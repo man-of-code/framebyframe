@@ -249,3 +249,38 @@ Append below this line.
 - Light mode has no token for the warm fill `#F2A65A`. `--accent-warm` in light mode is the text/icon color `#A35A09`. The wash still uses `rgba(242,166,90,0.18)`.
 - WCAG contrast of the transcribed hexes does not match every ratio printed in the design system. Light `--accent-warm` `#A35A09` on `#F7F8FA` is 4.91:1 (the table says 5.6). Light `--text-tertiary` is 5.10:1 (the table says 5.5). Both are above the 4.5:1 body-text floor. The hexes were not changed.
 - The inline script and `useTheme` disagree on corrupt stored values, as noted above.
+
+### Task 3: Content types and build-time validation
+
+- **Status:** complete
+- **When:** 2026-10-22
+- **Plan reference:** `docs/implementation-plan.md` → Task 3
+
+#### Shipped
+
+- `src/lib/types.ts` — exported the PRD content types plus `Tool`, `CapstoneStage`, and `Content`.
+- `src/lib/schema.ts` — exported Zod schemas and cross-reference validation with named issues.
+- `src/lib/schema.test.ts` — eight tests covering valid content and required failure modes.
+- `src/content/index.ts` — exported an empty, typed content collection for later ledger tasks.
+- `scripts/validate-content.ts` — exits nonzero with formatted issues or prints all five content counts.
+- `tsconfig.json` — exposed the existing `@/*` source alias to root-level `tsx` scripts.
+- `src/lib/noop.test.ts` — removed the temporary Task 1 toolchain proof.
+
+#### Verified
+
+- `npm run test -- schema` before `src/lib/schema.ts` existed → FAIL, cannot resolve `@/lib/schema`.
+- `npm run test -- schema` after implementation → 8 passed.
+- `npm run validate` with empty content → exit 0; resources, weeks, gaps, tools, and stages were all 0.
+- `npm run validate` with a temporary invalid resource → exit 1; named `resource invalid-resource` and `verified`. The resource was then removed.
+
+#### Decisions
+
+- **Decision:** Root `tsconfig.json` defines `baseUrl` and the `@/*` path mapping in addition to `tsconfig.app.json`.
+  - **Because:** `tsx` resolves root scripts from the root TypeScript config and otherwise cannot import `@/lib/schema` or `@/content`.
+  - **Rejected:** Relative imports in the validation script, because they would make build-time scripts use a different import contract than the application.
+  - **Risk:** The alias is duplicated across root and app configs and must remain synchronized.
+  - **Deviation:** no
+
+#### Left open
+
+- none
