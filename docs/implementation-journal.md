@@ -284,3 +284,77 @@ Append below this line.
 #### Left open
 
 - none
+
+### Task 4: Port the resource ledger
+
+- **Status:** complete
+- **When:** 2026-10-22
+- **Plan reference:** `docs/implementation-plan.md` → Task 4
+
+#### Shipped
+
+- `src/content/resources.ts` — 138 `Resource` records transcribed from Part 1 of the ledger, including the seven module sections and Cross-cutting. HitFilm, Kickstarter, Script Slug, and IMSDb are absent. `verified` is `2026-10-21` on every record. Cursa is `language: "hi"`; every other record is `"en"`.
+- `src/content/index.ts` — barrel exports `resources` and a `content` object whose other collections stay empty.
+
+#### Verified
+
+- `npm run validate` → exit 0. `resources: 138`, `weeks: 0`, `gaps: 0`, `tools: 0`, `stages: 0`. The 138 count matches the transcription tally: 21 Module 1 (the Short of the Week row split into two), 18 Module 2, 6 new Module 3, 17 Module 4 (shot-list deduped, the subreddit row split, ShotDeck added), 28 Module 5, 17 Module 6 (HitFilm dropped), 20 Module 7, 11 Cross-cutting (the community row split, two subreddits already present).
+- `npx tsc -b --noEmit` → exit 0.
+- `npm test` → 10 passed. Not required by the verify step; the schema suite does not import this data.
+
+#### Decisions
+
+- **Decision:** `weeks` is the inclusive range printed on the module heading, unioned when the same resource appears in more than one module. Cross-cutting rows get `weeks: []`. Module 5 editing and sound both get `[9, 10]`. Crew deal memo is `[3, 6]` because the Module 3 row names it for the week 6 assignment while linking only the call sheet.
+  - **Because:** the plan does not say how to fill `weeks`, and the heading is the only week span printed on each section.
+  - **Rejected:** narrowing each row to the single curriculum week that names it. That mapping belongs to Task 5, and many rows are never named in the week table.
+  - **Risk:** week filters for 9 and 10 both show the whole editing-and-sound module. Cross-cutting communities do not appear under a week filter.
+  - **Deviation:** no
+
+- **Decision:** A ledger level the schema cannot store maps to its floor: `beginner-intermediate` and `all` become `beginner`, `intermediate-advanced` becomes `intermediate`, `reference` and ArtCraft's `n/a` become `beginner`. Unsane stays `intermediate` because that row states it. Where the ledger printed a range, the `why` text keeps the range.
+  - **Because:** `level` is `beginner | intermediate | advanced`, and this curriculum's reader is a beginner. The floor keeps a ranged resource inside the filter a beginner will use.
+  - **Rejected:** mapping a range to its ceiling, which would hide BetterFountain, Blackmagic Camera, and the LUT pack from a beginner filter.
+  - **Risk:** an intermediate or advanced filter will not show resources whose ledger level was a range or `all`.
+  - **Deviation:** no
+
+- **Decision:** Rows with no href still get a real URL. Working Man links the Asian Movie Pulse review that confirms the Redmi Note 7 Pro. Unsane and Manasanamaha link their Wikipedia pages. ShotDeck links `https://shotdeck.com`. Search-term rows (mcpro24fps, AddictiveTips, Digital Camera World, three No Film School roots, BlenderNation sci-fi) link the site root named in the ledger, and `why` states the search term.
+  - **Because:** `url` is required, and those rows are either a title with no link or an explicit search term. ShotDeck is not a table row; the Module 4 gap names it and the plan requires `benchmarkOnly` on it.
+  - **Rejected:** dropping the rows, and inventing a watch or article URL the ledger did not verify.
+  - **Risk:** Working Man, Unsane, and Manasanamaha do not open the film itself. The three No Film School search rows share `https://nofilmschool.com`. iFilmThings is labeled as such and still points at that root, which is what the ledger printed.
+  - **Deviation:** no
+
+- **Decision:** A type label outside the enum maps to the nearest member. `video` becomes `youtube`. `shorts` becomes `short-film`. A government portal becomes `service`. A curator page becomes `platform`. GitHub project URLs, including BetterFountain, become `repo`. The Audacity manual becomes `docs`. Corridor Crew's Wikipedia link becomes `article`. Ian Hubert's Patreon link becomes `platform`. Unsane's "background reading" becomes `reading`.
+  - **Because:** the schema rejects the ledger's raw labels, and a `youtube` badge on a Wikipedia or Patreon URL would be false.
+  - **Rejected:** keeping the column label when it contradicts the href.
+  - **Risk:** Blender Guru stays `youtube` because the ledger classifies the channel that way and the href is the creator's site, not a third-party page.
+  - **Deviation:** no
+
+- **Decision:** The Fountain, John August script library, and WGA East rows have their level column shifted into the cost cell. Level is `beginner` because the row never states one. WGA cost is `paid` from the `$25, 10 yrs` cell. Fountain's second href and the treatment template href stay inside `why` on the single row.
+  - **Because:** copying the cells in order would store `free` as a level and fail the schema.
+  - **Rejected:** guessing an intermediate level for the script library.
+  - **Risk:** those three are tagged beginner with no ledger sentence that says so.
+  - **Deviation:** no
+
+- **Decision:** A stated price is `paid`. A free tier, a paid certificate, or a paid festival fee on a free account is `freemium` (Milanote, FutureLearn, Blender Studio, FilmFreeway, Festhome, mcpro24fps). Incompetech stays `free` because CC-BY use does not require the $30 attribution waiver. The LawSikho article stays `free`; the ₹7,500 SWA fee is in `why`, and it is not `benchmarkOnly`. IDSFFK, BIFFes, and Sci-Fi-London are `paid` because the ledger says a fee exists and does not confirm the amount. They are not `benchmarkOnly`. MIFF and Film Bazaar stay `free` with the historical low-fee caveat in `why`. TakeTen stays `free`.
+  - **Because:** `cost` has no "unknown", and a free badge on a festival that charges is the worse error.
+  - **Rejected:** marking every unconfirmed fee `free`, and marking the four priced genre festivals as the only paid festivals.
+  - **Risk:** Sci-Fi-London, IDSFFK, or BIFFes may turn out to be free or nominal. The `why` text says the amount is unconfirmed. `benchmarkOnly` is only ShotDeck, WGA East, Fantasia, Sitges, Screamfest, and Slamdance.
+  - **Deviation:** no
+
+- **Decision:** No resource sets `grayArea`. The Ketto `why` states that India-based creators cannot launch on Kickstarter. The iPleaders `why` states practical norms, not verified law.
+  - **Because:** the only gray-area titles the ledger names are Script Slug and IMSDb, which the plan excludes rather than flags. Unconfirmed LUT packs are not rows. The Kickstarter and public-shooting caveats have no row of their own and belong on the resource a learner would open instead.
+  - **Rejected:** a Kickstarter resource with `benchmarkOnly` or `grayArea`, which the plan says to omit.
+  - **Risk:** a learner who never opens the Ketto record will not see the Kickstarter restriction.
+  - **Deviation:** no
+
+- **Decision:** One ledger row that names more than one destination becomes one resource per destination. Short of the Week is `short-of-the-week-thriller` and `short-of-the-week-sci-fi`. The Module 4 subreddit cell is `r-mobile-filmmakers` and `r-cinematography`. The Cross-cutting community cell is one subreddit each, skipping the two already created.
+  - **Because:** `Resource` has a single `url`, and Task 5 has to point `resourceIds` at a specific channel or community.
+  - **Rejected:** keeping one record and burying the second URL in `why`, which is what the treatment and Fountain rows do when the second link is an attachment of the same resource.
+  - **Risk:** the resource count is higher than the row count. Slugs Task 5 will need: `short-of-the-week-thriller`, `short-of-the-week-sci-fi`, `r-mobile-filmmakers`, `r-cinematography`, `r-filmmakers`, `r-indie-filmmakers`, `r-filmmaker-support`, `r-davinci-resolve`, `r-blender`, `r-sounddesign`.
+  - **Deviation:** yes. Plan step: "Every row becomes one Resource." Did this instead: split a row when it names two or more destinations that each need their own URL.
+
+#### Left open
+
+- Working Man, Unsane, and Manasanamaha still need a verified watch URL before the library presents them as the film.
+- iFilmThings points at the No Film School root because that is the href in the ledger. The article may live elsewhere.
+- ShotDeck's product URL was not in the ledger.
+- Sci-Fi-London, IDSFFK, and BIFFes fees are unconfirmed and badged `paid`.
