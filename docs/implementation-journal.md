@@ -102,3 +102,62 @@ Reviewers check that `## Entries` contains each heading once, in this order. Imp
 ## Entries
 
 Append below this line.
+
+### Task 1: Scaffold and toolchain
+
+- **Status:** complete
+- **When:** 2026-10-22
+- **Plan reference:** `docs/implementation-plan.md` → Task 1
+
+#### Shipped
+
+- `package.json` — Vite scripts plus `prebuild`, `test`, `e2e`, `validate`, and `check-links`. Locked versions match the plan: Vite 8.3.5, React 19.3.1, React Router 7.18.4, Tailwind 4.3.3, Zod 4.6.7, Fuse.js 7.5.0, Lucide 1.61.0, TanStack Virtual 3.14.21, Vitest 5.0.5, Playwright 1.64.1. No `three` dependency.
+- `vite.config.ts` — `@/*` → `src/*`, Tailwind plugin, `src/vendor/threeui` manual chunk named `atmosphere`.
+- `tsconfig.app.json` — `strict`, `baseUrl`, and `@/*` paths.
+- `vitest.config.ts` — jsdom, the same `@/*` alias, tests under `src/**/*.test.{ts,tsx}`.
+- `src/lib/noop.test.ts` — temporary toolchain proof from the plan. Deleted in Task 3.
+- `index.html`, `src/main.tsx`, `src/App.tsx`, `.gitignore` — create-vite React-TS scaffold, with the document title set to `framebyframe`.
+
+#### Verified
+
+- `npm run test` → 1 passed (Vitest 5.0.5).
+- `npx tsc -b --noEmit` → exit 0, no output.
+- `npm run dev` → Vite 8.3.5 at http://localhost:5173/. The default React page rendered (`Get started`, counter moved from 0 to 1). No Vite error overlay. Dev-server log had no compile errors.
+
+#### Decisions
+
+- **Decision:** Package name and document title are `framebyframe`.
+  - **Because:** The repo already contained `docs/` and the research ledger, so scaffolding used the plan's `.tmp-scaffold` fallback. create-vite named the package and `<title>` after that directory.
+  - **Rejected:** Leaving `tmp-scaffold` in `package.json` and `index.html`.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** `tsconfig.app.json` sets `"ignoreDeprecations": "6.0"` beside the plan's `baseUrl`.
+  - **Because:** create-vite installed TypeScript ~6.0.3, and `tsc` exits 2 on `baseUrl` unless that flag is set. The plan requires `baseUrl` and a clean `tsc -b --noEmit`.
+  - **Rejected:** Dropping `baseUrl` and relying on TS 6 relative `paths` alone.
+  - **Risk:** `baseUrl` stops working in TypeScript 7. Revisit the alias when the compiler is upgraded.
+  - **Deviation:** no
+
+- **Decision:** `tsconfig.node.json` includes `vitest.config.ts` as well as `vite.config.ts`.
+  - **Because:** `tsc -b` only typechecks files in the project references. Without this, the Vitest config the task creates is outside the verify step.
+  - **Rejected:** Leaving `vitest.config.ts` untyped.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** Kept the create-vite `lint` script (`oxlint`) in addition to the plan's scripts.
+  - **Because:** create-vite 9.3.1 installed oxlint and a lint script. The plan says to add scripts; it does not say to remove that one.
+  - **Rejected:** Replacing `scripts` verbatim and leaving oxlint installed with no script.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** Did not create `playwright.config.ts` or `components.json`.
+  - **Because:** Both are named in the task file list and neither step gives contents. `components.json` is created by Task 8 `npx shadcn@latest init`. Playwright's default `testDir` is `./tests`, while Task 17 puts the smoke spec in `e2e/`.
+  - **Rejected:** Inventing a shadcn config and a Playwright config the plan never wrote.
+  - **Risk:** `npm run e2e` will not discover `e2e/smoke.spec.ts` until a config sets `testDir`. Task 17 needs that config, or the spec needs to live under `tests/`.
+  - **Deviation:** yes. Plan step: "Create: `package.json`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `index.html`, `src/main.tsx`, `src/App.tsx`, `.gitignore`, `vitest.config.ts`, `playwright.config.ts`, `components.json`". Did this instead: left `playwright.config.ts` and `components.json` uncreated.
+
+#### Left open
+
+- `src/lib/noop.test.ts` accepts a failed `@/main.tsx` import (`catch(() => null)` and an assertion that allows `null`). A broken alias still passes. The plan specifies this test and Task 3 deletes it. `tsc` does resolve `@/main.tsx`, so the alias is checked at compile time.
+- Vitest 5.0.5 and jsdom 30 declare engines of Node `^22.12.0 || ^24 || >=26` and `^22.22.2 || ^24.15.0 || >=26`. This machine's default Node is v23.11.0. `npm install` printed `EBADENGINE`. `npm run test` still passed on that Node.
+- `npm run build` is wired to `scripts/validate-content.ts` and `scripts/assert-bundle.ts`, which do not exist yet. Failure until Tasks 3 and 17 is the plan's expected state.
