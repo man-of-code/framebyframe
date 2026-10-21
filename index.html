@@ -1,6 +1,23 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      (function () {
+        try {
+          var p = localStorage.getItem("fbf:theme") || "system";
+          var dark = p === "dark" || (p === "system" && !window.matchMedia("(prefers-color-scheme: light)").matches);
+          if (!dark) document.documentElement.classList.add("light");
+          document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        } catch (e) {}
+      })();
+    </script>
+    <link
+      rel="preload"
+      href="/fonts/archivo-expanded-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

@@ -215,7 +215,7 @@ The journal entry ships in this commit.
 **Interfaces:**
 - Produces: `type Theme = 'dark' | 'light' | 'system'`; `resolveTheme(pref: Theme, prefersDark: boolean): 'dark' | 'light'`; `applyTheme(resolved: 'dark' | 'light', root: HTMLElement): void`; `useTheme(): { theme: Theme; resolved: 'dark' | 'light'; setTheme(t: Theme): void }`; a `.grain` utility class.
 
-- [ ] **Step 1: Transcribe the tokens**
+- [x] **Step 1: Transcribe the tokens**
 
 Create `src/styles/tokens.css`. Transcribe **every** token from `docs/design-system.md` §2.1 into `:root` (dark is the default) and **every** token from §2.2 into `.light`. Then add §4's spacing, radius, z-index, easing, and duration tokens, and §3.2's type scale. Also map shadcn's variable names per §2.3.
 
@@ -260,7 +260,7 @@ Structure (abbreviated — fill in all tokens):
 }
 ```
 
-- [ ] **Step 2: Wire Tailwind v4 and the grain utility**
+- [x] **Step 2: Wire Tailwind v4 and the grain utility**
 
 `src/index.css`:
 
@@ -286,7 +286,7 @@ Structure (abbreviated — fill in all tokens):
 
 `src/styles/grain.css` — copy the `.grain` implementation from `design-system.md` §5.3 verbatim. Generate the 128px `feTurbulence` SVG, inline it as a data URI in `--grain-tile`, and set `baseFrequency` around `0.85` with `numOctaves="3"`.
 
-- [ ] **Step 3: Write the failing theme test**
+- [x] **Step 3: Write the failing theme test**
 
 `src/lib/theme.test.ts`:
 
@@ -307,12 +307,12 @@ describe("resolveTheme", () => {
 });
 ```
 
-- [ ] **Step 4: Run it and watch it fail**
+- [x] **Step 4: Run it and watch it fail**
 
 Run: `npm run test -- theme`
 Expected: FAIL — cannot resolve `@/lib/theme`.
 
-- [ ] **Step 5: Implement**
+- [x] **Step 5: Implement**
 
 `src/lib/theme.ts`:
 
@@ -331,12 +331,12 @@ export function applyTheme(resolved: "dark" | "light", root: HTMLElement): void 
 }
 ```
 
-- [ ] **Step 6: Verify the test passes**
+- [x] **Step 6: Verify the test passes**
 
 Run: `npm run test -- theme`
 Expected: 2 passing.
 
-- [ ] **Step 7: Prevent the flash of wrong theme**
+- [x] **Step 7: Prevent the flash of wrong theme**
 
 Add to `index.html` as the **first** element inside `<head>`, before any stylesheet:
 
@@ -355,16 +355,16 @@ Add to `index.html` as the **first** element inside `<head>`, before any stylesh
 
 Also add the font `<link rel="preload">` for Archivo Expanded only, per `design-system.md` §3.1, and self-host the three families as woff2 under `public/fonts/`.
 
-- [ ] **Step 8: Implement `useTheme`**
+- [x] **Step 8: Implement `useTheme`**
 
 `src/hooks/useTheme.ts` reads `THEME_KEY`, subscribes to `matchMedia("(prefers-color-scheme: light)")`, calls `applyTheme` on change, and persists on `setTheme`. Wrap all storage access in try/catch.
 
-- [ ] **Step 9: Verify both modes by eye**
+- [x] **Step 9: Verify both modes by eye**
 
 Temporarily render a swatch page in `App.tsx` showing every token as a labelled chip with its contrast ratio against the current background. Toggle both themes.
 Expected: no token is invisible against its intended background; `--text-tertiary` is legible at weight 400; grain is visible on dark and absent on light.
 
-- [ ] **Step 10: Journal, then commit**
+- [x] **Step 10: Journal, then commit**
 
 Append one entry to `docs/implementation-journal.md` before this commit. Re-read the file, then add a heading `### Task 2: Design tokens, theme, and grain` at the end of `## Entries`. Follow the template in that file. Do not edit any other task's entry. A bullet starting with `**Decision:**` is required even when the choice was to follow the plan.
 
