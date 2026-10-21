@@ -358,3 +358,113 @@ Append below this line.
 - iFilmThings points at the No Film School root because that is the href in the ledger. The article may live elsewhere.
 - ShotDeck's product URL was not in the ledger.
 - Sci-Fi-London, IDSFFK, and BIFFes fees are unconfirmed and badged `paid`.
+
+### Task 5: Port the curriculum, gaps, tools, and capstone stages
+
+- **Status:** complete
+- **When:** 2026-10-22
+- **Plan reference:** `docs/implementation-plan.md` → Task 5
+
+#### Shipped
+
+- `src/content/weeks.ts` — 16 weeks. Core weeks 1–12 have watch, read, and do tasks. Weeks 13–16 have `tasks: []`, `extension: true`, `module: 0`, and one `gapIds` entry. `heavy` is set only on weeks 3 and 8. Week 4 has no `capstoneStage`.
+- `src/content/gaps.ts` — 9 gaps: two global, three module, four extension-week.
+- `src/content/tools.ts` — 22 tools. ArtCraft is `experimental: true`. DaVinci Resolve carries the free-edition limitation. GIMP, Krita, and Inkscape are included.
+- `src/content/capstone.ts` — 8 stages. `criteria` are the linked weeks' assignment checks, copied in week order.
+- `src/content/index.ts` — `content` now includes `resources`, `weeks`, `gaps`, `tools`, and `capstone`, and still re-exports `resources`.
+- `src/content/content.test.ts` — the plan's content guard, copied verbatim.
+
+#### Verified
+
+- `npm run validate` → exit 0. `resources: 138`, `weeks: 16`, `gaps: 9`, `tools: 22`, `stages: 8`.
+- `npx tsc -b --noEmit` → exit 0.
+- `npm run test -- content` → 7 passed.
+- `npm run test` → 17 passed (3 files).
+
+#### Decisions
+
+- **Decision:** No `hours` field was added. Each core week's stated estimate is the sum of its task minutes: week 1 = 300, 2 = 420, 3 = 480, 4 = 240, 5 = 360, 6 = 240, 7 = 480, 8 = 600, 9 = 420, 10 = 360, 11 = 480, 12 = 360. Those totals divide evenly across that week's tasks (including stretch), so the last core task gets no extra remainder. Extension weeks have no tasks and no minutes.
+  - **Because:** `Week` has no hours field, and the week's hours display is the sum of its tasks' minutes. The sum must equal the stated estimate and must not go above it.
+  - **Rejected:** adding minutes for a stretch task on top of the estimate, and storing the hour total on the week.
+  - **Risk:** week 2's pitch deck and week 8's lighting test consume part of the stated core estimate rather than sitting outside it.
+  - **Deviation:** no
+
+- **Decision:** One task per Watch, Read, and Do cell. The week 2 pitch deck, the week 3 storyboard, and the week 8 lighting test are extra do tasks with `core: false`. Every other task is `core: true`.
+  - **Because:** the ledger marks only part of those three cells as stretch, and the brief says anything the ledger marks stretch is `core: false`. The plan's examples name weeks 3 and 8; the week 2 minutes cell also marks the pitch deck as stretch.
+  - **Rejected:** marking the whole week 2 or week 3 do cell as stretch, and dropping the pitch deck because the plan's examples omit week 2.
+  - **Risk:** week 2 has four tasks, so its 420 minutes are 105 each, including the stretch pitch deck.
+  - **Deviation:** no
+
+- **Decision:** `brochureNo` is only the first assignment number on the row: week 2 is 2, week 3 is 6, week 11 is 14. Weeks 6, 7, 8, and 12, and extension weeks 13–16, omit `brochureNo`. Their assignment text keeps the table's "New (no brochure source)" or "replaced — brochure duplicate" wording. Later numbers on a multi-number row stay in the text.
+  - **Because:** `assignment` is one object with one optional `brochureNo`.
+  - **Rejected:** inventing a second assignment object for A4, A5, A7, A15, or A17.
+  - **Risk:** A4, A5, A7, A15, and A17 are not recoverable from `brochureNo`. Week 11's text also includes the minutes-cell line "Cap VFX ambition to one shot." Week 12's done-when says five EPK components; the do cell names four (bio, synopsis, press release, poster).
+  - **Deviation:** no
+
+- **Decision:** Done-when cells split on a semicolon that joins two checks. Week 14's semicolon stays inside one check because it sits in the parenthetical aside. Week 4 and week 13 were still one condition after that, so each was split into two checks the sentence already states. The weekly self-review checklist is not a check.
+  - **Because:** every assignment needs at least two checks, and a semicolon inside "YouTube-ish; re-check…" is one aside.
+  - **Rejected:** splitting week 14 on that semicolon, and adding the self-review questions as checks.
+  - **Risk:** week 13's checks are "Every shot on the original shot list now exists in the footage" and "The footage is usable." Week 14's second check is the fragment "YouTube-ish; re-check target festival specs."
+  - **Deviation:** no
+
+- **Decision:** Weeks 13–16 have empty `tasks`, `extension: true`, and `gapIds` of exactly `extension-week-13` through `extension-week-16`. `heavy: true` is only weeks 3 and 8.
+  - **Because:** an empty task list without a gap fails `validateContent`, and the ledger flags only weeks 3 and 8 as heavier.
+  - **Rejected:** inventing watch/read tasks for the buffer weeks, and marking week 7 or week 11 heavy because their estimates are 8 hours.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** `community` is the ledger's community cell, with the strings specified for this task. `communityCaveat` is set only on weeks 1 and 2 ("read the FAQ and Logline Monday rules first") and week 12 ("post work once live"). Week 13's community is an empty string. The generic "read each subreddit's wiki" note is not copied onto every week.
+  - **Because:** the week-1 cell states the Screenwriting caveat, week 2 uses the same community, and week 12's cell says to post work once live. The cross-cutting wiki note is not a per-week flag.
+  - **Rejected:** putting the wiki note on every subreddit week, and copying week 1's slash wording ("FAQ/Logline") instead of the required sentence.
+  - **Risk:** week 11's community is the string "r/vfx or r/blender". There is no `r/vfx` resource.
+  - **Deviation:** no
+
+- **Decision:** Capstone stages are premise (week 1), script (2), shot list (3, 5, 6), shoot (7, 8, 13), rough cut (9), sound (10, 14), final cut (11, 15), and submissions (12, 16). Week 4 has no stage. Each stage's `criteria` are those weeks' checks, in week order, copied rather than rewritten.
+  - **Because:** the brief names the eight stages and says criteria come from the matching week's done-when checks. It does not assign week numbers. Week 4 is an analysis exercise, not a pipeline artifact. Extension weeks continue the stage their buffer job belongs to.
+  - **Rejected:** giving week 4 its own stage, and attaching week 4 to shot list because it sits between weeks 3 and 5.
+  - **Risk:** shoot, sound, final cut, and submissions include extension-week checks, including the week 13 and week 14 splits above.
+  - **Deviation:** no
+
+- **Decision:** `indian-language-craft` `attempted` lists the categories the cross-cutting section names, plus the Pawan Kumar near-miss. It does not contain search-query strings, channel names, or person names, because Batch G's list is not in this repo. `raw-footage-practice` `attempted` restates the Part 2 sentence that the pass verified no source; it names no archive. The note uses the paragraph's "week 7's lighting-setup exercise." Module gaps `hindi-resolve-sound` and `hindi-blender-vfx` have empty `attempted` arrays because those notes state a conclusion and no queries.
+  - **Because:** the brief asks for the list Batch G documented, and the ledger file does not contain it. Inventing queries would be a false record.
+  - **Rejected:** writing plausible Hindi/Tamil query strings, and moving the lighting-test fallback from week 7 to week 8 to match the week table.
+  - **Risk:** the attempted list cannot be re-run as a search. The raw-footage note says week 7; the week table puts the lighting test in week 8.
+  - **Deviation:** no
+
+- **Decision:** The toolkit is every resource with `type: "tool"`, plus the installable apps the ledger types as `repo` or documents as Audacity, plus DaVinci Resolve, GIMP, Krita, and Inkscape. Homepages the ledger does not give: DaVinci Resolve `https://www.blackmagicdesign.com/products/davinciresolve` (parent of the Fairlight and training URLs in the ledger), Audacity `https://www.audacityteam.org/` (host of the manual URL), GIMP `https://www.gimp.org/`, Krita `https://krita.org/`, Inkscape `https://inkscape.org/`. Their licenses are the projects' published ones (GPL-3.0, GPL-3.0, GPL-2.0) because the ledger does not state them. `firstWeek` is the earliest week on the matching resource, or 11 for GIMP, Krita, and Inkscape because that is the ArtCraft module. The CGChannel LUT pack's `firstWeek` is 9 from its resource weeks, not 15 where the week table names it.
+  - **Because:** the ledger names those tools and does not give those five homepages. A guessed download mirror would be worse than the project homepage.
+  - **Rejected:** omitting GIMP, Krita, and Inkscape; omitting DaVinci Resolve because only Fairlight is `type: "tool"`; using the Storyblocks free-vs-studio article as Resolve's download URL.
+  - **Risk:** those five URLs are homepages, not direct download files. The LUT pack appears from week 9. GIMP, Krita, and Inkscape appear from week 11, while the poster assignment is week 12.
+  - **Deviation:** no
+
+- **Decision:** `src/content/content.test.ts` is the brief's guard copied verbatim, and it was written after the week, gap, tool, and capstone modules.
+  - **Because:** the brief says not to weaken the test, and it orders transcription before that test.
+  - **Rejected:** adding assertions for minute totals or brochure numbers inside that file, which would change the specified test.
+  - **Risk:** none. The guard does not check minute sums, brochure numbers, or that criteria match the week checks.
+  - **Deviation:** no
+
+- **Decision:** `src/content/index.ts` exports `content` with `resources`, `weeks`, `gaps`, `tools`, and `capstone`, and re-exports `resources`, using the existing `@/lib/types` import.
+  - **Because:** that is the collection shape `validateContent` and the guard test import.
+  - **Rejected:** a default export, or leaving the non-resource arrays empty.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** Extension weeks 13–16 use `module: 0`. Titles and topics are the Module & focus cell: the focus phrase is the title, and the comma-separated items are `topics`. Buffer weeks are titled "Buffer" with `topics: ["buffer"]`.
+  - **Because:** `Week.module` is a number, the buffer is not an eighth module, and the brief does not assign those weeks to modules 1–7.
+  - **Rejected:** `module: 8`, and repeating module 4–7 onto the buffer week that continues that work.
+  - **Risk:** any UI that assumes modules are 1–7 will not group weeks 13–16.
+  - **Deviation:** no
+
+- **Decision:** A do or watch cell links a resource only when that cell names the source, or when the stretch task is the storyboard and `storyboarder` is the week 3 storyboard tool. Week 11's do task links `blender` only. Week 9's do task has `resourceIds: []`. Week 8's watch links `ifilmthings-low-key-lighting` for "No Film School: Low-Key Lighting" and `no-film-school-diy-gimbal` for the gimbal.
+  - **Because:** there is no Fusion resource, the week 9 cell does not name the EditingTools.io proxy article, and the only low-key resource is the iFilmThings row whose URL is the No Film School root.
+  - **Rejected:** linking `davinci-resolve-training` or `davinci-resolve-fairlight` as Fusion, linking `davinci-resolve-proxy-workflow` without the cell naming it, and leaving the low-key half of week 8 with no resource.
+  - **Risk:** week 11 does not open a Fusion page. Week 9 does not open the proxy article. The low-key resource title says iFilmThings.
+  - **Deviation:** no
+
+#### Left open
+
+- Week 8's low-key link is `ifilmthings-low-key-lighting`. The week cell says "No Film School: Low-Key Lighting." Task 4 already recorded that this resource points at the No Film School root.
+- Week 11 names Resolve Fusion and no resource id is the Fusion page. Week 9 says "proxies if needed" and does not link `davinci-resolve-proxy-workflow`.
+- Week 12's check says five EPK components. The do cell names four.
+- The raw-footage gap follows the ledger's "week 7's lighting-setup exercise." The week table puts the lighting test in week 8.
+- DaVinci Resolve, Audacity, GIMP, Krita, and Inkscape use project homepages the ledger does not print.
