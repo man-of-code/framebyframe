@@ -1,0 +1,15 @@
+/* --grain-tile is the 128px feTurbulence tile required by design-system.md section 5.3. */
+:root {
+  --grain-tile: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjgnIGhlaWdodD0nMTI4Jz48ZmlsdGVyIGlkPSdnJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC44NScgbnVtT2N0YXZlcz0nMycgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPScxMjgnIGhlaWdodD0nMTI4JyBmaWx0ZXI9J3VybCgjZyknLz48L3N2Zz4=");
+}
+
+.grain { position: relative; isolation: isolate; }
+.grain::before {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background-image: var(--grain-tile);      /* inline SVG feTurbulence data URI, 128px */
+  background-size: 128px 128px;
+  opacity: var(--grain-opacity);            /* 0.025 dark, 0 light */
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+.grain > * { position: relative; z-index: 2; }

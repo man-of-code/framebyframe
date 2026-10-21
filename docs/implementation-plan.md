@@ -82,7 +82,7 @@ Task 17's entry also states which of the 17 required headings are missing.
 - Consumes: nothing.
 - Produces: the `@/*` path alias resolving to `src/*`; `npm run dev`, `npm run build`, `npm run test`, `npm run e2e` scripts.
 
-- [ ] **Step 1: Initialise the repo and scaffold Vite**
+- [x] **Step 1: Initialise the repo and scaffold Vite**
 
 ```bash
 cd /Users/manofcode/Projects/personal/framebyframe
@@ -93,7 +93,7 @@ npm install
 
 If Vite refuses to scaffold into a non-empty directory, scaffold into `.tmp-scaffold/`, move its contents up, and delete the folder. Keep the existing `docs/` and the research ledger markdown untouched.
 
-- [ ] **Step 2: Install dependencies at the verified versions**
+- [x] **Step 2: Install dependencies at the verified versions**
 
 ```bash
 npm install react@19.3.1 react-dom@19.3.1 react-router-dom@7.18.4 fuse.js@7.5.0 zod@4.6.7 lucide-react@1.61.0 @tanstack/react-virtual@3.14.21
@@ -102,7 +102,7 @@ npm install -D tailwindcss@4.3.3 @tailwindcss/vite@4.3.3 vitest@5.0.5 @vitest/co
 
 Do **not** install `three` or `@designcodeio/threeui`.
 
-- [ ] **Step 3: Configure the path alias and Tailwind plugin**
+- [x] **Step 3: Configure the path alias and Tailwind plugin**
 
 `vite.config.ts`:
 
@@ -132,7 +132,7 @@ export default defineConfig({
 
 Add to `tsconfig.app.json` under `compilerOptions`: `"baseUrl": "."`, `"paths": { "@/*": ["./src/*"] }`, and confirm `"strict": true`.
 
-- [ ] **Step 4: Configure Vitest**
+- [x] **Step 4: Configure Vitest**
 
 `vitest.config.ts`:
 
@@ -146,7 +146,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 5: Add scripts to `package.json`**
+- [x] **Step 5: Add scripts to `package.json`**
 
 ```json
 {
@@ -166,7 +166,7 @@ export default defineConfig({
 
 `scripts/validate-content.ts` and `scripts/assert-bundle.ts` do not exist yet, so `npm run build` will fail until Tasks 3 and 17. That is expected and correct — the pipeline is wired before it is filled.
 
-- [ ] **Step 6: Write a toolchain proof test**
+- [x] **Step 6: Write a toolchain proof test**
 
 `src/lib/noop.test.ts`:
 
@@ -181,7 +181,7 @@ describe("toolchain", () => {
 });
 ```
 
-- [ ] **Step 7: Verify**
+- [x] **Step 7: Verify**
 
 Run: `npm run test`
 Expected: 1 passing test.
@@ -192,7 +192,7 @@ Expected: exit 0, no output.
 Run: `npm run dev`, open the printed URL.
 Expected: the default Vite React page renders with no console errors.
 
-- [ ] **Step 8: Journal, then commit**
+- [x] **Step 8: Journal, then commit**
 
 Append one entry to `docs/implementation-journal.md` before this commit. Re-read the file, then add a heading `### Task 1: Scaffold and toolchain` at the end of `## Entries`. Follow the template in that file. Do not edit any other task's entry. A bullet starting with `**Decision:**` is required even when the choice was to follow the plan.
 
@@ -215,7 +215,7 @@ The journal entry ships in this commit.
 **Interfaces:**
 - Produces: `type Theme = 'dark' | 'light' | 'system'`; `resolveTheme(pref: Theme, prefersDark: boolean): 'dark' | 'light'`; `applyTheme(resolved: 'dark' | 'light', root: HTMLElement): void`; `useTheme(): { theme: Theme; resolved: 'dark' | 'light'; setTheme(t: Theme): void }`; a `.grain` utility class.
 
-- [ ] **Step 1: Transcribe the tokens**
+- [x] **Step 1: Transcribe the tokens**
 
 Create `src/styles/tokens.css`. Transcribe **every** token from `docs/design-system.md` §2.1 into `:root` (dark is the default) and **every** token from §2.2 into `.light`. Then add §4's spacing, radius, z-index, easing, and duration tokens, and §3.2's type scale. Also map shadcn's variable names per §2.3.
 
@@ -260,7 +260,7 @@ Structure (abbreviated — fill in all tokens):
 }
 ```
 
-- [ ] **Step 2: Wire Tailwind v4 and the grain utility**
+- [x] **Step 2: Wire Tailwind v4 and the grain utility**
 
 `src/index.css`:
 
@@ -286,7 +286,7 @@ Structure (abbreviated — fill in all tokens):
 
 `src/styles/grain.css` — copy the `.grain` implementation from `design-system.md` §5.3 verbatim. Generate the 128px `feTurbulence` SVG, inline it as a data URI in `--grain-tile`, and set `baseFrequency` around `0.85` with `numOctaves="3"`.
 
-- [ ] **Step 3: Write the failing theme test**
+- [x] **Step 3: Write the failing theme test**
 
 `src/lib/theme.test.ts`:
 
@@ -307,12 +307,12 @@ describe("resolveTheme", () => {
 });
 ```
 
-- [ ] **Step 4: Run it and watch it fail**
+- [x] **Step 4: Run it and watch it fail**
 
 Run: `npm run test -- theme`
 Expected: FAIL — cannot resolve `@/lib/theme`.
 
-- [ ] **Step 5: Implement**
+- [x] **Step 5: Implement**
 
 `src/lib/theme.ts`:
 
@@ -331,12 +331,12 @@ export function applyTheme(resolved: "dark" | "light", root: HTMLElement): void 
 }
 ```
 
-- [ ] **Step 6: Verify the test passes**
+- [x] **Step 6: Verify the test passes**
 
 Run: `npm run test -- theme`
 Expected: 2 passing.
 
-- [ ] **Step 7: Prevent the flash of wrong theme**
+- [x] **Step 7: Prevent the flash of wrong theme**
 
 Add to `index.html` as the **first** element inside `<head>`, before any stylesheet:
 
@@ -355,16 +355,16 @@ Add to `index.html` as the **first** element inside `<head>`, before any stylesh
 
 Also add the font `<link rel="preload">` for Archivo Expanded only, per `design-system.md` §3.1, and self-host the three families as woff2 under `public/fonts/`.
 
-- [ ] **Step 8: Implement `useTheme`**
+- [x] **Step 8: Implement `useTheme`**
 
 `src/hooks/useTheme.ts` reads `THEME_KEY`, subscribes to `matchMedia("(prefers-color-scheme: light)")`, calls `applyTheme` on change, and persists on `setTheme`. Wrap all storage access in try/catch.
 
-- [ ] **Step 9: Verify both modes by eye**
+- [x] **Step 9: Verify both modes by eye**
 
 Temporarily render a swatch page in `App.tsx` showing every token as a labelled chip with its contrast ratio against the current background. Toggle both themes.
 Expected: no token is invisible against its intended background; `--text-tertiary` is legible at weight 400; grain is visible on dark and absent on light.
 
-- [ ] **Step 10: Journal, then commit**
+- [x] **Step 10: Journal, then commit**
 
 Append one entry to `docs/implementation-journal.md` before this commit. Re-read the file, then add a heading `### Task 2: Design tokens, theme, and grain` at the end of `## Entries`. Follow the template in that file. Do not edit any other task's entry. A bullet starting with `**Decision:**` is required even when the choice was to follow the plan.
 
