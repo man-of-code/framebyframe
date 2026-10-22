@@ -401,10 +401,10 @@ Append below this line.
   - **Risk:** A4, A5, A7, A15, and A17 are not recoverable from `brochureNo`. Week 11's text also includes the minutes-cell line "Cap VFX ambition to one shot." Week 12's done-when says five EPK components; the do cell names four (bio, synopsis, press release, poster).
   - **Deviation:** no
 
-- **Decision:** Done-when cells split on a semicolon that joins two checks. Week 14's semicolon stays inside one check because it sits in the parenthetical aside. Week 4 and week 13 were still one condition after that, so each was split into two checks the sentence already states. The weekly self-review checklist is not a check.
-  - **Because:** every assignment needs at least two checks, and a semicolon inside "YouTube-ish; re-check…" is one aside.
-  - **Rejected:** splitting week 14 on that semicolon, and adding the self-review questions as checks.
-  - **Risk:** week 13's checks are "Every shot on the original shot list now exists in the footage" and "The footage is usable." Week 14's second check is the fragment "YouTube-ish; re-check target festival specs."
+- **Decision:** Done-when cells split on a semicolon that joins two checks. Week 13 keeps its done-when as one check, "Every shot on the original shot list now exists in usable footage", and the second check is the row's other obligation, "Reshoots and pickups cover anything missed in weeks 7–8". Week 14's semicolon splits the parenthetical, and "YouTube-ish" stays on the LUFS check: "LUFS roughly in the -14 to -16 range (YouTube-ish)" and "Re-check target festival specs". Week 4 was still one condition after that rule, so it was split into two checks the sentence already states. The weekly self-review checklist is not a check.
+  - **Because:** every assignment needs at least two checks, and a semicolon that joins two checks is the split. "YouTube-ish" modifies the LUFS range. Week 13's done-when is one clause, so the second check is the reshoot obligation.
+  - **Rejected:** splitting week 13 into "exists in the footage" and "The footage is usable", leaving week 14's second check as "YouTube-ish; re-check target festival specs", and adding the self-review questions as checks.
+  - **Risk:** week 13's second check restates the assignment line rather than a second done-when sentence.
   - **Deviation:** no
 
 - **Decision:** Weeks 13–16 have empty `tasks`, `extension: true`, and `gapIds` of exactly `extension-week-13` through `extension-week-16`. `heavy: true` is only weeks 3 and 8.
@@ -422,7 +422,7 @@ Append below this line.
 - **Decision:** Capstone stages are premise (week 1), script (2), shot list (3, 5, 6), shoot (7, 8, 13), rough cut (9), sound (10, 14), final cut (11, 15), and submissions (12, 16). Week 4 has no stage. Each stage's `criteria` are those weeks' checks, in week order, copied rather than rewritten.
   - **Because:** the brief names the eight stages and says criteria come from the matching week's done-when checks. It does not assign week numbers. Week 4 is an analysis exercise, not a pipeline artifact. Extension weeks continue the stage their buffer job belongs to.
   - **Rejected:** giving week 4 its own stage, and attaching week 4 to shot list because it sits between weeks 3 and 5.
-  - **Risk:** shoot, sound, final cut, and submissions include extension-week checks, including the week 13 and week 14 splits above.
+  - **Risk:** shoot, sound, final cut, and submissions include extension-week checks, including the week 13 and week 14 checks above.
   - **Deviation:** no
 
 - **Decision:** `indian-language-craft` `attempted` lists the categories the cross-cutting section names, plus the Pawan Kumar near-miss. It does not contain search-query strings, channel names, or person names, because Batch G's list is not in this repo. `raw-footage-practice` `attempted` restates the Part 2 sentence that the pass verified no source; it names no archive. The note uses the paragraph's "week 7's lighting-setup exercise." Module gaps `hindi-resolve-sound` and `hindi-blender-vfx` have empty `attempted` arrays because those notes state a conclusion and no queries.

@@ -560,8 +560,8 @@ export const weeks: Week[] = [
       id: "w13-assignment",
       text: "Reshoots and pickups for anything missed in weeks 7–8",
       checks: [
-        "Every shot on the original shot list now exists in the footage",
-        "The footage is usable",
+        "Every shot on the original shot list now exists in usable footage",
+        "Reshoots and pickups cover anything missed in weeks 7–8",
       ],
     },
     capstoneStage: "shoot",
@@ -579,8 +579,8 @@ export const weeks: Week[] = [
       id: "w14-assignment",
       text: "Sound re-record/clean-up pass; re-check every audio file's license before public release",
       checks: [
-        "LUFS roughly in the -14 to -16 range",
-        "YouTube-ish; re-check target festival specs",
+        "LUFS roughly in the -14 to -16 range (YouTube-ish)",
+        "Re-check target festival specs",
       ],
     },
     capstoneStage: "sound",
