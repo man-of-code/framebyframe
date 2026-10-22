@@ -525,3 +525,48 @@ Append below this line.
 
 - A version other than 1 already stored at `fbf:progress:v1` loads as `corrupt` and is overwritten on the next edit. There is no backup key.
 - Import drops wrong-typed `done`, `notes`, and `capstone` entries and still returns `ok: true`.
+
+### Task 7: Week derivation
+
+- **Status:** complete
+- **When:** 2026-10-22
+- **Plan reference:** `docs/implementation-plan.md` → Task 7
+
+#### Shipped
+
+- `src/lib/week.ts` — `TOTAL_WEEKS` 16, `CORE_WEEKS` 12, `rawWeekNumber`, `clampWeek`, and `resolveCurrentWeek`. Week comes from local calendar days. An override replaces the displayed week and is clamped to 1–16. `complete` is true only when the derived week is past 16.
+- `src/lib/week.test.ts` — the plan's 12 tests.
+- `src/hooks/useCurrentWeek.ts` — takes the shell's `Progress` and returns `resolveCurrentWeek(progress, new Date())` on each render.
+
+#### Verified
+
+- `npm run test -- week` → 12 passing, exit 0.
+- `npm test` → 48 passing, exit 0.
+- `npx tsc -b` → exit 0.
+- `npx oxlint` on the three new files → exit 0.
+- `TZ=America/New_York` comparison for start `2026-03-01`: on `2026-03-15` the plan's `getTime()` division returns week 2 and the shipped calendar-day count returns week 3. On `2026-03-22` the same split is week 3 versus week 4.
+
+#### Decisions
+
+- **Decision:** Day count is `Date.UTC` of the local year, month, and day for both the start date and `now`.
+  - **Because:** in `America/New_York`, the spring-forward on 2026-03-08 makes a `getTime()` delta one hour short. `Math.floor` then reports one fewer day, so each later week boundary (14 days, 21 days) stays on the previous week for that day.
+  - **Rejected:** `localMidnight(now).getTime()` divided by `86_400_000`, which is the snippet in the plan.
+  - **Risk:** a zone with a transition other than a one-hour shift is not covered by the 12 tests. The 12 tests pass in the host zone and do not include 2026-03-15.
+  - **Deviation:** yes. Plan step: "const days = Math.floor((localMidnight(now) - start) / 86_400_000)". Did this instead: divide the UTC timestamps of the two local calendar dates.
+
+- **Decision:** `useCurrentWeek(progress)` takes `Progress` and does not call `useProgress`.
+  - **Because:** `useProgress` stores state in the component that calls it. A second call inside this hook would not see the shell's progress.
+  - **Rejected:** reading storage again inside the week hook.
+  - **Risk:** the caller has to pass the same `progress` value it is editing. There is no midnight timer; the week changes on the next render.
+  - **Deviation:** no
+
+- **Decision:** A numeric `weekOverride` with no `startDate` is `source: "override"` and `complete: false`. `complete` still follows the derived week when both are set, so an override of week 5 after the calendar has passed week 16 is `{ week: 5, source: "override", complete: true }`.
+  - **Because:** the plan says the override wins the displayed week, and `complete` is `rawWeekNumber(...) > TOTAL_WEEKS`, which needs a start date. Those two fields answer different questions.
+  - **Rejected:** treating a lone override as `unset`, treating a clamped override of 99 during week 1 as completion, and forcing `complete` false whenever `source` is `override`. The last one would hide the past-week-16 state for anyone who had set an override.
+  - **Risk:** a later screen that treats `complete` and `week` as one fact will show the finished-curriculum state on an overridden earlier week. The 12 tests do not cover an override without a start date, or an override while the calendar is past week 16.
+  - **Deviation:** no
+
+#### Left open
+
+- `useCurrentWeek` has no test. `npm run test -- week` would count a file whose name contains `week`, and the plan's verify step expects 12.
+- A start date that is not `YYYY-MM-DD` makes `rawWeekNumber` return `NaN`. Nothing in this task rejects it.
