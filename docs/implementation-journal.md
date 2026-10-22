@@ -570,3 +570,99 @@ Append below this line.
 
 - `useCurrentWeek` has no test. `npm run test -- week` would count a file whose name contains `week`, and the plan's verify step expects 12.
 - A start date that is not `YYYY-MM-DD` makes `rawWeekNumber` return `NaN`. Nothing in this task rejects it.
+
+### Task 8: App shell and navigation
+
+- **Status:** complete
+- **When:** 2026-10-22
+- **Plan reference:** `docs/implementation-plan.md` → Task 8
+
+#### Shipped
+
+- `components.json` — shadcn config for `src/index.css`, alias `@/components`, Radix Vega, Lucide.
+- `src/components/ui/*` — the plan's primitives, plus `input`, `input-group`, and `toggle` because `command` and `toggle-group` import them. Icons are Lucide. `sonner` reads `useTheme`.
+- `src/lib/utils.ts` — `cn`.
+- `src/index.css` — Tailwind color aliases of the existing tokens, and the focus ring. No second palette.
+- `src/router.tsx` — `createBrowserRouter`. `/` is the lazy landing without a `startDate` and the eager dashboard with one. `/plan`, `/week/:n`, `/library`, `/capstone`, `/toolkit`, `/about` are lazy. `/week/:n` outside 1–16 renders not-found. Unknown paths stay in the shell.
+- `src/lib/route-week.ts` — `parseWeekParam`.
+- `src/routes/Root.tsx` — skip link, rail or mobile bar and bottom tabs, read-only banner when `status === "unavailable"`, outlet, toaster.
+- `src/components/nav/LeftRail.tsx` — 240px rail, week numeral, brand, empty filmstrip slot, the six destinations, theme toggle.
+- `src/components/nav/BottomTabs.tsx` — Today, Plan, Library, Capstone, More. 56px bar plus the safe-area inset.
+- `src/components/nav/MoreSheet.tsx` — Toolkit, About, theme, export, import.
+- `src/components/nav/items.ts` — `NAV_ITEMS`.
+- `src/components/SkipLink.tsx`, `src/components/nav/ThemeToggle.tsx`, `src/components/nav/WeekNumeral.tsx`, `src/components/nav/shell.css`.
+- `src/routes/Dashboard.tsx`, `Landing.tsx`, `Plan.tsx`, `Week.tsx`, `Library.tsx`, `Capstone.tsx`, `Toolkit.tsx`, `About.tsx` — placeholder screens so the router can mount. Later tasks replace them.
+- `src/App.tsx` — mounts the router.
+
+#### Verified
+
+- Browser on `npm run dev`, viewport overrides 360×800, 767×800, 768×900, 1024×900, and 1440×900.
+- 360: no horizontal scroll (`scrollWidth` 360). Bottom tabs, no rail. Each tab 62×56. Gaps 8px. Mobile bar 48px tall. Tab tops at 745px of 800px.
+- 767: bottom tabs, no rail. 768: rail 240px, no tabs, no mobile bar. 1024 and 1440: no horizontal scroll, rail 240px.
+- Nav targets and the theme options measure at least 48×48. Desktop nav gaps and theme gaps are 8px.
+- Active tab background is `rgba(106, 184, 255, 0.12)`. The week numeral is `rgb(242, 166, 90)`. A forced `:focus-visible` on a nav link is `2px solid rgb(106, 184, 255)` with offset 2px.
+- `/week/0` and `/week/foo` render "Week not found". `/week/7` renders "Week 7". `/` with no `startDate` renders the landing. `/` with `startDate` `2026-10-01` renders the dashboard. `/plan` and `/toolkit` render those headings. `/nope` stays in the shell.
+- More opens from the tab bar. Escape closes it. Toolkit inside it navigates to `/toolkit` and closes the sheet. Choosing Light adds `class="light"` on `html`.
+- `npm run test -- route-week` → 3 passing. `npm test` → 51 passing, exit 0. `npx tsc -b` → exit 0.
+
+#### Decisions
+
+- **Decision:** The primitives came from `https://ui.shadcn.com/r/styles/radix-vega/*.json`, with registry paths rewritten to `@/components/ui` and `IconPlaceholder` rewritten to Lucide. Preset Vega, base Radix.
+  - **Because:** `npx shadcn@latest init` stops on a preset prompt, and the non-interactive init's Node fetch to `ui.shadcn.com` times out at 10s. `curl` returns the same payload the CLI requests.
+  - **Rejected:** the CLI default `base-nova` preset, and copying the registry files with their `@/app/(create)` icon imports.
+  - **Risk:** a later `npx shadcn add` from Node can hit the same timeout.
+  - **Deviation:** yes. Plan step: "`npx shadcn@latest init`" then "`npx shadcn@latest add button checkbox …`". Did this instead: wrote `components.json` and the component files from the radix-vega registry.
+
+- **Decision:** `index.css` does not contain the registry's oklch palette. `@theme` points Tailwind color names at the tokens already in `tokens.css`. `--color-secondary-foreground` and `--color-accent-foreground` use `--text-primary`. `font-inter` was not installed.
+  - **Because:** `tokens.css` is the color source, and the display, body, and mono faces are already self-hosted.
+  - **Rejected:** pasting the init payload's light and dark oklch blocks, and adding a second Inter.
+  - **Risk:** a utility that expects `--color-secondary-foreground` to differ from body text will not.
+  - **Deviation:** no
+
+- **Decision:** `sonner.tsx` calls `useTheme` from `@/hooks/useTheme` and passes `resolved` to the toaster.
+  - **Because:** the registry file imports `next-themes`, and this app switches theme with a `light` class on `html`, not `next-themes`.
+  - **Rejected:** installing `next-themes` beside `useTheme`.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** The theme control is in the desktop rail and in the More sheet.
+  - **Because:** the sheet is the mobile overflow. At 768px and up that sheet is not mounted, so the rail is the only place the control can sit.
+  - **Rejected:** a desktop shell with no theme control.
+  - **Risk:** none.
+  - **Deviation:** yes. Plan step: "`MoreSheet`: Toolkit, About, theme toggle, export/import." Did this instead: the same control is also the last block in `LeftRail`.
+
+- **Decision:** `NAV_ITEMS` is the six rail destinations. `BOTTOM_TABS` is Today, Plan, Library, and Capstone. More is the sheet trigger, not an item in either array.
+  - **Because:** the interface asks for `NAV_ITEMS` as `{ to, label, icon }`, and the mobile label for `/` is Today while the rail label is Dashboard.
+  - **Rejected:** one array whose labels could not satisfy both bars.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** Export downloads `frame-by-frame-progress.json`. A failed import toasts `reason` and does not call `replace`.
+  - **Because:** the sheet is specified to contain export and import, and Task 17 names that filename and the failure behavior.
+  - **Rejected:** buttons that do nothing until Task 17.
+  - **Risk:** Task 17 should move this JSX into `ExportImport.tsx` instead of writing a second copy.
+  - **Deviation:** no
+
+- **Decision:** Pages that later tasks own are placeholder modules, lazy-imported except `Dashboard`.
+  - **Because:** the router has to resolve those paths now, and those tasks replace the file bodies.
+  - **Rejected:** inline screens inside `router.tsx` with no route modules.
+  - **Risk:** a later task that expects to create `src/routes/Plan.tsx` from scratch will find the placeholder.
+  - **Deviation:** yes. Plan file list for this task does not include `Dashboard.tsx`, `Landing.tsx`, `Plan.tsx`, `Week.tsx`, `Library.tsx`, `Capstone.tsx`, `Toolkit.tsx`, or `About.tsx`. Did this instead: added those files as placeholders.
+
+- **Decision:** `main.tsx` still mounts `App`. `App` mounts the router.
+  - **Because:** `main.tsx` had no other job.
+  - **Rejected:** moving `RouterProvider` into `main.tsx` and leaving `App` unused.
+  - **Risk:** none.
+  - **Deviation:** yes. Plan file list: "Modify: `src/App.tsx`, `src/main.tsx`". Did this instead: modified `src/App.tsx` only.
+
+- **Decision:** Paths that match no route render "Page not found" inside the shell.
+  - **Because:** an unmatched URL would otherwise leave the router error outside the rail and the tabs.
+  - **Rejected:** no catch-all.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- `useProgress` keeps state in the component that calls it. The shell calls it once. A later page that calls `useProgress()` on its own will not share that state.
+- The filmstrip slot in the rail is empty until Task 9.
+- Node's fetch to `ui.shadcn.com` timed out. `curl` did not.
