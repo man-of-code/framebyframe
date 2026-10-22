@@ -468,3 +468,60 @@ Append below this line.
 - Week 12's check says five EPK components. The do cell names four.
 - The raw-footage gap follows the ledger's "week 7's lighting-setup exercise." The week table puts the lighting test in week 8.
 - DaVinci Resolve, Audacity, GIMP, Krita, and Inkscape use project homepages the ledger does not print.
+
+### Task 6: Progress engine
+
+- **Status:** complete
+- **When:** 2026-10-22
+- **Plan reference:** `docs/implementation-plan.md` → Task 6
+
+#### Shipped
+
+- `src/lib/progress.ts` — versioned `fbf:progress:v1` load, save, toggle, note, capstone stage, start date, week override, export, import, and `countDone`. Storage failures return `unavailable`. Bad JSON and a wrong version return `corrupt` and a blank progress. Import never throws.
+- `src/lib/progress.test.ts` — the plan's 11 tests.
+- `src/hooks/useProgress.ts` — `{ progress, status, toggle, note, stage, setStartDate, setWeekOverride, replace }`. Reads storage in the first render, debounces writes 300ms, flushes on unmount and `pagehide`.
+- `src/hooks/useProgress.test.ts` — debounce, unmount flush, `pagehide` flush, read failure, write failure, and recovery after a later successful write.
+
+#### Verified
+
+- `npm run test -- progress` → 19 passing, exit 0. The filter matches both test files. The plan's 11 library tests are inside that run.
+- `npm test` → 36 passing, exit 0.
+- `npx tsc -b` → exit 0.
+- `npx oxlint` on the four new files → exit 0.
+
+#### Decisions
+
+- **Decision:** `useProgress` reads storage in the `useState` initializer.
+  - **Because:** the shell renders the read-only banner from `status` on the first paint.
+  - **Rejected:** loading in `useEffect`, which would paint `empty` before the real status.
+  - **Risk:** none in this Vite client app. A server render would not see `localStorage`.
+  - **Deviation:** yes. Plan step: "loads once on mount". Did this instead: load once during the first render so `status` is already set.
+
+- **Decision:** A pending write flushes on unmount and on `pagehide`, ahead of the 300ms debounce. A failed debounced write sets `status` to `unavailable`, and a later successful write sets it back to `ok`.
+  - **Because:** a route change unmounts the hook, a tab close does not run the effect cleanup, and a quota error that later clears would otherwise leave the read-only banner up.
+  - **Rejected:** flushing only through the debounce, and adding `beforeunload` beside `pagehide`.
+  - **Risk:** a save that fails inside the unmount cleanup cannot update `status`.
+  - **Deviation:** yes. Plan step: "debounces `saveProgress` by 300ms". Did this instead: debounce while the hook is mounted, and flush on unmount and `pagehide`.
+
+- **Decision:** `setStartDate` and `setWeekOverride` live in `src/lib/progress.ts`. `setWeekOverride(p, undefined)` deletes the key. The hook only calls those functions.
+  - **Because:** the plan says the hook contains no business logic.
+  - **Rejected:** spreading `startDate` and deleting `weekOverride` inside the hook.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** Import keeps booleans in `done`, strings in `notes`, `todo` | `doing` | `done` in `capstone`, and optional fields only when their types match. Other entries are dropped and the import still returns `ok: true`. Failed loads return a new blank object. A stored version other than 1 is `corrupt`, and the next edit overwrites that blob.
+  - **Because:** the value has to match `Progress`, and returning the `emptyProgress` singleton would let a caller mutate every later empty read.
+  - **Rejected:** failing the import when one entry has the wrong type, and copying the rejected blob to a second localStorage key before overwrite.
+  - **Risk:** a newer schema under this key is replaced on the next edit. A wrong-typed note or checkbox disappears on import.
+  - **Deviation:** no
+
+- **Decision:** The hook has its own test file, so `npm run test -- progress` reports 19 tests.
+  - **Because:** the plan's 11 tests never mount the hook, and the debounce can pass those tests while writing on the wrong tick.
+  - **Rejected:** leaving `useProgress` untested.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- A version other than 1 already stored at `fbf:progress:v1` loads as `corrupt` and is overwritten on the next edit. There is no backup key.
+- Import drops wrong-typed `done`, `notes`, and `capstone` entries and still returns `ok: true`.
