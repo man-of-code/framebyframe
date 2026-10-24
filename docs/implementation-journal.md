@@ -877,3 +877,37 @@ Append below this line.
 #### Left open
 
 - none
+
+### Task 12: Library search and filter logic
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** `docs/implementation-plan.md` → Task 12
+
+#### Shipped
+
+- `src/lib/search.ts` — `statusOf`, `emptyFacets`, `filterResources` (OR within a facet, AND across facets, empty array means no constraint), `createIndex` (Fuse keys and weights from the plan, `threshold: 0.38`, `ignoreLocation: true`), `searchResources` (blank query returns the filtered set; a query is limited to that set), and `facetOptions`.
+- `src/lib/search.test.ts` — the 13 cases specified in the plan.
+
+#### Verified
+
+- `npm run test -- search` → 13 passing, exit 0. The same command before `src/lib/search.ts` existed failed to resolve `@/lib/search`.
+- `npm test` → 73 passing, exit 0. `npx tsc -b --noEmit` → exit 0.
+
+#### Decisions
+
+- **Decision:** Closed facets come from a fixed catalog. Language is always `en`, `hi`, `ta`, `te`, `ml`, `mr`, `bn`, plus any other code present on a resource. Weeks are 1–16, plus any other week number present. Type, level, cost, and status are the full unions. Topics are the sorted topic strings present on the resources.
+  - **Because:** `facetOptions` only receives resources, and the plan requires zero-match options so the language gap stays visible. The ledger names Hindi, Tamil, Telugu, Malayalam, Marathi, and Bengali. The test and the data already use `ta`, `hi`, and `en`. Those are the ISO 639-1 codes. The curriculum and the schema bound weeks to 1–16.
+  - **Rejected:** building every facet only from values that appear in `all`. That drops Tamil and the other empty languages. Also rejected: inventing topic strings no resource uses.
+  - **Risk:** the plan's test only checks that `type` contains `template`, which the fixture already has. It does not fail if `ta` is missing from `language`. Task 13 has to treat `ta`, `te`, `ml`, `mr`, and `bn` as the empty Indian-language options.
+  - **Deviation:** no
+
+- **Decision:** `searchResources` queries the supplied index, then keeps hits whose ids survived `filterResources`.
+  - **Because:** the signature takes a prebuilt index, and a non-empty query must still obey the facets. Fuse scores each document on its own with these options, so the surviving hits match a second search over only the filtered resources.
+  - **Rejected:** constructing a new Fuse index on the filtered array for every query. That leaves the caller's index unused, which this project rejects under `noUnusedParameters`.
+  - **Risk:** if `index` was built from a different array than `all`, a filtered resource missing from the index will not show up for a non-empty query.
+  - **Deviation:** no
+
+#### Left open
+
+- none
