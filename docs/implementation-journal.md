@@ -801,3 +801,79 @@ Append below this line.
 
 - Weeks 13–16 are all titled "Buffer" in the content records. The frame numeral and capstone stage are what distinguish them.
 - Extension weeks have no core tasks, so they stay unexposed and show `0/0`.
+
+### Task 11: /week/:n
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** `docs/implementation-plan.md` → Task 11
+
+#### Shipped
+
+- `src/routes/Week.tsx` — week page in the §4.4 order: letterboxed header, Watch, Read, Do, notes, community, self-review. An empty Watch or Read section renders that week's gap cards.
+- `src/components/week/WeekHeader.tsx` — eyebrow, title, topic chips, core hours, capstone stage, heavy chip, previous and next week.
+- `src/components/week/TaskList.tsx` — core tasks, then a Stretch divider, then non-core tasks. Ticks go through the shared progress store.
+- `src/components/week/AssignmentCard.tsx` — 2px warm left border, brochure number when present, done-when checklist.
+- `src/components/week/DoneWhenChecklist.tsx` — check ids are `${assignmentId}:check:${index}`.
+- `src/components/week/NotesField.tsx` — notes stored under the assignment id, debounced 500ms, then the progress hook's 300ms write. "Saved" is announced.
+- `src/components/resource/ResourceCard.tsx` — outbound title link with `rel="noopener noreferrer"`, type, why, verified date, minutes, and `licenseNote` when set.
+- `src/components/resource/BadgeRow.tsx` — cost, level, and gray-area, benchmark, experimental, and email-gated badges, each with an icon and text.
+- `src/components/resource/GapCard.tsx` — dashed inset card, help-wanted chip, what is missing, the three-pass line, attempted terms, and the contribution note.
+- `src/hooks/ProgressProvider.tsx` — one progress owner for the shell and the week page. `TaskList` with no provider still writes through `useProgress`.
+- `src/components/week/week.css`, `src/components/resource/resource.css` — token-only layout for the page and the cards.
+- `src/routes/Root.tsx` — wraps the shell in `ProgressProvider`.
+- `src/components/week/TaskList.test.tsx` — stretch divider and a persisted tick.
+
+#### Verified
+
+- `npm run test -- TaskList` → 2 passing. `npm test` → 60 passing. `npx tsc -b --noEmit` → exit 0.
+- Browser at 360px: weeks 1, 2, 3, 8, 10, 13, and 16. `scrollWidth` equals `innerWidth`. Weeks 3 and 8 show the Heavy chip. Weeks 13 and 16 each show two gap cards. Every visited assignment has 2 done-when checks. Week 2 shows the Stretch divider before the pitch-deck task. Week 10 renders Freesound's per-file license sentence. External links use `rel="noopener noreferrer"`.
+- Ticking week 13's first done-when check wrote `done["w13-assignment:check:0"]`. A note wrote `notes["w13-assignment"]` and showed Saved. Both survived a reload. The checkbox box is 20×20px inside a row taller than 48px. Notes text is 16px. The assignment border is 2px `#F2A65A`.
+
+#### Decisions
+
+- **Decision:** `Root` owns one `ProgressProvider`. Week controls read that value. A `TaskList` rendered with no provider, as in the unit test, calls `useProgress` itself.
+  - **Because:** each `useProgress()` call has its own state and its own debounced write. Two of them on one page overwrite each other.
+  - **Rejected:** passing progress props through `TaskList`, which would break the interface the test renders.
+  - **Risk:** a route mounted outside `Root` still works, but it will not update the shell until reload.
+  - **Deviation:** no
+
+- **Decision:** Notes are stored under `assignment.id`, and `NotesField` is keyed by that id.
+  - **Because:** the plan does not name the notes key, and the week route stays mounted while `:n` changes. A reused field would save one week's text onto the next assignment.
+  - **Rejected:** a week-number key, and leaving the field mounted across weeks.
+  - **Risk:** notes written under any other id will not show on this page.
+  - **Deviation:** no
+
+- **Decision:** The stretch test matches `/^stretch$/i`.
+  - **Because:** the fixture task is named "Stretch goal", so `getByText(/stretch/i)` throws once a real divider also says Stretch.
+  - **Rejected:** removing the word Stretch from the divider so the loose regex hit only the task.
+  - **Risk:** a diff against the plan's test block shows a tighter matcher.
+  - **Deviation:** yes. Plan step: "expect(screen.getByText(/stretch/i)).toBeTruthy();". Did this instead: `expect(screen.getByText(/^stretch$/i)).toBeTruthy();`.
+
+- **Decision:** The week header's 2.39 frame is `min-height: calc(100cqw / 2.39)`, with the same 8px inset bars, vignette, and grain as the plan module headers.
+  - **Because:** a grid sibling with `aspect-ratio: 2.39 / 1` grew to the content height times 2.39 and forced horizontal scroll at 360px.
+  - **Rejected:** clipping the header with `overflow: hidden`, and dropping the ratio.
+  - **Risk:** when the title is taller than the ratio, the panel grows and is no longer exactly 2.39.
+  - **Deviation:** no
+
+- **Decision:** An empty Watch section and an empty Read section each render every gap in `week.gapIds`. Do always renders the assignment, plus resource cards for do-task links. Core hours use the same sum as Task 10, including `0h` when there are no tasks.
+  - **Because:** weeks 13–16 have no Watch or Read tasks, and several Do tasks are the only reference to a resource. Hiding `0h` would disagree with the plan frames.
+  - **Rejected:** one shared gap below both sections, and omitting do-task links.
+  - **Risk:** buffer weeks show the same gap card twice.
+  - **Deviation:** no
+
+- **Decision:** A community name links out only when a ledger title matches it after lowercasing and removing spaces, preferring a resource tagged with this week. Unmatched names stay text.
+  - **Because:** `community` is a label, not a URL. `r/Screenwriting` has no ledger row.
+  - **Rejected:** guessing Reddit URLs for names the ledger did not verify.
+  - **Risk:** "Short of the Week" also matches the study-channel titles; the week tag breaks that tie.
+  - **Deviation:** no
+
+- **Decision:** Cards and badges are local CSS on the design tokens, not the shadcn `Card` and `Badge` defaults.
+  - **Because:** those defaults paint accent-primary and 12px type. Cost, benchmark, and warn colors are already assigned in the design system.
+  - **Rejected:** restyling the shared primitives for this one page.
+  - **Risk:** the library page can drift if it builds a second card.
+  - **Deviation:** no
+
+#### Left open
+
+- none

@@ -7,7 +7,7 @@ import { WeekNumeral } from "@/components/nav/WeekNumeral";
 import { SkipLink } from "@/components/SkipLink";
 import { Toaster } from "@/components/ui/sonner";
 import { useCurrentWeek } from "@/hooks/useCurrentWeek";
-import { useProgress } from "@/hooks/useProgress";
+import { ProgressProvider, useProgressContext } from "@/hooks/ProgressProvider";
 import type { Progress } from "@/lib/types";
 
 const RAIL_QUERY = "(min-width: 768px)";
@@ -40,7 +40,15 @@ function eyebrowFor(pathname: string): string {
 }
 
 export function Root() {
-  const { progress, status, replace } = useProgress();
+  return (
+    <ProgressProvider>
+      <RootLayout />
+    </ProgressProvider>
+  );
+}
+
+function RootLayout() {
+  const { progress, status, replace } = useProgressContext();
   const { week } = useCurrentWeek(progress);
   const rail = useRailLayout();
   const { pathname } = useLocation();
