@@ -12,18 +12,35 @@ export function WeekFrame(props: {
   title: string;
   state: FrameState;
   ratio?: { done: number; total: number };
+  hours?: string;
+  stage?: string;
+  moduleLabel?: string;
   extension?: boolean;
   heavy?: boolean;
   orientation: "rail" | "card";
 }): JSX.Element {
-  const { n, module, title, state, ratio, extension, heavy, orientation } = props;
+  const { n, module, title, state, ratio, hours, stage, moduleLabel, extension, heavy, orientation } = props;
   const uid = useId();
   const codeId = `${uid}-code`;
+  const moduleId = `${uid}-module`;
   const titleId = `${uid}-title`;
+  const hoursId = `${uid}-hours`;
+  const ratioId = `${uid}-ratio`;
+  const stageId = `${uid}-stage`;
   const heavyId = `${uid}-heavy`;
   const pad = String(n).padStart(2, "0");
   const total = String(TOTAL_WEEKS).padStart(2, "0");
-  const labelledBy = [codeId, titleId, heavy ? heavyId : ""].filter(Boolean).join(" ");
+  const card = orientation === "card";
+  const moduleText = moduleLabel ?? (module > 0 ? `Module ${module}` : "");
+  const labelledBy = [
+    codeId,
+    card && moduleText ? moduleId : "",
+    titleId,
+    card && hours ? hoursId : "",
+    card && ratio ? ratioId : "",
+    card && stage ? stageId : "",
+    heavy ? heavyId : "",
+  ].filter(Boolean).join(" ");
 
   return (
     <Link
@@ -39,14 +56,25 @@ export function WeekFrame(props: {
         WK {pad}
         {orientation === "card" ? ` / ${total}` : ""}
       </span>
-      {orientation === "card" && module > 0 ? (
-        <span className="week-frame-module">Module {module}</span>
+      {card && moduleText ? (
+        <span id={moduleId} className="week-frame-module">{moduleText}</span>
       ) : null}
-      <span id={titleId} className={orientation === "card" ? "week-frame-title" : "filmstrip-sr"}>
+      <span id={titleId} className={card ? "week-frame-title" : "filmstrip-sr"}>
         {title}
       </span>
-      {ratio ? (
-        <span className={orientation === "card" ? "week-frame-ratio" : "filmstrip-sr"}>
+      {card && (hours || ratio || stage) ? (
+        <span className="week-frame-meta">
+          {hours ? <span id={hoursId}>{hours}</span> : null}
+          {ratio ? (
+            <span id={ratioId} className="week-frame-ratio">
+              {ratio.done}/{ratio.total}
+            </span>
+          ) : null}
+          {stage ? <span id={stageId}>{stage}</span> : null}
+        </span>
+      ) : null}
+      {!card && ratio ? (
+        <span className="filmstrip-sr">
           {ratio.done}/{ratio.total}
         </span>
       ) : null}

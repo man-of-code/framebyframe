@@ -738,3 +738,66 @@ Append below this line.
 
 - `FilmstripRail` without a `progress` prop does not share the shell's progress store.
 - Card frames are not on a route yet. Task 10 places them.
+
+### Task 10: /plan
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** `docs/implementation-plan.md` → Task 10
+
+#### Shipped
+
+- `src/routes/Plan.tsx` — `/plan` reads the shell progress snapshot, marks the current week, and groups all 16 weeks.
+- `src/components/plan/ModuleGroup.tsx` — one module section: mono eyebrow, title, optional note, and card frames.
+- `src/components/plan/plan.css` — vertical sprocket list below 768px, 2-column grid at 768px, splice before the buffer group.
+- `src/components/filmstrip/WeekFrame.tsx` — card frames can show hours, the completion ratio, a capstone stage, and a module label.
+- `src/routes/Plan.test.tsx` — 16 frames, 7 modules plus buffer, hours and stage, current and exposed states.
+
+#### Verified
+
+- `npm run test -- Plan` → 3 passing. `npm run test -- WeekFrame` → 4 passing. `npm run test` → 58 passing. `npx tsc -b --noEmit` → exit 0.
+- Browser, 360px: 8 groups, 16 card frames stacked, horizontal progress strip in the header, `scrollWidth` equals `clientWidth`. Smallest card target is above 48px.
+- Browser, 1100px: writing weeks 1 and 2 sit side by side (`394px 394px`). The page-level strip is `display: none`. Week 1 with its three core tasks done reads `exposed` with the check. Week 7, set with `weekOverride`, has `aria-current="step"`. Clicking that frame navigated to `/week/7`.
+
+#### Decisions
+
+- **Decision:** The seven module titles are the ledger headings: Writing, Pre-production, Directing, Cinematography, Editing and Sound, Post-production and VFX, Marketing, Distribution and Career.
+  - **Because:** `Week.module` is only a number, and the plan does not name the headers.
+  - **Rejected:** numbering the headers with no subject.
+  - **Risk:** a later rename in the ledger will not update this list.
+  - **Deviation:** no
+
+- **Decision:** Hours are the sum of that week's task minutes, rendered as `Nh` when the result is whole and one decimal otherwise. Extension weeks render `0h`. The ratio is core tasks only, and a week with no core tasks renders `0/0`. The current week stays current even when its core tasks are done.
+  - **Because:** there is no `hours` field, and Task 5 recorded the stated estimate as that sum. Task 9 already defined exposed as "every core task done, unless this is the current week".
+  - **Rejected:** hiding the ratio when the total is 0, and counting stretch tasks.
+  - **Risk:** `0/0` reads as an empty fraction. Week 4 has no `capstoneStage`, so that frame has no stage line.
+  - **Deviation:** no
+
+- **Decision:** The page takes `progress` from the shell outlet and passes that same object to `useCurrentWeek`, `ModuleGroup`, and `FilmstripRail`.
+  - **Because:** `useProgress` is not a shared store. A second call would not see edits made by the shell.
+  - **Rejected:** calling `useProgress()` inside `Plan`.
+  - **Risk:** rendering `Plan` outside `Root` throws, because `useOutletContext` is required.
+  - **Deviation:** yes. Plan step: "Consumes: `FilmstripRail`, `WeekFrame`, `useProgress`, `useCurrentWeek`, `content`." Did this instead: did not call `useProgress`; used the outlet snapshot Task 9 said this page should pass.
+
+- **Decision:** `FilmstripRail` is a horizontal compact strip on `/plan` below 768px and is not rendered visually at 768px and above.
+  - **Because:** the design system places that rail in the desktop left column and in the mobile `/plan` header. The left rail already mounts it.
+  - **Rejected:** a second vertical rail beside the module groups on desktop.
+  - **Risk:** the hidden strip stays in the DOM. `display: none` keeps it out of tab order.
+  - **Deviation:** no
+
+- **Decision:** Card frames gained optional `hours`, `stage`, and `moduleLabel` props. Buffer frames pass `Buffer` because `module` is 0. The card's accessible name includes hours, ratio, and stage. The rail's name does not.
+  - **Because:** the plan requires those fields on the frame, and `aria-labelledby` replaces the link's contents. The rail must stay within the Task 9 name.
+  - **Rejected:** painting the extra lines outside the link, and a second frame component.
+  - **Risk:** a card test that asserts the exact accessible name now includes the ratio.
+  - **Deviation:** no
+
+- **Decision:** Each module header uses grain, the vignette, and 8px inset bars. The header is not a 2.39 letterbox.
+  - **Because:** eight full letterboxes would sit above the frames and push them off a phone. Grain on module cards is the part that still applies.
+  - **Rejected:** `aspect-ratio: 2.39 / 1` on the module section.
+  - **Risk:** the module header will not match a later letterbox component that does use 2.39.
+  - **Deviation:** yes. Plan step: "Per `docs/prd.md` §4.3." The design system §6 also assigns letterbox containers (`aspect-ratio: 2.39/1`) to module cards. Did this instead: letterbox bars and vignette on the header only, with no 2.39 ratio.
+
+#### Left open
+
+- Weeks 13–16 are all titled "Buffer" in the content records. The frame numeral and capstone stage are what distinguish them.
+- Extension weeks have no core tasks, so they stay unexposed and show `0/0`.
