@@ -911,3 +911,46 @@ Append below this line.
 #### Left open
 
 - none
+
+### Task 13: /library UI
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** `docs/implementation-plan.md` → Task 13
+
+#### Shipped
+
+- `src/hooks/useLibraryFilters.ts` — `useLibraryFilters()` returns `{ query, facets, setQuery, toggleFacet, clearAll, results, options, view, setView }`. Query, facets, and `view=table` share one URL writer. `selectedEmptyLanguages` reports selected language codes with no catalog row.
+- `src/routes/Library.tsx` — inline search, `⌘K` / Ctrl+K / `/` command palette, facet chips at ≥768px, a bottom sheet with an applied-count badge below that, removable active chips, clear all, a mono live result count, card grid or table, and the `indian-language-craft` gap card.
+- `src/components/library/FilterChips.tsx`, `FilterSheet.tsx`, `SearchPalette.tsx`, `ResultsGrid.tsx`, `ResultsTable.tsx`, `labels.ts`, `useMediaQuery.ts`, `library.css` — the controls and the two result layouts. The card grid virtualizes only once the list exceeds 200.
+- `src/hooks/useLibraryFilters.test.tsx`, `src/routes/Library.test.tsx`, `src/components/library/ResultsGrid.test.tsx` — URL round-trip, same-click facet composition, Tamil gap versus the Hindi course, palette shortcuts, mobile sheet, and the 200-item virtualization threshold.
+
+#### Verified
+
+- `npm run test -- useLibraryFilters` before `useLibraryFilters.ts` existed → fail, cannot resolve `@/hooks/useLibraryFilters`.
+- `npm test` → 92 passing, exit 0. `npx tsc -b --noEmit` → exit 0.
+- Browser on a fresh `npm run dev` (`http://localhost:5180/library`). Typing `Cursa` wrote `?q=Cursa` and narrowed the grid. `/` and `⌘K` opened the command palette. Four facets (`YouTube`, `Writing`, `Week 1`, `Free`) composed into `?type=youtube&topic=writing&week=1&cost=free`. Count-changing clicks painted in 44.6ms, 21.0ms, and 26.6ms. The fourth facet did not change the count, so that sample is not a paint time. Hindi alone reads `1 result` and shows the Cursa course. Hindi plus Tamil keeps that course and also shows the gap card. Tamil alone shows the gap card and the live text "No verified resources in this language"; the page does not say "0 results". Reloading `?language=ta` shows the same gap. At 1440px the grid is 3 columns, chips and the search field are 48px tall, and `scrollWidth` equals the viewport. At 360px `scrollWidth` is 360 and the facet controls sit behind the Filters sheet.
+
+#### Decisions
+
+- **Decision:** The URL uses `q`, one repeated key per facet value (`type`, `topic`, `week`, `level`, `cost`, `language`, `status`), and `view=table`. `view` is written by the same setter as the facets.
+  - **Because:** the plan requires a linkable filter state and does not name the query keys. React Router's `setSearchParams` updater closes over the location from the current render, so two writes before the next render drop the first. A ref composes them, which a same-click test and a four-facet browser check both require.
+  - **Rejected:** a second `useSearchParams` for the table toggle. Also rejected: calling the functional updater twice and trusting React to chain it. This version of React Router does not.
+  - **Risk:** a Back navigation that lands while a write is in flight is adopted only after that write settles. If a navigation is dropped, the next click rebuilds from the last URL this hook wrote.
+  - **Deviation:** no
+
+- **Decision:** A selected language with zero catalog rows renders the `indian-language-craft` gap card. If another selected language still has rows, those rows stay and the gap card sits above them. An empty result that is not caused by such a language says "0 results". A single row says "1 result".
+  - **Because:** Hindi has one verified course. Tamil, Telugu, Malayalam, Marathi, and Bengali have none. The plan's check is "selecting Tamil shows the gap card", and the facet rule is OR within a language. A review pass asked to treat a language as empty unless a row had `status === "verified"`. `Resource` has no such field. `verified` is a required ISO date on every row, so a missing row is the empty option.
+  - **Rejected:** showing the gap for every Indian language code, which would hide the Hindi course. Also rejected: hiding the gap whenever any other facet still matches.
+  - **Risk:** selecting Tamil and English shows English cards plus the gap card. The count is the card count, not zero.
+  - **Deviation:** no
+
+- **Decision:** Facet clicks push a history entry. Query edits and the table toggle replace the current entry. The card grid virtualizes above 200 items; the table does not. `/` and both `⌘K` and Ctrl+K open the palette, and `/` is ignored while an input is focused.
+  - **Because:** a keystroke per history entry makes Back unusable, and a facet click is one deliberate change. The table is the accessible alternative, so its rows stay in the DOM. The plan names `⌘K`; Ctrl+K is the same shortcut on other keyboards. The catalog has 138 resources, so the virtualized branch is covered by a 201-item test rather than by the live page.
+  - **Rejected:** replacing history on every facet click. Also rejected: virtualizing the table.
+  - **Risk:** React Compiler skips memoizing `ResultsGrid` because `useWindowVirtualizer` returns unstable functions. That path is off until a result list exceeds 200.
+  - **Deviation:** no
+
+#### Left open
+
+- none
