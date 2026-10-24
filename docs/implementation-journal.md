@@ -666,3 +666,75 @@ Append below this line.
 - `useProgress` keeps state in the component that calls it. The shell calls it once. A later page that calls `useProgress()` on its own will not share that state.
 - The filmstrip slot in the rail is empty until Task 9.
 - Node's fetch to `ui.shadcn.com` timed out. `curl` did not.
+
+### Task 9: Filmstrip components
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** `docs/implementation-plan.md` → Task 9
+
+#### Shipped
+
+- `src/components/filmstrip/WeekFrame.tsx` — link to `/week/:n`, padded timecode, exposed check with an accessible complete label, `aria-current="step"` on the current frame, heavy chip, rail and card density.
+- `src/components/filmstrip/FilmstripRail.tsx` — sixteen frames from `content.weeks`, one splice before the first extension week.
+- `src/components/filmstrip/filmstrip.css` — sprocket gradient, state fills and borders, 48px targets, 8px separation.
+- `src/components/filmstrip/WeekFrame.test.tsx` — the four tests from the plan.
+- `src/components/nav/LeftRail.tsx` — vertical compact rail in the slot Task 8 left empty.
+- `src/routes/Root.tsx` — passes the shell progress snapshot into that rail.
+
+#### Verified
+
+- `npm run test -- WeekFrame` → 4 passing.
+- `npx tsc -b --noEmit` → exit 0.
+- `npm run test` → 55 passing.
+- Browser, 1440px wide: 16 week links, the stored current week has `aria-current="step"`, smallest target 175×48, smallest gap 8px, document does not overflow horizontally. Clicking week 7 navigated to `/week/7`.
+- Browser, 360px wide: the rail is unmounted with the rest of the left rail, and `scrollWidth` equals `clientWidth`.
+
+#### Decisions
+
+- **Decision:** A week is exposed only when it has at least one core task and every core task id is done. The current week stays current even if those tasks are done. Stretch tasks are ignored. Extension weeks have no tasks, so they stay unexposed.
+  - **Because:** the plan names the three states and does not define completion. `countDone` already counts ids in `progress.done`. Assignment-check ids are not written until Task 11.
+  - **Rejected:** treating every past week as exposed, and counting stretch tasks or the future check ids.
+  - **Risk:** a week whose tasks are done and whose assignment checks are not will already read as exposed. Task 10 should pass the same progress object the page is editing.
+  - **Deviation:** no
+
+- **Decision:** `FilmstripRail` takes an optional `progress` prop, and the shell passes the snapshot from `Root`. The component still calls `useProgress()` when the prop is omitted.
+  - **Because:** `useProgress` is not a shared store, and the plan's props do not include progress. A second call inside the rail would render a stale copy.
+  - **Rejected:** reading only the internal hook, and widening the required props so every caller must pass progress.
+  - **Risk:** a later page that renders `<FilmstripRail />` without `progress` will not update when the shell edits progress. The unused hook does not write, because this component never calls its mutators.
+  - **Deviation:** no
+
+- **Decision:** One splice item is inserted before the first week with `extension` set.
+  - **Because:** weeks 13–16 are the extension block, and a gap on every one of those frames would split the block.
+  - **Rejected:** hardcoding week 13, and drawing a splice on each extension frame.
+  - **Risk:** a later week flagged `extension` ahead of week 13 would move the splice.
+  - **Deviation:** no
+
+- **Decision:** The current frame uses a 2px `border-color` of `--accent-warm`, not the CSS `outline` property.
+  - **Because:** `:focus-visible` already draws a 2px `--accent-primary` outline. A second outline would replace that ring.
+  - **Rejected:** `outline: 2px solid var(--accent-warm)` on the current frame.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** The link name comes from the timecode, title, and heavy chip. The check's accessible name is `Complete` and is not part of that name.
+  - **Because:** the exposed test asks for one link and a separate complete label. Putting "complete" in the link name makes that query match both.
+  - **Rejected:** an `aria-label` on the link that repeats the visible text.
+  - **Risk:** the ratio is in the accessibility tree of the list item and not in the link name.
+  - **Deviation:** no
+
+- **Decision:** The rail is mounted from `LeftRail`, with `compact` clipping the heavy chip. Rail frames show the timecode; card frames show module, title, ratio, and the chip.
+  - **Because:** Task 8 left an empty slot for this component, and the 240px column cannot show sixteen full titles.
+  - **Rejected:** leaving the slot empty until Task 10.
+  - **Risk:** none for the card test, which uses card orientation. A non-compact rail shows the heavy chip in the row.
+  - **Deviation:** yes. Plan step: "Create: `src/components/filmstrip/FilmstripRail.tsx`, `src/components/filmstrip/WeekFrame.tsx`, `src/components/filmstrip/filmstrip.css`, `src/components/filmstrip/WeekFrame.test.tsx`". Did this instead: also edited `LeftRail.tsx` and `Root.tsx` so the slot renders the rail.
+
+- **Decision:** The return type is `JSX.Element` imported from `react`.
+  - **Because:** the plan's signature uses `JSX.Element`, and this project's React types do not provide a global `JSX` namespace.
+  - **Rejected:** dropping the return type.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- `FilmstripRail` without a `progress` prop does not share the shell's progress store.
+- Card frames are not on a route yet. Task 10 places them.

@@ -48,7 +48,7 @@ export function Root() {
   return (
     <div className="shell">
       <SkipLink />
-      {rail ? <LeftRail week={week} /> : null}
+      {rail ? <LeftRail week={week} progress={progress} /> : null}
       <div className="shell-main">
         {rail ? null : (
           <header className="mobile-bar">
