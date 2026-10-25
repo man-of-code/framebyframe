@@ -1125,3 +1125,64 @@ Append below this line.
 
 - `npm run build` still exits 1 after Vite succeeds, because `scripts/assert-bundle.ts` arrives in Task 17.
 - The hero poster is one frame of the countdown (the digit 8), not a blank leader.
+
+### Task 17: Hardening and release gates
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** `docs/implementation-plan.md` → Task 17
+
+#### Shipped
+
+- `scripts/assert-bundle.ts` — reads `dist/index.html`, walks the static entry graph (module entry, `modulepreload`, `import`, and `export … from`), prints the gzipped size, and exits 1 over 160KiB or when that graph contains `crtRenderer`, `CRT_FRAGMENT`, a `three` import, or a file named `atmosphere`.
+- `scripts/check-links.ts` — HEAD with a 10s timeout, GET only on 405, four at a time. Skips a bare site root whose `why` states a search term. Failures print `week N · id · url · status`.
+- `.github/workflows/link-check.yml` — Mondays and manual dispatch. A failure opens or comments on an issue. It is not a pull-request check.
+- `src/components/ExportImport.tsx` — download `frame-by-frame-progress.json`, import through `importProgress`, toast the `reason` on failure and leave state alone. Used by the More sheet and `/about`.
+- `e2e/smoke.spec.ts` and `playwright.config.ts` — clean storage, start date, `/week/1`, tick, reload, library search, then a type filter. The dev server is not production, so no service worker is registered. `test-results/` and `playwright-report/` are gitignored.
+- `vercel.json` — SPA rewrite to `/index.html`.
+- `public/sw.js` — registered from `src/main.tsx` only when `import.meta.env.PROD`. Hashed `/assets` are cache-first. Navigations are stale-while-revalidate, with the cached `/` shell as the offline fallback.
+
+#### Verified
+
+- `npm run validate && npm run test && npm run build && npm run e2e` → validate printed 138 resources, 16 weeks, 9 gaps, 22 tools, 8 stages. Vitest 130 passed. Build exit 0. `entry graph: 162695 bytes gzipped (158.9 KB), limit 163840`. Playwright 1 passed.
+- Production preview: ticked the week-1 watch task, wrote `keep this note`, exported, cleared storage, imported a bad file (toast `invalid JSON`, storage stayed empty), imported the export, and reloaded `/week/1` with the tick and the note restored.
+- `/about` at 595px and 360px: Export and Import are on the page, the More sheet has a second pair, horizontal overflow is 0, and the two file inputs are not mounted together once the sheet closes.
+- Lighthouse mobile, simulated throttling, production preview: `/` performance 84, accessibility 100, LCP 3551ms. `/plan` 92 / 100 / 2914ms. `/week/7` 90 / 100 / 3079ms. `/library` 84 / 100 / 3818ms. Accessibility clears 95. Performance misses 90 on `/` and `/library`. LCP misses 2.0s on the learning routes. TTFB was under 12ms and total blocking time under 30ms. The time is first paint of the shell.
+- Separate from the gate: shell plus the lazy route JS is 164250 bytes on `/plan`, 171838 on `/week/7`, and 194159 on `/library`.
+- CSS check against `docs/design-system.md` §8: light mode sets `--grain-opacity: 0`. The new controls add no emoji and no scale-on-hover. `--accent-warm` is still used for the current week and completion, which earlier tasks already shipped. Contrast was not re-measured with a picker.
+
+#### Decisions
+
+- **Decision:** The bundle gate follows `export … from` and checks every file in the static graph, including an `atmosphere` filename.
+  - **Because:** a facade chunk can re-export the file that contains `three` or `crtRenderer` without an `import` token, and Task 16 showed minify renames `crtRenderer` / `CRT_FRAGMENT`. Review: [Review release gates](946724ab-81d1-447c-af6b-dd2c79aa07ea).
+  - **Rejected:** scanning only the entry file for the literal tokens.
+  - **Risk:** a relative string that is not a module specifier and still matches the export-from pattern would be treated as a chunk.
+  - **Deviation:** yes. Plan step: "finds the main entry chunk, and exits 1 if it contains `crtRenderer`, `CRT_FRAGMENT`, or any `three` import". Did this instead: the same checks on the whole static graph, plus a failure when a statically included filename contains `atmosphere`.
+
+- **Decision:** Navigations use stale-while-revalidate. Hashed assets stay cache-first.
+  - **Because:** a cache-first `index.html` keeps the previous deploy until `sw.js` itself changes. Week routes are the same shell, so the cached document plus cached `/assets` is what makes a visited week open offline.
+  - **Rejected:** cache-first for navigations, and dropping the worker. The plan's deferred list names F13, and step 6 says to drop it if the rest of the release is at risk. The worker was not what missed the Lighthouse bar.
+  - **Risk:** the first offline load of a route that was never visited falls back to the cached `/` shell and then fails if that route's chunk was never fetched.
+  - **Deviation:** yes. Plan step: "`public/sw.js` with a cache-first strategy for the app shell and visited week pages". Did this instead: cache-first for `/assets`, stale-while-revalidate for navigations.
+
+- **Decision:** `playwright.config.ts` sets `testDir` to `e2e` and starts Vite on port 5197.
+  - **Because:** Playwright's default directory is `tests`, and port 5173 is already taken by an older dev server in this workspace.
+  - **Rejected:** putting the spec under `tests/`, and reusing whatever is bound to 5173.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** A link failure reports the earliest week, or an em dash when `weeks` is empty. A bare homepage is skipped only when `why` matches `search` or `search term`. ShotDeck is still checked.
+  - **Because:** the report format says `week N` and several resources have more than one week. The ledger's search rows say "Search …" or "Search term:", not one phrase.
+  - **Rejected:** joining every week into the line, and skipping every bare homepage.
+  - **Risk:** a real page whose `why` happens to say "search" and whose URL is the site root will be skipped.
+  - **Deviation:** no
+
+- **Decision:** The Lighthouse miss stays as measured. The shell was not split in this task.
+  - **Because:** first paint is 2.5–3.0s with blocking time under 30ms. Cutting that means splitting the entry graph, which is outside this task's file list, and the entry graph itself is under the 160KiB gate (162695 bytes).
+  - **Rejected:** raising the gate, and treating the simulated scores as a pass.
+  - **Risk:** `/`, `/plan`, `/week/7`, and `/library` do not all meet the plan's Lighthouse bar. `/library` is also about 30KB over the design-system 160KB once its lazy chunk loads.
+  - **Deviation:** yes. Plan step: "Expected: ≥90 performance and ≥95 accessibility on every one; LCP under 2.0s on throttled 4G for the learning routes." Did this instead: recorded the scores above and left the shell as it was.
+
+#### Left open
+
+- none

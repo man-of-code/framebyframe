@@ -1,8 +1,10 @@
 import type { JSX } from "react";
 import { Link } from "react-router-dom";
 import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
+import { ExportImport } from "@/components/ExportImport";
 import { GapCard } from "@/components/resource/GapCard";
 import { content } from "@/content";
+import { WithProgress } from "@/hooks/ProgressProvider";
 import "./pages.css";
 
 const LEGAL = [
@@ -80,6 +82,13 @@ export function About(): JSX.Element {
         {gaps.map((gap) => (
           <GapCard key={gap.id} gap={gap} />
         ))}
+      </section>
+
+      <section className="stack" aria-labelledby="progress-file-heading">
+        <h2 id="progress-file-heading">Progress file</h2>
+        <WithProgress>
+          {(api) => <ExportImport progress={api.progress} replace={api.replace} />}
+        </WithProgress>
       </section>
 
       <Link className="text-link" to="/?intro=1">See the intro again</Link>
