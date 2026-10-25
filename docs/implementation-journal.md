@@ -954,3 +954,51 @@ Append below this line.
 #### Left open
 
 - none
+
+### Task 14: Dashboard, landing, capstone, toolkit, about
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** `docs/implementation-plan.md` → Task 14
+
+#### Shipped
+
+- `src/routes/Dashboard.tsx` — `Home` is the only `/` branch. No `startDate` renders the landing. A stored date renders the dashboard. `/?intro=1` shows the landing again. Past week 16 leads with the curriculum-complete state, `/capstone`, and the feedback communities. An override still shows that week.
+- `src/routes/Landing.tsx` — hero with a static poster layer, module filmstrip including the buffer, the capstone brief, the ₹0 cost with its three exceptions, the Indian-language gap, and a start-date form that writes `startDate` and opens `/week/1`.
+- `src/components/dashboard/NextTasks.tsx`, `StartDateControl.tsx` — the next incomplete tasks, the editable start date, and the "I'm actually on week" override.
+- `src/lib/week.ts` — `nextIncompleteTasks(week, progress, limit)`.
+- `src/routes/Capstone.tsx`, `src/components/capstone/StageList.tsx` — eight stages as a vertical filmstrip with week ranges, criteria, and todo / doing / done. The ceremony callback is a no-op.
+- `src/routes/Toolkit.tsx` — the free-software table, first week, experimental flag, and the Resolve and ArtCraft limits on their rows.
+- `src/routes/About.tsx` — method, fetched versus seen, the LevelUp credit, the legal notes, the five open items, the non-week gaps, and "See the intro again".
+- `src/router.tsx` — `/` lazy-loads `Home`. The shell no longer has its own branch.
+- `src/routes/Dashboard.test.tsx`, `src/lib/week.test.ts` — the dual-state home test and the incomplete-task order.
+
+#### Verified
+
+- `npm run test -- Dashboard week.test` before `Home` and `nextIncompleteTasks` existed → 4 failed. `Home` was undefined. `nextIncompleteTasks` was not a function.
+- `npm test` → 96 passing, exit 0. `npx tsc -b --noEmit` → exit 0.
+- Browser at `http://localhost:5180/`. Cleared storage shows the landing and no "Next up". "Start week 1" stored `2026-10-25` and opened `/week/1`. Ticking the first task stored `w1-watch: true`. Changing the start date to `2026-01-01` left that tick in place, the count read `1 / 39 tasks`, and `/` showed "Curriculum complete". Toolkit: 22 rows, the Resolve hardware-decode limit, the ArtCraft early-alpha limit, no HitFilm, and `scrollWidth` equal to the viewport at 360px. About: LevelUp credit, the open items, 5 gap cards, and `/?intro=1` returned the landing with "Back to today".
+
+#### Decisions
+
+- **Decision:** `/` lazy-loads `Home` from `Dashboard.tsx`, and the branch that used to live in `router.tsx` is gone.
+  - **Because:** the plan says `Home` is the single component that branches, and the test renders that component without the shell. Leaving the old branch would make `/` and the test disagree. Lazy-loading keeps the landing out of the entry chunk that learning routes download.
+  - **Rejected:** an eager import of `Landing` from the router. Also rejected: keeping both branches.
+  - **Risk:** none.
+  - **Deviation:** no
+
+- **Decision:** The whole `WK nn / 16` string is one warm text node. The module name stays tertiary.
+  - **Because:** `docs/design-system.md` §3.3 colors the current week number with `--accent-warm`. The plan's test is `getByText(/WK 0?1 \/ 16/)`, and Testing Library reads only an element's own text nodes. A span around the number removes it from that match.
+  - **Rejected:** coloring only the digits and changing the specified test.
+  - **Risk:** `WK`, the slash, and `16` are warm along with the week number.
+  - **Deviation:** yes. Plan step: "shows the dashboard once a start date exists" expects `getByText(/WK 0?1 \/ 16/)`. Did this instead: put `WK nn / 16` in one element so that query matches, and colored that whole string warm.
+
+- **Decision:** The hero poster is a background layer and the section grows with the title and actions. Help-wanted on About is every gap whose scope is not `week`. A feedback label longer than four words is left off the complete-state list.
+  - **Because:** a fixed 2.39 crop clips the display H1, and Task 15 is the letterbox pass. Extension weeks are buffer notes, not help-wanted. "whichever community fits the feedback needed" is a sentence, not a community.
+  - **Rejected:** clipping the hero to the cinematic ratio. Also rejected: rendering every week gap on About, and listing that sentence under feedback communities.
+  - **Risk:** the hero is not letterboxed until Task 15. The complete state omits that one week-16 label.
+  - **Deviation:** no
+
+#### Left open
+
+- `src/routes/Dashboard.test.tsx` uses the real clock against `startDate: 2026-10-22`. It expects week 1, so it fails once that date is no longer week 1 (after 2026-10-28).

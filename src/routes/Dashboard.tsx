@@ -1,8 +1,183 @@
-export function Dashboard() {
+import { TriangleAlert } from "lucide-react";
+import type { JSX } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { StartDateControl } from "@/components/dashboard/StartDateControl";
+import { NextTasks } from "@/components/dashboard/NextTasks";
+import { FilmstripRail } from "@/components/filmstrip/FilmstripRail";
+import { content } from "@/content";
+import { WithProgress, type ProgressApi } from "@/hooks/ProgressProvider";
+import { useCurrentWeek } from "@/hooks/useCurrentWeek";
+import { countDone } from "@/lib/progress";
+import type { Progress, Week } from "@/lib/types";
+import { nextIncompleteTasks, TOTAL_WEEKS } from "@/lib/week";
+import { Landing } from "@/routes/Landing";
+import "./pages.css";
+
+const MODULES: Record<number, string> = {
+  1: "Writing",
+  2: "Pre-production",
+  3: "Directing",
+  4: "Cinematography",
+  5: "Editing and Sound",
+  6: "Post-production and VFX",
+  7: "Marketing, Distribution and Career",
+};
+
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function coreMinutes(week: Week): number {
+  return week.tasks.filter((task) => task.core).reduce((sum, task) => sum + task.minutes, 0);
+}
+
+function formatHours(minutes: number): string {
+  if (minutes <= 0) return "0h";
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins}m`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
+}
+
+function totals(progress: Progress): { weeksDone: number; tasksDone: number; tasksTotal: number } {
+  let weeksDone = 0;
+  let tasksDone = 0;
+  let tasksTotal = 0;
+  for (const week of content.weeks) {
+    const core = week.tasks.filter((task) => task.core);
+    if (core.length > 0 && countDone(progress, core.map((task) => task.id)) === core.length) {
+      weeksDone += 1;
+    }
+    tasksTotal += week.tasks.length;
+    tasksDone += countDone(progress, week.tasks.map((task) => task.id));
+  }
+  return { weeksDone, tasksDone, tasksTotal };
+}
+
+function feedbackPlaces(): { label: string; url?: string }[] {
+  const seen = new Set<string>();
+  const places: { label: string; url?: string }[] = [];
+  for (const week of content.weeks) {
+    const parts = week.community.split(/\s+(?:or|\/)\s+/i).map((part) => part.trim()).filter(Boolean);
+    for (const label of parts) {
+      const key = label.toLowerCase();
+      if (seen.has(key) || label.split(/\s+/).length > 4) continue;
+      seen.add(key);
+      const match = content.resources.find((resource) => resource.title.toLowerCase() === key);
+      places.push({ label, url: match?.url });
+    }
+  }
+  return places;
+}
+
+export function Home(): JSX.Element {
+  const [params] = useSearchParams();
+  const replay = params.get("intro") === "1";
   return (
-    <article>
-      <p className="eyebrow">Today</p>
-      <h1>Dashboard</h1>
+    <WithProgress>
+      {(api) => (
+        !api.progress.startDate || replay
+          ? <Landing api={api} replay={Boolean(api.progress.startDate)} />
+          : <Dashboard api={api} />
+      )}
+    </WithProgress>
+  );
+}
+
+function Dashboard({ api }: { api: ProgressApi }): JSX.Element {
+  const current = useCurrentWeek(api.progress);
+  const week = content.weeks.find((item) => item.n === current.week);
+  const counts = totals(api.progress);
+  const stages = [...content.capstone].sort((a, b) => a.order - b.order);
+  const active = stages.find((stage) => api.progress.capstone[stage.id] !== "done") ?? stages[stages.length - 1];
+  const showWeek = week !== undefined && (!current.complete || current.source === "override");
+
+  return (
+    <article className="page">
+      {current.complete ? (
+        <section className="stack" aria-labelledby="complete-heading">
+          <p className="eyebrow">Past week 16</p>
+          <h1 id="complete-heading">Curriculum complete</h1>
+          <p className="page-copy">
+            The calendar is past the sixteen weeks. What is left is the capstone, and a place to get feedback.
+          </p>
+          <Link className="page-button" to="/capstone">Open the capstone</Link>
+          <h2>Feedback communities</h2>
+          <ul className="link-list">
+            {feedbackPlaces().map((place) => (
+              <li key={place.label}>
+                {place.url ? (
+                  <a className="text-link" href={place.url} target="_blank" rel="noopener noreferrer">
+                    {place.label}
+                  </a>
+                ) : (
+                  <p className="page-copy">{place.label}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+          {current.source === "override" ? (
+            <p className="note">You set week {current.week}, so that week stays open below.</p>
+          ) : null}
+        </section>
+      ) : null}
+      {showWeek && week ? (
+        <WeekCard week={week} heading={current.complete ? "h2" : "h1"} />
+      ) : null}
+      {showWeek && week ? (
+        <NextTasks tasks={nextIncompleteTasks(week, api.progress, 3)} api={api} />
+      ) : null}
+      <section className="stack" aria-labelledby="progress-heading">
+        <h2 id="progress-heading">Progress</h2>
+        <p className="mono">
+          {counts.weeksDone} / {TOTAL_WEEKS} weeks · {counts.tasksDone} / {counts.tasksTotal} tasks
+        </p>
+        <div className="dash-rail">
+          <FilmstripRail orientation="horizontal" compact progress={api.progress} />
+        </div>
+      </section>
+      {active ? (
+        <section className="stack" aria-labelledby="capstone-heading">
+          <h2 id="capstone-heading">Capstone</h2>
+          <p className="page-copy">
+            Stage {active.order} of {stages.length} · {active.label}
+          </p>
+          <Link className="text-link" to="/capstone">Open the capstone</Link>
+        </section>
+      ) : null}
+      <StartDateControl
+        progress={api.progress}
+        now={new Date()}
+        onStartDate={api.setStartDate}
+        onWeekOverride={api.setWeekOverride}
+      />
     </article>
+  );
+}
+
+function WeekCard(props: { week: Week; heading: "h1" | "h2" }): JSX.Element {
+  const { week, heading: Heading } = props;
+  const moduleTitle = MODULES[week.module] ?? "Buffer";
+  const moduleBit = week.module > 0
+    ? `Module ${pad(week.module)} · ${moduleTitle}`
+    : "Buffer";
+
+  return (
+    <section className="dash-card" aria-labelledby="current-week-heading">
+      <p className="eyebrow">
+        <span className="week-now">WK {pad(week.n)} / {pad(TOTAL_WEEKS)}</span>
+        {` · ${moduleBit}`}
+      </p>
+      <Heading id="current-week-heading">{week.title}</Heading>
+      <p className="mono">~{formatHours(coreMinutes(week))} core</p>
+      {week.heavy ? (
+        <p className="heavy-chip">
+          <TriangleAlert aria-hidden="true" size={16} />
+          Heavy week
+        </p>
+      ) : null}
+      <Link className="page-button" to={`/week/${week.n}`}>Open this week</Link>
+    </section>
   );
 }

@@ -1,4 +1,4 @@
-import type { Progress } from "@/lib/types";
+import type { Progress, Task, Week } from "@/lib/types";
 
 export const TOTAL_WEEKS = 16;
 export const CORE_WEEKS = 12;
@@ -31,4 +31,15 @@ export function resolveCurrentWeek(
   const complete = raw > TOTAL_WEEKS;
   if (p.weekOverride != null) return { week: clampWeek(p.weekOverride), source: "override", complete };
   return { week: clampWeek(raw), source: "derived", complete };
+}
+
+export function nextIncompleteTasks(week: Week, progress: Progress, limit: number): Task[] {
+  if (limit <= 0) return [];
+  const pending: Task[] = [];
+  for (const task of week.tasks) {
+    if (progress.done[task.id] === true) continue;
+    pending.push(task);
+    if (pending.length === limit) break;
+  }
+  return pending;
 }

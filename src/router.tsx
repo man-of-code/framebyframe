@@ -1,12 +1,11 @@
 import { lazy, Suspense, type LazyExoticComponent } from "react";
-import { createBrowserRouter, Link, useOutletContext, useParams } from "react-router-dom";
+import { createBrowserRouter, Link, useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseWeekParam } from "@/lib/route-week";
 import { TOTAL_WEEKS } from "@/lib/week";
-import { Dashboard } from "@/routes/Dashboard";
-import { Root, type ShellOutletContext } from "@/routes/Root";
+import { Root } from "@/routes/Root";
 
-const Landing = lazy(() => import("@/routes/Landing").then((m) => ({ default: m.Landing })));
+const Home = lazy(() => import("@/routes/Dashboard").then((m) => ({ default: m.Home })));
 const Plan = lazy(() => import("@/routes/Plan").then((m) => ({ default: m.Plan })));
 const Week = lazy(() => import("@/routes/Week").then((m) => ({ default: m.Week })));
 const Library = lazy(() => import("@/routes/Library").then((m) => ({ default: m.Library })));
@@ -29,12 +28,6 @@ function Lazy({ page: Page }: { page: LazyExoticComponent<() => React.JSX.Elemen
       <Page />
     </Suspense>
   );
-}
-
-function Home() {
-  const { progress } = useOutletContext<ShellOutletContext>();
-  if (!progress.startDate) return <Lazy page={Landing} />;
-  return <Dashboard />;
 }
 
 function WeekRoute() {
@@ -72,7 +65,7 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Root />,
     children: [
-      { index: true, element: <Home /> },
+      { index: true, element: <Lazy page={Home} /> },
       { path: "plan", element: <Lazy page={Plan} /> },
       { path: "week/:n", element: <WeekRoute /> },
       { path: "library", element: <Lazy page={Library} /> },

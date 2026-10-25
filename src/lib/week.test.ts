@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { clampWeek, rawWeekNumber, resolveCurrentWeek } from "@/lib/week";
+import { content } from "@/content";
+import { clampWeek, nextIncompleteTasks, rawWeekNumber, resolveCurrentWeek } from "@/lib/week";
 import { emptyProgress } from "@/lib/progress";
 
 const at = (iso: string) => new Date(`${iso}T12:00:00`);
@@ -65,5 +66,21 @@ describe("resolveCurrentWeek", () => {
   it("ignores an out-of-range override", () => {
     const p = { ...emptyProgress, startDate: "2026-10-22", weekOverride: 99 };
     expect(resolveCurrentWeek(p, at("2026-10-22")).week).toBe(16);
+  });
+});
+
+describe("nextIncompleteTasks", () => {
+  const week = content.weeks[0];
+
+  it("returns the first incomplete tasks in week order", () => {
+    const progress = { ...emptyProgress, done: { [week.tasks[0].id]: true } };
+    expect(nextIncompleteTasks(week, progress, 2).map((task) => task.id)).toEqual([
+      week.tasks[1].id,
+      week.tasks[2].id,
+    ]);
+  });
+
+  it("stops at the limit when nothing is done", () => {
+    expect(nextIncompleteTasks(week, emptyProgress, 1)).toEqual([week.tasks[0]]);
   });
 });
