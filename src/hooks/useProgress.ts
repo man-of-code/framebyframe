@@ -22,6 +22,7 @@ export function useProgress(): {
   setStartDate: (startDate: string) => void;
   setWeekOverride: (week: number | undefined) => void;
   replace: (progress: Progress) => void;
+  seeCeremony: () => boolean;
 } {
   const [state, setState] = useState(() => loadProgress());
   const progressRef = useRef(state.progress);
@@ -96,6 +97,13 @@ export function useProgress(): {
     write(progress);
   }, [write]);
 
+  const seeCeremony = useCallback(() => {
+    const current = progressRef.current;
+    if (current.ceremonySeen) return false;
+    write({ ...current, ceremonySeen: true });
+    return true;
+  }, [write]);
+
   return {
     progress: state.progress,
     status: state.status,
@@ -105,5 +113,6 @@ export function useProgress(): {
     setStartDate,
     setWeekOverride,
     replace,
+    seeCeremony,
   };
 }

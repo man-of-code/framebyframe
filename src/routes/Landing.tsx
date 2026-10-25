@@ -1,10 +1,13 @@
 import type { FormEvent, JSX } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
+import { HeroCanvas } from "@/components/atmosphere/HeroCanvas";
 import { Letterbox } from "@/components/atmosphere/Letterbox";
 import "@/components/filmstrip/filmstrip.css";
 import { content } from "@/content";
 import type { ProgressApi } from "@/hooks/ProgressProvider";
+import { LumenCta } from "@/vendor/threeui/lumen-cta/LumenCta";
 import "./pages.css";
 
 const MODULES = [
@@ -16,6 +19,18 @@ const MODULES = [
   { n: 6, title: "Post-production and VFX" },
   { n: 7, title: "Marketing, Distribution and Career" },
 ] as const;
+
+function useDocumentLight(): boolean {
+  const [light, setLight] = useState(() => document.documentElement.classList.contains("light"));
+  useEffect(() => {
+    const node = document.documentElement;
+    const sync = () => setLight(node.classList.contains("light"));
+    const observer = new MutationObserver(sync);
+    observer.observe(node, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  return light;
+}
 
 function localToday(): string {
   const now = new Date();
@@ -37,6 +52,7 @@ function weekSpan(module: number): { first: number; label: string } | null {
 export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Element {
   const { api, replay } = props;
   const navigate = useNavigate();
+  const light = useDocumentLight();
   const [date, setDate] = useState(api.progress.startDate ?? localToday());
   const gap = content.gaps.find((item) => item.id === "indian-language-craft");
   const buffer = weekSpan(0);
@@ -51,17 +67,26 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
     <article className="page">
       <header className="hero">
         <Letterbox>
-          <div className="hero-poster" aria-hidden="true" />
+          <HeroCanvas enabled={!replay} />
           <div className="hero-copy">
             <p className="eyebrow">16 weeks</p>
-            <h1>Frame by Frame</h1>
+            <DecodeHeading text="Frame by Frame" />
             <p className="page-copy">
               A sixteen-week path to a short film, shot on an Android phone, with free tools.
             </p>
             <div className="control-row">
-              <button className="page-button" type="submit" form="start-date">
-                Start week 1
-              </button>
+              <LumenCta
+                className="hero-lumen"
+                label="Start week 1"
+                type="button"
+                mode={light ? "light" : "dark"}
+                hue={-48}
+                saturation={0.85}
+                onClick={() => {
+                  const form = document.getElementById("start-date");
+                  if (form instanceof HTMLFormElement) form.requestSubmit();
+                }}
+              />
               <Link className="text-link" to="/plan">Browse the plan first</Link>
             </div>
             {replay ? <Link className="text-link" to="/">Back to today</Link> : null}

@@ -43,6 +43,74 @@
   position: absolute;
   z-index: 0;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.grain > .hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.grain > .hero-canvas.is-in {
+  opacity: 1;
+}
+
+.hero-canvas .crt,
+.hero-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-lumen.lumen-cta {
+  display: inline-grid;
+  width: auto;
+  height: auto;
+  background: transparent;
+}
+
+.hero-lumen .lumen-cta__button {
+  height: auto;
+  min-height: 48px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.ceremony {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  background: #000;
+}
+
+.ceremony-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.ceremony .spark-badge {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.ceremony .spark-badge__frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.ceremony-dismiss {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 1;
 }
 
 .bleach-bypass {

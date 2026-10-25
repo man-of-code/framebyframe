@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import { Link } from "react-router-dom";
+import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
 import { GapCard } from "@/components/resource/GapCard";
 import { content } from "@/content";
 import "./pages.css";
@@ -31,7 +32,7 @@ export function About(): JSX.Element {
     <article className="page prose-page">
       <header className="stack">
         <p className="eyebrow">About</p>
-        <h1>How this was made</h1>
+        <DecodeHeading text="How this was made" />
       </header>
 
       <section className="stack" aria-labelledby="method-heading">

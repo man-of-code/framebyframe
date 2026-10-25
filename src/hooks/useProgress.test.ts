@@ -150,4 +150,15 @@ describe("useProgress", () => {
     expect(stored.startDate).toBe("2026-10-22");
     expect(stored.notes).toEqual({});
   });
+
+  it("records ceremonySeen without dropping a stage write from the same turn", () => {
+    const { result } = renderHook(() => useProgress());
+    act(() => {
+      result.current.stage("submissions", "done");
+      expect(result.current.seeCeremony()).toBe(true);
+      expect(result.current.seeCeremony()).toBe(false);
+    });
+    expect(result.current.progress.capstone.submissions).toBe("done");
+    expect(result.current.progress.ceremonySeen).toBe(true);
+  });
 });

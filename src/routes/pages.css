@@ -147,6 +147,11 @@
   font-size: var(--text-display);
   line-height: var(--text-display-lh);
   letter-spacing: var(--text-display-tracking);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 8px 24px rgba(0, 0, 0, 0.65);
+}
+
+.hero-copy .page-copy {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 8px 24px rgba(0, 0, 0, 0.65);
 }
 
 .field {

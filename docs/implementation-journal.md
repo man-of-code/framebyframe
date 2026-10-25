@@ -1052,3 +1052,76 @@ Append below this line.
 #### Left open
 
 - none
+
+### Task 16: Vendored canvas layer and guards
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** `docs/implementation-plan.md` → Task 16
+
+#### Shipped
+
+- `src/vendor/threeui/` — unmodified CRT, Lumen CTA, SparkBadge, and `articleHeadingDecode` from `MengTo/threeui` `68802d5428071ada5c20db8094b1649e6bb770ed`, plus `LICENSE` and `SOURCE.md`. No `three` import.
+- `public/spark-badge.html` — the unmodified iframe document `SparkBadge` requests.
+- `public/posters/hero-crt.webp` — WebP quality 80 of the mounted cinematic canvas at a 1440×900 viewport (1168×489).
+- `src/lib/webgl-guard.ts` — one module-level slot, and `shouldRenderCanvas` (reduced motion, width under 768, cores or memory at or under 4, save-data).
+- `src/hooks/useFpsGuard.ts` — one 2s sample of visible frame deltas. Hidden-tab gaps are dropped. Returns false once the mean is under 30fps.
+- `src/components/atmosphere/HeroCanvas.tsx` — poster first, lazy `CrtBackground`, slot acquire/release, WebGL probe, layout-effect listener for a CRT throw, `webglcontextlost`, FPS unmount, fade over `--dur-slow`.
+- `src/components/atmosphere/CeremonyBadge.tsx` — `SparkBadge` once, inside a grain surface, dismissed with Continue or Escape. Reduced motion does not mount the iframe.
+- `src/components/atmosphere/DecodeHeading.tsx` — landing H1 and the about H1. The vendored function leaves the final string in place under reduced motion.
+- `src/routes/Landing.tsx` — hero canvas off on replay, Lumen CTA only on "Start week 1".
+- `src/routes/Capstone.tsx` — `seeCeremony()` on the final stage flip.
+- `src/hooks/useProgress.ts` — `seeCeremony` writes `ceremonySeen` from the progress ref.
+- `vite.config.ts` — Rolldown group `atmosphere` for `src/vendor/threeui/crt/` only, dependencies not included.
+
+#### Verified
+
+- `npm run test -- webgl-guard` before the module existed → fail, cannot resolve `@/lib/webgl-guard`. After the implementation → 9 passing.
+- `npm test` → 116 passing, exit 0. `npx tsc -b` → exit 0.
+- `npm run build` → Vite built, then exit 1 because `scripts/assert-bundle.ts` is still absent (Task 17). `grep -rl "crtRenderer\|CRT_FRAGMENT" dist/assets/*.js` matched nothing: minify renamed the bindings. `grep -rl "CRT requires WebGL"` matched only `dist/assets/atmosphere-BRr336yn.js` (gzip 9.32KB). No other chunk statically imports that file. `grep three package.json` → no match.
+- Preview at `http://localhost:4173`. Desktop 1440×900: one canvas, `aria-hidden`, opacity 1, and `atmosphere-BRr336yn.js` loads. Width 390 and the in-browser 595px landing: poster present (`naturalWidth` 1168), zero canvases, no atmosphere JS. `/library`, `/plan`, `/week/7`, `/toolkit`, `/capstone` request no `atmosphere-*.js`. `/week/1` loads `atmosphere-*.css` (the letterbox stylesheet) and not the JS chunk.
+- "Start week 1" calls `requestSubmit` and lands on `/week/1` with the start date stored. The button computes to 48px.
+- Capstone: the last Done opens the dialog once, `ceremonySeen` is true, the iframe src is `/spark-badge.html`, the stage is `.grain` with the `::before` at `z-index: 1` and the badge at `0`. A second flip does not open the dialog.
+
+#### Decisions
+
+- **Decision:** `public/spark-badge.html` is vendored next to the component that iframes it.
+  - **Because:** `SparkBadge.tsx` is a loader. Its default `sourceUrl` is `/spark-badge.html`. The plan's curl list did not include that document, and without it the ceremony is a 404. The file is self-contained canvas 2D and does not import `three`.
+  - **Rejected:** editing `SparkBadge.tsx`, and skipping the ceremony visual.
+  - **Risk:** the particle loop runs until Continue or Escape. It is not the WebGL slot.
+  - **Deviation:** yes. Plan step: "Copy from `MengTo/threeui` at `main`" and the curl list that follows. Did this instead: also copied `src/shaders/spark-badge/spark-badge.html` from the same SHA to `public/spark-badge.html`.
+
+- **Decision:** The CRT chunk is a Rolldown group on `src/vendor/threeui/crt/` with `includeDependenciesRecursively: false`.
+  - **Because:** Task 1's `manualChunks` match on all of `src/vendor/threeui` put React in the same file as the CRT. Every route then statically imported that file, so the quarantine check failed.
+  - **Rejected:** the Task 1 matcher as written, and a single `node_modules` vendor chunk (that build was 507KB and still imported the CRT file).
+  - **Risk:** a crt module added outside that directory will not join the group.
+  - **Deviation:** yes. Plan step: Task 16 does not edit `vite.config.ts`. Task 1 set `if (id.includes("src/vendor/threeui")) return "atmosphere"`. Did this instead: only the `crt/` directory, and its dependencies stay in the shared chunks.
+
+- **Decision:** The hero passes `variant="cinematic"`, and the hero type has a text shadow.
+  - **Because:** the component default is the Matrix terminal log. Cinematic is the film-leader screen already on `CrtBackground`. The captured still freezes the countdown digit "8" under the promise line, which failed contrast at 595px.
+  - **Rejected:** the terminal default, and waiting for the later frame that paints the upstream title "THE LONG QUIET".
+  - **Risk:** phones always show that frozen digit. The shadow is dark in both themes.
+  - **Deviation:** no
+
+- **Decision:** `seeCeremony` writes from `progressRef`, and `/?intro=1` does not mount the canvas.
+  - **Because:** `StageList` calls `onStage` and then `onCeremony` in one click. `replace` of the render snapshot would drop the stage write. `design-system.md` §7.2 forbids WebGL on `/` for a returning learner.
+  - **Rejected:** spreading `api.progress` from the click closure, and mounting the canvas on every `Landing` render.
+  - **Risk:** a later writer that ignores the ref can still clobber `ceremonySeen`.
+  - **Deviation:** no
+
+- **Decision:** A CRT throw is caught in a parent layout effect, after a `getContext("webgl")` probe.
+  - **Because:** `createCrtRenderer` throws inside the child `useEffect`. An error boundary does not see that, and a parent `useEffect` listener is registered after the child effect runs. The slot would stay held and the empty canvas div would cover the poster. Review: [canvas guard review](5d9269ff-17c0-4f82-83fc-0c8c3763912d).
+  - **Rejected:** an error boundary alone, and a passive `error` listener. Also rejected that review's second note: keep sampling FPS for the life of the canvas. The plan samples one 2s window after mount.
+  - **Risk:** a throw whose message does not contain "CRT" is still uncaught. A canvas that is fine for 2s and then slows stays mounted until context loss or navigation.
+  - **Deviation:** no
+
+- **Decision:** Off-screen pause stays inside unmodified `CrtBackground`. The Lumen button submits with `requestSubmit` because the vendored button has no `form` prop. Heading decode uses duration 1400, scramble length 3, preserve 0.08, tail 0.45. The ceremony stage is a `GrainSurface`, which Task 15 left for this badge.
+  - **Because:** the vendored loop already cancels `requestAnimationFrame` off-screen and when `document.hidden`. The vendor files must not be edited. `design-system.md` §5.3 includes the ceremony surface, and the badge is pinned to `z-index: 0` so the grain stays above it.
+  - **Rejected:** unmounting the hero when it scrolls away (that restarts the countdown), editing `LumenCta.tsx`, and a bare iframe with no grain.
+  - **Risk:** the decode options are not from an upstream call site. Reduced motion still paints the final string immediately.
+  - **Deviation:** no
+
+#### Left open
+
+- `npm run build` still exits 1 after Vite succeeds, because `scripts/assert-bundle.ts` arrives in Task 17.
+- The hero poster is one frame of the countdown (the digit 8), not a blank leader.
