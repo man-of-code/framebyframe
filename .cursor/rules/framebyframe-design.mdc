@@ -1,0 +1,23 @@
+---
+description: Visual and accessibility rules for Frame by Frame UI
+alwaysApply: true
+---
+
+# Frame by Frame design
+
+Read `docs/design-system.md` before changing UI. Tokens are already transcribed in `src/styles/tokens.css`.
+
+- Breakpoints are `360` (floor), `640`, `768` (bottom tabs swap to the left rail), `1024`, and `1440`. No horizontal scroll at 360px. Body text stays at least 16px on mobile. Page gutters are 16px, then 24px from 640px, then 48px from 1024px.
+- Touch targets are at least 48×48px, with at least 8px between them.
+- Animate `transform` and `opacity` only. Hover never uses `scale`. `prefers-reduced-motion: reduce` collapses durations.
+- Grain never shares a stacking layer with text, and `--grain-opacity` is `0` in light mode.
+- Focus is `outline: 2px solid var(--accent-primary); outline-offset: 2px`. Never remove the outline without a replacement.
+- Decorative canvases and grain are `aria-hidden`. An image that carries meaning has a specific `alt`. An image that is pure decoration has `alt=""`.
+
+```css
+/* ❌ BAD — a hover that reflows the library grid */
+.card:hover { transform: scale(1.04); }
+
+/* ✅ GOOD — color and border only */
+.card:hover { background: var(--bg-hover); }
+```

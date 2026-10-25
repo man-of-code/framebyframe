@@ -3,6 +3,7 @@ import { createBrowserRouter, Link, useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseWeekParam } from "@/lib/route-week";
 import { TOTAL_WEEKS } from "@/lib/week";
+import { NotFound } from "@/routes/NotFound";
 import { Root } from "@/routes/Root";
 
 const Home = lazy(() => import("@/routes/Dashboard").then((m) => ({ default: m.Home })));
@@ -12,12 +13,20 @@ const Library = lazy(() => import("@/routes/Library").then((m) => ({ default: m.
 const Capstone = lazy(() => import("@/routes/Capstone").then((m) => ({ default: m.Capstone })));
 const Toolkit = lazy(() => import("@/routes/Toolkit").then((m) => ({ default: m.Toolkit })));
 const About = lazy(() => import("@/routes/About").then((m) => ({ default: m.About })));
+const Contact = lazy(() => import("@/routes/Contact").then((m) => ({ default: m.Contact })));
+const Privacy = lazy(() => import("@/routes/Privacy").then((m) => ({ default: m.Privacy })));
+const Terms = lazy(() => import("@/routes/Terms").then((m) => ({ default: m.Terms })));
+const ThankYou = lazy(() => import("@/routes/ThankYou").then((m) => ({ default: m.ThankYou })));
 
 function RouteFallback() {
   return (
-    <div className="route-fallback" aria-hidden="true">
+    <div className="route-fallback" role="status" aria-live="polite">
+      <span className="visually-hidden">Loading</span>
       <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-10 w-2/3" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-5/6" />
+      <Skeleton className="h-12 w-40" />
     </div>
   );
 }
@@ -48,18 +57,6 @@ function WeekRoute() {
   return <Lazy page={Week} />;
 }
 
-function NotFound() {
-  return (
-    <article>
-      <p className="eyebrow">Missing</p>
-      <h1>Page not found</h1>
-      <Link className="text-link" to="/">
-        Back to today
-      </Link>
-    </article>
-  );
-}
-
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -72,6 +69,10 @@ export const router = createBrowserRouter([
       { path: "capstone", element: <Lazy page={Capstone} /> },
       { path: "toolkit", element: <Lazy page={Toolkit} /> },
       { path: "about", element: <Lazy page={About} /> },
+      { path: "contact", element: <Lazy page={Contact} /> },
+      { path: "privacy", element: <Lazy page={Privacy} /> },
+      { path: "terms", element: <Lazy page={Terms} /> },
+      { path: "thank-you", element: <Lazy page={ThankYou} /> },
       { path: "*", element: <NotFound /> },
     ],
   },

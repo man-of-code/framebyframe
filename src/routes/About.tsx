@@ -1,6 +1,7 @@
 import type { JSX } from "react";
 import { Link } from "react-router-dom";
 import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
+import { ContactAddress } from "@/components/ContactAddress";
 import { ExportImport } from "@/components/ExportImport";
 import { GapCard } from "@/components/resource/GapCard";
 import { content } from "@/content";
@@ -89,6 +90,16 @@ export function About(): JSX.Element {
         <WithProgress>
           {(api) => <ExportImport progress={api.progress} replace={api.replace} />}
         </WithProgress>
+      </section>
+
+      <section className="stack" aria-labelledby="contact-heading">
+        <h2 id="contact-heading">Contact</h2>
+        <ContactAddress />
+        <div className="control-row">
+          <Link className="text-link" to="/contact">Write a note</Link>
+          <Link className="text-link" to="/privacy">Privacy</Link>
+          <Link className="text-link" to="/terms">Terms</Link>
+        </div>
       </section>
 
       <Link className="text-link" to="/?intro=1">See the intro again</Link>

@@ -77,6 +77,7 @@
 .page-button,
 .field input,
 .field select,
+.field textarea,
 .status-choice {
   box-sizing: border-box;
   min-width: 48px;
@@ -105,6 +106,7 @@
 .module-block:focus-visible,
 .field input:focus-visible,
 .field select:focus-visible,
+.field textarea:focus-visible,
 .status-choice:focus-visible,
 .tool-table a:focus-visible {
   outline: 2px solid var(--accent-primary);
@@ -164,7 +166,8 @@
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
   width: 100%;
   padding: 0 var(--space-3);
   color: var(--text-primary);
@@ -175,8 +178,15 @@
   color-scheme: dark;
 }
 
+.field textarea {
+  padding: var(--space-3);
+  min-height: 8rem;
+  resize: vertical;
+}
+
 .light .field input,
-.light .field select {
+.light .field select,
+.light .field textarea {
   color-scheme: light;
 }
 

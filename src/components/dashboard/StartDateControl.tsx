@@ -1,4 +1,5 @@
-import type { JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
+import { startDateError } from "@/lib/form";
 import { clampWeek, rawWeekNumber, resolveCurrentWeek, TOTAL_WEEKS } from "@/lib/week";
 import type { Progress } from "@/lib/types";
 
@@ -12,6 +13,12 @@ export function StartDateControl(props: {
   const resolved = resolveCurrentWeek(progress, now);
   const raw = progress.startDate ? rawWeekNumber(progress.startDate, now) : null;
   const calendarWeek = raw === null ? resolved.week : clampWeek(raw);
+  const [value, setValue] = useState(progress.startDate ?? "");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setValue(progress.startDate ?? "");
+  }, [progress.startDate]);
 
   return (
     <section className="stack" aria-labelledby="start-date-heading">
@@ -20,11 +27,18 @@ export function StartDateControl(props: {
         Start date
         <input
           type="date"
-          value={progress.startDate ?? ""}
+          value={value}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? "dashboard-start-error" : undefined}
           onChange={(event) => {
-            if (event.target.value) onStartDate(event.target.value);
+            const next = event.target.value;
+            setValue(next);
+            const message = startDateError(next);
+            setError(message);
+            if (!message) onStartDate(next);
           }}
         />
+        {error ? <span className="field-error" id="dashboard-start-error" role="alert">{error}</span> : null}
       </label>
       <label className="field">
         I'm actually on week

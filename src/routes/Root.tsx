@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { BottomTabs } from "@/components/nav/BottomTabs";
 import { LeftRail } from "@/components/nav/LeftRail";
 import "@/components/nav/shell.css";
-import { WeekNumeral } from "@/components/nav/WeekNumeral";
+import { PageMeta } from "@/components/PageMeta";
 import { SkipLink } from "@/components/SkipLink";
+import { WeekNumeral } from "@/components/nav/WeekNumeral";
 import { Toaster } from "@/components/ui/sonner";
 import { useCurrentWeek } from "@/hooks/useCurrentWeek";
 import { ProgressProvider, useProgressContext } from "@/hooks/ProgressProvider";
 import type { Progress } from "@/lib/types";
+import "@/routes/launch.css";
+import "@/routes/pages.css";
 
 const RAIL_QUERY = "(min-width: 768px)";
 
@@ -36,6 +39,10 @@ function eyebrowFor(pathname: string): string {
   if (pathname.startsWith("/capstone")) return "Capstone";
   if (pathname.startsWith("/toolkit")) return "Toolkit";
   if (pathname.startsWith("/about")) return "About";
+  if (pathname.startsWith("/contact")) return "Contact";
+  if (pathname.startsWith("/privacy")) return "Privacy";
+  if (pathname.startsWith("/terms")) return "Terms";
+  if (pathname.startsWith("/thank-you")) return "Thank you";
   return "Today";
 }
 
@@ -47,6 +54,23 @@ export function Root() {
   );
 }
 
+function DeferredChrome({ progress }: { progress: Progress }) {
+  const [Chrome, setChrome] = useState<ComponentType<{ progress: Progress }> | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    void import("@/components/LaunchChrome").then((mod) => {
+      if (live) setChrome(() => mod.LaunchChrome);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  if (!Chrome) return null;
+  return <Chrome progress={progress} />;
+}
+
 function RootLayout() {
   const { progress, status, replace } = useProgressContext();
   const { week } = useCurrentWeek(progress);
@@ -55,6 +79,7 @@ function RootLayout() {
 
   return (
     <div className="shell">
+      <PageMeta />
       <SkipLink />
       {rail ? <LeftRail week={week} progress={progress} /> : null}
       <div className="shell-main">
@@ -74,6 +99,7 @@ function RootLayout() {
         </main>
       </div>
       {rail ? null : <BottomTabs progress={progress} replace={replace} />}
+      <DeferredChrome progress={progress} />
       <Toaster position="top-center" />
     </div>
   );

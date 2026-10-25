@@ -47,7 +47,9 @@ function NotesBody({ assignmentId, api }: { assignmentId: string; api: ProgressA
         value={value}
         onChange={(event) => setValue(event.target.value)}
       />
-      <p className="notes-saved" aria-live="polite">{saved ? "Saved" : ""}</p>
+      <p className="notes-saved" aria-live="polite">
+        {value !== savedText.current ? "Saving" : saved ? "Saved" : ""}
+      </p>
     </div>
   );
 }

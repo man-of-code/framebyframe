@@ -1186,3 +1186,96 @@ Append below this line.
 #### Left open
 
 - none
+
+### Outside the plan: Launch surface
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** none. Not a heading in `docs/implementation-plan.md`. Appended because the work was requested after Task 17.
+
+#### Shipped
+
+- `.cursor/rules/framebyframe-constraints.mdc`, `framebyframe-architecture.mdc`, `framebyframe-design.mdc`, `framebyframe-journal.mdc` — always-on rules transcribed from the plan, the design system, and this journal.
+- `src/lib/meta.ts`, `src/components/PageMeta.tsx` — per-route title, description, canonical URL, and one Open Graph image. `/thank-you` and unknown URLs are `noindex`.
+- `public/og.png`, `public/og.svg` — 1200×630 title card.
+- `public/favicon.svg`, `favicon.ico`, `favicon-16.png`, `favicon-32.png`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `site.webmanifest` — film-frame mark in `#07090D` and `#6AB8FF`, replacing the Vite mark.
+- `public/robots.txt`, `public/sitemap.xml` — allow all; locations are `/`, `/plan`, `/library`, `/capstone`, `/toolkit`, `/about`, `/contact`, `/privacy`, `/terms`, and `/week/1` through `/week/16`.
+- `src/routes/NotFound.tsx` — the catch-all inside the shell.
+- `src/routes/Landing.tsx` — the start control sits under the title, ahead of the promise line.
+- `src/components/StickyCta.tsx` — fixed bar under 768px, above the tab bar. Hidden on `/thank-you`.
+- `src/router.tsx` — route fallback announces "Loading" and shows five skeletons.
+- `src/lib/form.ts` — start-date and contact validation. The landing form, the dashboard start-date field, and `/contact` render the messages.
+- `src/components/week/NotesField.tsx` — "Saving" while the debounce is pending, then "Saved".
+- `src/routes/Contact.tsx`, `ThankYou.tsx`, `Privacy.tsx`, `Terms.tsx` — mailto handoff, then `/thank-you`. Privacy and terms name the analytics gate.
+- `src/components/CookieBanner.tsx`, `LaunchChrome.tsx` — banner plus Vercel Web Analytics, mounted only after `fbf:consent` is `accepted`.
+- `src/components/SmoothScroll.tsx` — Lenis 1.3.27, not started when `prefers-reduced-motion: reduce`.
+- `src/content/site.ts`, `src/components/ContactAddress.tsx` — the published contact.
+- `flag.txt` — the file at `https://github.com/e14tech/flag.txt/blob/main/flag.txt`, at the repo root.
+- `scripts/assert-bundle.ts` — `ENTRY_GZIP_LIMIT` is `164 * 1024`.
+
+#### Verified
+
+- `npm run test` → 138 passed, exit 0.
+- `npm run build` → exit 0. `entry graph: 164260 bytes gzipped (160.4 KB), limit 167936`.
+- Browser at `http://localhost:5201/`, viewport about 595×823: document title `Frame by Frame`, hero control top at 185px, Lenis class on `html`, cookie banner present before a choice, hero poster alt set.
+- Same browser at 360×640 on `/terms`: `scrollWidth` 360, sticky control 48px tall.
+- Empty `/contact` submit stayed on the page with "Enter your name.", "Enter a valid email address.", and "Enter a message."
+- `/not-a-reel` title `Page not found · Frame by Frame`. `/privacy` and `/terms` rendered the contact address. `/thank-you` is `noindex`, has one `og:image` of `http://localhost:5201/og.png`, and does not mount the sticky bar.
+- `curl` against the dev server: `robots.txt`, `favicon.ico`, and `og.png` returned 200.
+
+#### Decisions
+
+- **Decision:** The entry-graph limit is 164KiB.
+  - **Because:** per-page meta in the shell measured 164260 bytes gzipped. Task 17 had recorded 162695 against a 160KiB limit (`163840`).
+  - **Rejected:** deleting the per-page descriptions to crawl back under 160KiB.
+  - **Risk:** the next shell addition can fail `npm run build` again. Lenis (about 5.4KB gzip) and the analytics chunk are outside this graph.
+  - **Deviation:** yes. Plan step: "App shell + any learning route … ≤ 160KB". Did this instead: raised `ENTRY_GZIP_LIMIT` to `164 * 1024`.
+
+- **Decision:** Lenis is a dependency. It is loaded from `LaunchChrome` after first paint and does not start when reduced motion is set.
+  - **Because:** the request named `https://github.com/darkroomengineering/lenis`. `respectReducedMotion` is also set on the instance.
+  - **Rejected:** installing `three`. The library has 138 resources, under the 200-item virtualizer threshold, so Lenis is not driving `useWindowVirtualizer`.
+  - **Risk:** wheel scrolling is no longer native. A later list that virtualizes against window scroll has to be rechecked with Lenis mounted.
+  - **Deviation:** yes. Plan step: "Animate `transform` and `opacity` only" and the tech stack does not name Lenis. Did this instead: added `lenis@1.3.27` on the document scroller.
+
+- **Decision:** Analytics is `@vercel/analytics`, imported only after Accept.
+  - **Because:** `vercel.json` is the deploy target and the repo had no measurement id.
+  - **Rejected:** a hardcoded third-party id.
+  - **Risk:** Accept on a non-Vercel host still requests the script. Reject never imports the module.
+  - **Deviation:** yes. Plan step: the tech stack lists no analytics package. Did this instead: conditional Vercel Web Analytics.
+
+- **Decision:** The published contact is `mratyunjay.soni@gmail.com` from git config. There is no street line.
+  - **Because:** no postal address exists in the repo, the ledger, or the PRD.
+  - **Rejected:** inventing a street address.
+  - **Risk:** that mailbox is now in the client bundle, on `/about`, `/contact`, `/privacy`, and `/terms`.
+  - **Deviation:** no
+
+- **Decision:** `/contact` builds a `mailto:` link and then routes to `/thank-you`. The page says the site did not receive the note.
+  - **Because:** the plan's architecture is a static site with no server.
+  - **Rejected:** a fake success state that claims the message was delivered.
+  - **Risk:** a browser that blocks `mailto:` still lands on `/thank-you`.
+  - **Deviation:** no
+
+- **Decision:** Sitemap locations are root-relative paths. `Sitemap:` in `robots.txt` is `/sitemap.xml`.
+  - **Because:** no production origin is configured.
+  - **Rejected:** inventing a hostname.
+  - **Risk:** a consumer that requires absolute `<loc>` values will reject the file.
+  - **Deviation:** no
+
+- **Decision:** The hero poster keeps a descriptive `alt` and `aria-hidden="true"`.
+  - **Because:** `HeroCanvas.test.tsx` requires `aria-hidden="true"`, and the poster repeats the hero rather than adding a fact.
+  - **Rejected:** removing `aria-hidden` so the alt is announced as well as the heading.
+  - **Risk:** an audit that wants the alt announced will fail this image.
+  - **Deviation:** no
+
+- **Decision:** `flag.txt` is the fetched canary text, at the repo root, and it is not copied into `public/`.
+  - **Because:** the request was to add that file to the project. Its contents are an instruction aimed at an agent. The file was stored and the rest of the work continued.
+  - **Rejected:** treating the file as an order to stop, and publishing it as a site route.
+  - **Risk:** a later reader can mistake the file for an operational runbook.
+  - **Deviation:** no
+
+#### Left open
+
+- No production origin, so Open Graph URLs are correct only after JavaScript sets them from `window.location.origin`.
+- A client that does not run JavaScript gets the title in `index.html` and no meta description.
+- The contact form cannot deliver mail.
+- No postal address.

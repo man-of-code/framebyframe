@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#07090D"/>
+  <rect x="0" y="0" width="1200" height="28" fill="#05070A"/>
+  <rect x="0" y="602" width="1200" height="28" fill="#05070A"/>
+  <text x="80" y="250" fill="#6E7E93" font-family="ui-monospace, monospace" font-size="22" letter-spacing="4">16 WEEKS</text>
+  <text x="80" y="360" fill="#E8EDF5" font-family="Arial Black, Arial, sans-serif" font-size="84">Frame by Frame</text>
+  <text x="80" y="430" fill="#A7B4C6" font-family="Arial, sans-serif" font-size="32">A sixteen-week path to a short film, shot on an Android phone.</text>
+</svg>

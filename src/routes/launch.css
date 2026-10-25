@@ -1,0 +1,118 @@
+.cookie-banner {
+  position: fixed;
+  z-index: var(--z-sheet);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  left: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  color: var(--text-secondary);
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.cookie-banner p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.cookie-banner a {
+  color: var(--accent-primary);
+}
+
+.cookie-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.page-button-quiet {
+  color: var(--text-primary);
+  background: transparent;
+  border-color: var(--border-default);
+}
+
+.page-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.sticky-cta {
+  display: none;
+}
+
+.contact-address {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  min-width: 0;
+  color: var(--text-primary);
+  font-style: normal;
+  overflow-wrap: anywhere;
+}
+
+.contact-address .text-link {
+  max-width: 100%;
+  height: auto;
+}
+
+.field-error {
+  margin: 0;
+  color: var(--status-danger);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"] {
+  border-color: var(--status-danger);
+}
+
+@media (min-width: 640px) {
+  .cookie-banner {
+    left: auto;
+    width: 24rem;
+    right: var(--space-5);
+    bottom: var(--space-5);
+  }
+}
+
+@media (max-width: 767px) {
+  .sticky-cta {
+    position: fixed;
+    z-index: var(--z-sticky);
+    right: 0;
+    bottom: calc(56px + env(safe-area-inset-bottom));
+    left: 0;
+    display: flex;
+    padding: var(--space-2) var(--space-4);
+    background: var(--bg-overlay);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .sticky-cta .page-button {
+    width: 100%;
+  }
+
+  .cookie-banner {
+    bottom: calc(56px + 64px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 1024px) {
+  .cookie-banner {
+    right: var(--space-7);
+    bottom: var(--space-7);
+  }
+}
+
+@media (min-width: 1440px) {
+  .cookie-banner {
+    right: var(--space-8);
+  }
+}

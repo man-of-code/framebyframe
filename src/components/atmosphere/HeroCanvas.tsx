@@ -137,7 +137,12 @@ export function HeroCanvas(props: { enabled: boolean }): JSX.Element {
 
   return (
     <>
-      <img className="hero-poster" src="/posters/hero-crt.webp" alt="" aria-hidden="true" />
+      <img
+        className="hero-poster"
+        src="/posters/hero-crt.webp"
+        alt="Still of a green phosphor terminal, the poster behind the landing title."
+        aria-hidden="true"
+      />
       {show ? (
         <CanvasBoundary onError={drop}>
           <Suspense fallback={null}>

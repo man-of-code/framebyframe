@@ -7,6 +7,7 @@ import { Letterbox } from "@/components/atmosphere/Letterbox";
 import "@/components/filmstrip/filmstrip.css";
 import { content } from "@/content";
 import type { ProgressApi } from "@/hooks/ProgressProvider";
+import { startDateError } from "@/lib/form";
 import { LumenCta } from "@/vendor/threeui/lumen-cta/LumenCta";
 import "./pages.css";
 
@@ -54,12 +55,18 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
   const navigate = useNavigate();
   const light = useDocumentLight();
   const [date, setDate] = useState(api.progress.startDate ?? localToday());
+  const [dateError, setDateError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   const gap = content.gaps.find((item) => item.id === "indian-language-craft");
   const buffer = weekSpan(0);
 
   function start(event?: FormEvent) {
     event?.preventDefault();
-    api.setStartDate(date || localToday());
+    const message = startDateError(date);
+    setDateError(message);
+    if (message) return;
+    setPending(true);
+    api.setStartDate(date);
     navigate("/week/1");
   }
 
@@ -71,9 +78,6 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
           <div className="hero-copy">
             <p className="eyebrow">16 weeks</p>
             <DecodeHeading text="Frame by Frame" />
-            <p className="page-copy">
-              A sixteen-week path to a short film, shot on an Android phone, with free tools.
-            </p>
             <div className="control-row">
               <LumenCta
                 className="hero-lumen"
@@ -89,6 +93,9 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
               />
               <Link className="text-link" to="/plan">Browse the plan first</Link>
             </div>
+            <p className="page-copy">
+              A sixteen-week path to a short film, shot on an Android phone, with free tools.
+            </p>
             {replay ? <Link className="text-link" to="/">Back to today</Link> : null}
           </div>
         </Letterbox>
@@ -149,13 +156,25 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
         <Link className="text-link" to="/about">Read the gap</Link>
       </section>
 
-      <form id="start-date" className="stack" onSubmit={start}>
+      <form id="start-date" className="stack" onSubmit={start} noValidate>
         <h2>Start date</h2>
         <label className="field">
           Start date
-          <input type="date" value={date} onChange={(event) => setDate(event.target.value)} required />
+          <input
+            type="date"
+            value={date}
+            aria-invalid={dateError ? true : undefined}
+            aria-describedby={dateError ? "start-date-error" : undefined}
+            onChange={(event) => {
+              setDate(event.target.value);
+              setDateError(startDateError(event.target.value));
+            }}
+          />
+          {dateError ? <span className="field-error" id="start-date-error" role="alert">{dateError}</span> : null}
         </label>
-        <button className="page-button" type="submit">Set start date</button>
+        <button className="page-button" type="submit" disabled={pending} aria-busy={pending}>
+          {pending ? "Saving…" : "Set start date"}
+        </button>
       </form>
     </article>
   );

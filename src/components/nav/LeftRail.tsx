@@ -32,6 +32,13 @@ export function LeftRail({ week, progress }: { week: number; progress: Progress 
         </ul>
       </nav>
       <ThemeToggle />
+      <nav aria-label="Legal">
+        <ul className="nav-list">
+          <li><Link className="nav-link" to="/contact">Contact</Link></li>
+          <li><Link className="nav-link" to="/privacy">Privacy</Link></li>
+          <li><Link className="nav-link" to="/terms">Terms</Link></li>
+        </ul>
+      </nav>
     </aside>
   );
 }

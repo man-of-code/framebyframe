@@ -1,0 +1,14 @@
+---
+description: How to record a completed Frame by Frame implementation task
+alwaysApply: true
+---
+
+# Implementation journal
+
+`docs/implementation-journal.md` is the only journal. After a task from `docs/implementation-plan.md` verifies, append one entry, then include that entry in the task commit.
+
+- Re-read the file. Add `### Task N: <title>` at the end of `## Entries`. If that heading already exists, stop.
+- Do not edit, reorder, or summarize another task's entry.
+- One bullet must start with `**Decision:**`. When the plan already decided everything: `**Decision:** none. Implemented as specified.`
+- A departure from the plan, the PRD, or the design system adds `**Deviation:**` on that same bullet and quotes the step that was not followed.
+- The user rule on git still holds: do not commit unless the user asked, or you are executing a plan task whose own steps include the commit.

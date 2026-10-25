@@ -45,6 +45,15 @@ export function MoreSheet({
           <ThemeToggle />
           <ExportImport progress={progress} replace={replace} />
           <SheetClose asChild>
+            <Link to="/contact" className="nav-link">Contact</Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/privacy" className="nav-link">Privacy</Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link to="/terms" className="nav-link">Terms</Link>
+          </SheetClose>
+          <SheetClose asChild>
             <Button type="button" variant="ghost" className="min-h-12">
               Close
             </Button>
