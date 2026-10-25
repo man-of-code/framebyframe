@@ -1,0 +1,11 @@
+{
+  "name": "Frame by Frame",
+  "short_name": "Frame by Frame",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#07090D",
+  "background_color": "#07090D",
+  "display": "standalone"
+}

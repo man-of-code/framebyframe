@@ -1,0 +1,25 @@
+---
+description: Frame by Frame product and engineering constraints from the implementation plan
+alwaysApply: true
+---
+
+# Frame by Frame constraints
+
+`docs/implementation-plan.md` is the source of truth for v1. `docs/design-system.md` locks visual values. `docs/prd.md` locks behavior. When a task departs from them, say so in the journal and in the reply.
+
+- TypeScript strict. No `any`. No non-null assertions on parsed data.
+- Do not install `three` or `@designcodeio/threeui`. Atmosphere stays the vendored files in `src/vendor/threeui/`.
+- Learning routes (`/plan`, `/week/:n`, `/library`, `/toolkit`, `/capstone`) load zero canvas code. One WebGL surface at a time.
+- `scripts/assert-bundle.ts` fails the build if the entry graph exceeds 160KB gzip, or if `three` or `crtRenderer` is in that graph.
+- Business logic lives in `src/lib/` as pure functions. Storage is injected. Components render; they do not decide progress rules.
+- Icons are Lucide only. No emoji.
+- Do not invent a color, type size, space, radius, duration, or font. Use the tokens already in `src/styles/tokens.css`.
+- `--accent-warm` is for progress and completion only. Never on a link, button, filter, or nav item.
+
+```tsx
+// ❌ BAD — warm accent used as a call to action
+<button style={{ background: "var(--accent-warm)" }}>Start</button>
+
+// ✅ GOOD — primary actions use the structural accent
+<button className="page-button">Start week 1</button>
+```

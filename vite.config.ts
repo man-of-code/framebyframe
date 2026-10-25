@@ -9,11 +9,16 @@ export default defineConfig({
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes("src/vendor/threeui")) return "atmosphere";
-          return undefined;
+        codeSplitting: {
+          groups: [
+            {
+              name: "atmosphere",
+              test: /src[\\/]vendor[\\/]threeui[\\/]crt[\\/]/,
+              includeDependenciesRecursively: false,
+            },
+          ],
         },
       },
     },

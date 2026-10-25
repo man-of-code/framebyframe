@@ -1,0 +1,21 @@
+---
+description: Where Frame by Frame code lives and how a change should be shaped
+alwaysApply: true
+---
+
+# Frame by Frame architecture
+
+- `src/lib/types.ts` is types only. `src/lib/schema.ts` is Zod. `progress.ts`, `week.ts`, `search.ts`, and `webgl-guard.ts` stay pure.
+- `src/hooks/` binds React to `src/lib/`. Do not put business rules in a hook.
+- `src/content/` is typed curriculum data. No logic. Every resource needs `cost` and `verified`. Every assignment needs at least two done-when checks. `npm run validate` must pass after a content edit.
+- `src/routes/` is one file per route, composition only. `src/components/ui/` is shadcn. Wire tokens; do not restyle primitives with new colors.
+- Learner progress uses the single versioned localStorage key behind `useProgress`. Do not add a server for that state.
+- Path alias `@/*` maps to `src/*`. Tests live next to the code as `*.test.ts` or `*.test.tsx`.
+
+```ts
+// ❌ BAD — a route computes week clamping itself
+const week = Math.min(16, Math.max(1, Number(n)));
+
+// ✅ GOOD — the route reads a pure helper
+const week = parseWeekParam(n);
+```

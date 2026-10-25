@@ -1,0 +1,210 @@
+.library {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: var(--container-app);
+  min-width: 0;
+}
+
+.library-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.library-search {
+  flex: 1 1 16rem;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 1rem;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.library-hint {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: var(--text-mono);
+  line-height: var(--text-mono-lh);
+}
+
+.library-hint kbd {
+  font: inherit;
+}
+
+.view-toggle {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.view-button,
+.filter-sheet-trigger,
+.active-chip,
+.clear-all {
+  box-sizing: border-box;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0 var(--space-3);
+  color: var(--text-secondary);
+  font: inherit;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.view-button[aria-pressed="true"],
+.active-chip {
+  color: var(--text-primary);
+  background: var(--accent-primary-wash);
+  border-color: var(--accent-primary-edge);
+}
+
+.view-button:hover,
+.filter-sheet-trigger:hover,
+.active-chip:hover,
+.clear-all:hover {
+  background: var(--bg-hover);
+}
+
+.filter-chips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.filter-facet {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filter-facet legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  color: var(--text-tertiary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--text-eyebrow-tracking);
+  text-transform: uppercase;
+}
+
+[data-slot="toggle-group"].filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+[data-slot="toggle-group-item"].filter-chip {
+  height: auto;
+  min-height: 48px;
+  min-width: 48px;
+  padding: var(--space-2) var(--space-3);
+  white-space: normal;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+[data-slot="toggle-group-item"].filter-chip[data-state="on"] {
+  color: var(--text-primary);
+  background: var(--accent-primary-wash);
+  border-color: var(--accent-primary-edge);
+}
+
+[data-slot="toggle-group-item"].filter-chip:hover {
+  background: var(--bg-hover);
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.library-count {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: var(--text-mono);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--text-mono-lh);
+}
+
+.library-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  color: var(--text-primary);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  background: var(--accent-primary-wash);
+  border-radius: var(--radius-sm);
+}
+
+.results-grid {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.results-virtual {
+  min-width: 0;
+}
+
+.filter-sheet {
+  max-height: 85vh;
+  overflow: auto;
+  padding: var(--space-4);
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+}
+
+.filter-sheet-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.library-table a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  color: var(--accent-primary);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="toggle-group-item"].filter-chip {
+    transition: none;
+  }
+}
