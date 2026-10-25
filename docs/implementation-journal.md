@@ -1002,3 +1002,53 @@ Append below this line.
 #### Left open
 
 - `src/routes/Dashboard.test.tsx` uses the real clock against `startDate: 2026-10-22`. It expects week 1, so it fails once that date is no longer week 1 (after 2026-10-28).
+
+### Task 15: Static atmosphere
+
+- **Status:** complete
+- **When:** 2026-10-25
+- **Plan reference:** `docs/implementation-plan.md` → Task 15
+
+#### Shipped
+
+- `src/components/atmosphere/GrainSurface.tsx` — `.grain` on one element. Direct children stay in the `z-index: 2` layer from Task 2.
+- `src/components/atmosphere/Letterbox.tsx` — composes `GrainSurface` with `letterbox-239` (default) or `letterbox-185`.
+- `src/components/atmosphere/atmosphere.css` — 8px `--bg-inset` bars, `--vignette`, a 2.39 or 1.85 ratio floor, the hero inset shadow, `.bleach-bypass`, and `.slate-rule`.
+- `src/routes/Landing.tsx` — the hero poster, copy, and grain share the letterbox. Landing module links and the start-date form are outside it.
+- `src/components/week/WeekHeader.tsx` — the week header panel is a letterbox. Resource cards on the week page are not.
+- `src/components/plan/ModuleGroup.tsx` — each plan module head is a letterbox. The week frames inside the module are not.
+- `src/components/week/AssignmentCard.tsx` — the existing warm left edge is the `.slate-rule` utility.
+- `src/components/atmosphere/atmosphere.test.tsx` — grain stays above its text, both ratios, the three framed surfaces, library cards excluded, slate class present.
+
+#### Verified
+
+- `npm run test -- atmosphere` before the components existed → fail, cannot resolve `./GrainSurface`.
+- `npm test` → 100 passing, exit 0. `npx tsc -b --noEmit` → exit 0.
+- Browser on a fresh dev server. Week header: grain `::before` is `z-index: 1`, `background-size: 128px 128px`, `pointer-events: none`; the title's parent is `z-index: 2`. Light theme: `--grain-opacity` and the pseudo opacity both compute to `0`. At 360px CSS width and 3× device pixel ratio, `background-size` stays `128px 128px` and `scrollWidth` equals `innerWidth` on `/week/1`, `/plan`, `/library`, and `/capstone`.
+- `/plan`: 8 module heads inside letterboxes, 16 week frames not inside `.grain`. A module head at 328px wide is 137px tall, `aspect-ratio: 2.39 / 1`.
+- `/?intro=1`: hero frame is `grain letterbox letterbox-239`, poster `z-index: 0`, copy `z-index: 2`, inset shadow `0 0 120px rgba(0,0,0,0.5)`. The module links and the start-date form are not inside `.grain`. The hero is 563×256 because the copy is taller than the 2.39 floor.
+- `/library`: 138 resource cards, zero `.grain`. `/capstone`: 8 stage cards, zero `.grain`, status buttons not inside grain. The assignment card's left border is 2px `rgb(242, 166, 90)`.
+
+#### Decisions
+
+- **Decision:** The 2.39 and 1.85 ratios are a grid-row floor (`::after` with `aspect-ratio` and `align-self: start`), and the bars stay 8px.
+  - **Because:** Task 11 measured that `aspect-ratio` on the header itself grew the width to content-height × 2.39 and forced horizontal scroll at 360px. `::before` is already the grain overlay. The 8px bars are the thin `--bg-inset` edges already on these panels.
+  - **Rejected:** clipping with `overflow: hidden`, and setting `aspect-ratio` on the letterbox box.
+  - **Risk:** when the title is taller than the ratio, the panel grows and is no longer exactly 2.39. The week header at 360px was 328×440.
+  - **Deviation:** no
+
+- **Decision:** `Letterbox` is a `GrainSurface`, and `.hero-poster` is pinned to `z-index: 0`.
+  - **Because:** `.grain > *` paints every direct child at `z-index: 2`. A letterbox child with its own background would hide the grain. The poster has to sit under the overlay; the copy stays above it.
+  - **Rejected:** a grain wrapper around a separate letterbox element.
+  - **Risk:** a new full-bleed child of a grain surface will cover the noise unless it is pinned under `z-index: 1`.
+  - **Deviation:** no
+
+- **Decision:** `/capstone` has no grain surface.
+  - **Because:** the ceremony badge is not mounted. Task 14 left `onCeremony` as a no-op and Task 16 adds `CeremonyBadge`. The eight stage cards are status controls on a prose page. `design-system.md` §5.3 excludes forms and anything inside `--container-prose`.
+  - **Rejected:** wrapping the stage list, and inserting an empty ceremony node.
+  - **Risk:** Task 16 has to wrap the badge in `GrainSurface`. This task did not leave a mount.
+  - **Deviation:** yes. Plan step: "Apply to the approved surfaces only. Landing hero, letterboxed image containers, week header panel, capstone ceremony surface, and plan module cards." Did this instead: framed the hero, the week header, and the plan module heads, and left the ceremony surface until the badge exists.
+
+#### Left open
+
+- none

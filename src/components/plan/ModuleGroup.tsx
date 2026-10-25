@@ -1,4 +1,5 @@
 import { useId, type JSX } from "react";
+import { Letterbox } from "@/components/atmosphere/Letterbox";
 import { WeekFrame, type FrameState } from "@/components/filmstrip/WeekFrame";
 import { content } from "@/content";
 import { countDone } from "@/lib/progress";
@@ -41,11 +42,13 @@ export function ModuleGroup(props: {
   return (
     <section className="module-group" aria-labelledby={titleId} data-spliced={spliced ? "true" : undefined}>
       {spliced ? <div className="plan-splice" aria-hidden="true" /> : null}
-      <div className="module-head grain">
-        <p className="eyebrow">{eyebrow}</p>
-        <h2 id={titleId}>{title}</h2>
-        {note ? <p className="module-note">{note}</p> : null}
-      </div>
+      <Letterbox>
+        <div className="module-head">
+          <p className="eyebrow">{eyebrow}</p>
+          <h2 id={titleId}>{title}</h2>
+          {note ? <p className="module-note">{note}</p> : null}
+        </div>
+      </Letterbox>
       <ol className="module-frames filmstrip" data-orientation="vertical">
         {weeks.map((week) => {
           const ratio = coreRatio(week, progress);

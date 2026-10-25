@@ -22,12 +22,6 @@
 
 .module-head {
   padding: calc(var(--space-4) + 8px) var(--space-4);
-  background:
-    linear-gradient(var(--bg-inset), var(--bg-inset)) top / 100% 8px no-repeat,
-    linear-gradient(var(--bg-inset), var(--bg-inset)) bottom / 100% 8px no-repeat,
-    var(--vignette),
-    var(--bg-raised);
-  border-radius: var(--radius-sm);
 }
 
 .module-head h2 {

@@ -1,6 +1,7 @@
 import type { FormEvent, JSX } from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Letterbox } from "@/components/atmosphere/Letterbox";
 import "@/components/filmstrip/filmstrip.css";
 import { content } from "@/content";
 import type { ProgressApi } from "@/hooks/ProgressProvider";
@@ -49,21 +50,23 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
   return (
     <article className="page">
       <header className="hero">
-        <div className="hero-poster" aria-hidden="true" />
-        <div className="hero-copy">
-          <p className="eyebrow">16 weeks</p>
-          <h1>Frame by Frame</h1>
-          <p className="page-copy">
-            A sixteen-week path to a short film, shot on an Android phone, with free tools.
-          </p>
-          <div className="control-row">
-            <button className="page-button" type="submit" form="start-date">
-              Start week 1
-            </button>
-            <Link className="text-link" to="/plan">Browse the plan first</Link>
+        <Letterbox>
+          <div className="hero-poster" aria-hidden="true" />
+          <div className="hero-copy">
+            <p className="eyebrow">16 weeks</p>
+            <h1>Frame by Frame</h1>
+            <p className="page-copy">
+              A sixteen-week path to a short film, shot on an Android phone, with free tools.
+            </p>
+            <div className="control-row">
+              <button className="page-button" type="submit" form="start-date">
+                Start week 1
+              </button>
+              <Link className="text-link" to="/plan">Browse the plan first</Link>
+            </div>
+            {replay ? <Link className="text-link" to="/">Back to today</Link> : null}
           </div>
-          {replay ? <Link className="text-link" to="/">Back to today</Link> : null}
-        </div>
+        </Letterbox>
       </header>
 
       <section className="stack" aria-labelledby="shape-heading">

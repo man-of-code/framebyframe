@@ -7,15 +7,8 @@
 }
 
 .week-header {
-  container-type: inline-size;
   min-width: 0;
   max-width: 100%;
-  border-radius: var(--radius-sm);
-  background:
-    linear-gradient(var(--bg-inset), var(--bg-inset)) top / 100% 8px no-repeat,
-    linear-gradient(var(--bg-inset), var(--bg-inset)) bottom / 100% 8px no-repeat,
-    var(--vignette),
-    var(--bg-raised);
 }
 
 .week-header-body {
@@ -27,7 +20,6 @@
   gap: var(--space-3);
   box-sizing: border-box;
   min-width: 0;
-  min-height: calc(100cqw / 2.39);
   padding: var(--space-5) var(--space-4);
 }
 
@@ -188,8 +180,9 @@
   min-width: 0;
   padding: var(--space-4);
   background: var(--bg-raised);
-  border: 1px solid var(--border-default);
-  border-left: 2px solid var(--accent-warm);
+  border-top: 1px solid var(--border-default);
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
   border-radius: var(--radius-md);
 }
 

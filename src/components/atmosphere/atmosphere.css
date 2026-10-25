@@ -1,0 +1,58 @@
+/* Bars are the 8px inset already used on the week header and plan modules. */
+.letterbox {
+  display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(var(--bg-inset), var(--bg-inset)) top / 100% 8px no-repeat,
+    linear-gradient(var(--bg-inset), var(--bg-inset)) bottom / 100% 8px no-repeat,
+    var(--vignette),
+    var(--bg-raised);
+}
+
+.letterbox::after {
+  content: "";
+  grid-area: 1 / 1;
+  align-self: start;
+  width: 100%;
+  pointer-events: none;
+}
+
+.letterbox-239::after {
+  aspect-ratio: 2.39 / 1;
+}
+
+.letterbox-185::after {
+  aspect-ratio: 1.85 / 1;
+}
+
+.letterbox > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.hero .letterbox {
+  align-items: end;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.5);
+}
+
+/* The poster sits under the grain. Text stays on the z-index 2 child. */
+.grain > .hero-poster {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+}
+
+.bleach-bypass {
+  filter: saturate(0.65) contrast(1.12);
+}
+
+.bleach-bypass:hover {
+  filter: saturate(1) contrast(1.12);
+}
+
+.slate-rule {
+  border-left: 2px solid var(--accent-warm);
+}
