@@ -90,11 +90,20 @@ R1 must settle these explicitly, or R2 will invent them:
 
 Also update `.cursor/rules/framebyframe-design.mdc` to match.
 
-### R2 — Foundation
+### R2a — Left rail, Lenis gating, budget gate (behavioural)
 
-- **Left sidebar fix first** (user report 2026-10-27: "extremely buggy"). The bugs diagnosed in R1 (browser-verified list in the R1 journal entry) are fixed in the rail as part of the shell restyle, each with a test or a recorded browser check.
-- `assert-bundle`: target 160KiB warns, ceiling 180KiB fails (tests updated).
-- Lenis does not mount on phones (`(max-width: 767px)`, `(pointer: coarse)`), under reduced motion, or under Save-Data.
+Split from R2 on advisor review (2026-10-27) so the user-reported rail problems land first and small.
+
+- Rail rebuilt to `design-system.md` §6.1 (order, compact 4×4 filmstrip, visible current-week title, legal links to a shell footer, independent scrolling with `data-lenis-prevent` + `overscroll-behavior: contain`). Visual styling stays on current tokens; R2b restyles.
+- `data-lenis-prevent` on every desktop nested scroller (palette list, table wrappers, dialog/sheet bodies).
+- Lenis does not mount on phones (`(max-width: 767px)` or `(pointer: coarse)`), under reduced motion, or under Save-Data.
+- `assert-bundle`: target 160KiB warns, ceiling 180KiB fails; tests updated.
+- Verify: tests (rail order and labels, footer links, Lenis gating), browser checks of wheel/trackpad scrolling over the rail and each nested scroller at 1280×800 and 1440×800, rail fit per §6.1.4, e2e.
+
+### R2b — Foundation
+
+- Contrast test computes every §2.8 composite itself from `tokens.css` (aurora stack, grain worst pixels, sheen, wash over inset) and is mutation-checked.
+- After the phase: screenshots at 360, 768, 1440 × both themes of `/`, `/week/7`, `/plan`, `/library`, critiqued by a Fable subagent (≤ 10 findings by visual impact); top findings fixed in-phase. Same after R3.
 
 - `src/styles/tokens.css` rewritten from R1 (both themes, shadcn mapping, aurora, pop, HUD tokens). Inline theme script and `useTheme` unchanged.
 - Fonts: add Abril Fatface woff2 + OFL text; drop Archivo Expanded; update preload.
@@ -134,7 +143,9 @@ Chosen with the advisor, 2026-10-27. Phases run one at a time; they share one wo
 |---|---|---|
 | R0 | Parent session (Opus), inline | Holds every review finding; 0.3 is a judgment call that breaks tests on purpose |
 | R1 | Parent session (Opus), inline; design finalization pass by a **Fable** subagent (ThreeUI exploration, grain map); cold review by an Opus subagent | The spec fixes every downstream value; the user invited Fable for finalizing the design |
-| R2 | Sonnet subagent | Precise transcription of R1 into tokens, utilities, primitives, contrast test. Escalate to Opus if review finds drift |
+| R2a | Sonnet subagent | Small behavioural fix of the user-reported rail, Lenis gating, gate change |
+| R2b | Sonnet subagent | Precise transcription of R1 into tokens, utilities, primitives, contrast test. Escalate to Opus if review finds drift |
+| Visual critique (after R2b, R3) | Fable subagent | Screenshot critique; nobody has looked at the site yet |
 | R3 | Sonnet subagent | Large but mechanical application of the R1 surface map |
 | R4 | Opus subagent | Taste-heavy: hero composition, CRT framing without editing vendor files, poster, OG image, favicon |
 | R5 | Sonnet subagent | Runs tools and records results; told explicitly to record misses and never adjust limits |

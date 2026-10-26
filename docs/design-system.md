@@ -1,6 +1,6 @@
 # Frame by Frame — Design System v2 ("Kinetoscope")
 
-**Status:** Locked 2026-10-27, revised the same day after the R1 cold review (pop-shadow layering, shadcn mapping, pseudo-element ownership, aurora strength, control boundaries), then finalized the same day (ThreeUI additions §7.1, grain map §5.6, rationale §10, open questions §11). Replaces v1 "Night Interior" (in git history before commit `00afb5d`). Implementers transcribe; they do not re-decide. A value that is not here is a question for the user, not a choice.
+**Status:** Locked 2026-10-27, revised the same day after the R1 cold review (pop-shadow layering, shadcn mapping, pseudo-element ownership, aurora strength, control boundaries), then finalized the same day (ThreeUI additions §7.1, grain map §5.6, rationale §10, open questions §11). Replaces v1 "Night Interior" (in git history before commit `00afb5d`). Implementers transcribe; they do not re-decide. A value that is not here is reported to the parent session (which decides or escalates), never invented.
 **Companions:** `docs/prd.md` (product), `docs/redesign-plan.md` (phases R0–R5).
 
 Direction: **Kinetoscope** — a Victorian playbill for the year cinema was born (1895), printed in pop-art halftone, read through a retro-futurist instrument panel, under an aurora sky. Loud at the edges, quiet where the learner reads.
@@ -499,6 +499,18 @@ Rules:
 | Resource card, gap card | Title Inter 600 | Badges only | Verified date, minutes mono | — | — |
 
 ---
+
+### 6.1 Desktop left rail (≥ 768px)
+
+The v1 rail was ~1650px tall with the primary nav below sixteen frames, and Lenis captured wheel input over it (R1 diagnosis). Constraints:
+
+1. **Order, top to bottom:** brand (Abril) → week HUD readout in `.hud-frame` → primary nav (Dashboard, Plan, Library, Capstone, Toolkit, About) → theme toggle (segmented) → `orn-rule` → filmstrip.
+2. **Compact filmstrip:** a 4-column grid of week frames (4 rows of 4, splice as a full-width row before week 13). Each frame is a link ≥ 48×48px, ≥ 8px apart, showing the mono numeral, its state (exposed check, current border) and `aria-label` "Week N: title, X of Y done". Hover/focus/active per §5.5 (teal), progress state brass.
+3. **The current week's title is visible as text** under the grid: eyebrow `NOW SHOWING`, the title in Inter (`--text-sm`, `--text-secondary`), linking to `/week/N`.
+4. **Fits:** at 1440×800 and 1280×800, everything through the theme toggle is visible without scrolling; the whole rail fits at 1280×900.
+5. **Legal links leave the rail**: Contact, Privacy and Terms move to a page footer rendered by the shell under `<main>` on every route (both layouts).
+6. **Scrolling:** the rail is `position: sticky; top: 0; height: 100dvh; overflow-y: auto; overscroll-behavior: contain` with `data-lenis-prevent`, so wheel and trackpad scroll it independently of the page. Every nested scroller on desktop carries `data-lenis-prevent` too (command palette list, `overflow-x` table wrappers, dialog and sheet bodies).
+7. Width stays 240px.
 
 ## 7. ThreeUI governance (unchanged from v1 except styling)
 
