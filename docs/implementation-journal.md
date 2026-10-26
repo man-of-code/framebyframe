@@ -1352,3 +1352,38 @@ Append below this line.
 - `SITE.email` still holds the Gmail address until the user supplies the dedicated one.
 - No `SITE_ORIGIN`, so production ships `robots.txt` without a sitemap.
 - The Vercel rewrite and the service-worker content-type check have not been exercised on a real deploy.
+
+### Redesign R0.1: Review follow-ups
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R0, §4 review
+
+#### Shipped
+
+- `src/components/capstone/StageList.tsx` — status arrows stop at the ends instead of wrapping. Test: ArrowLeft on "To do" neither reaches "Done" nor fires the ceremony.
+- `src/components/nav/BottomTabs.test.tsx` — opens the lazy More sheet, Escape closes it, focus is back on More.
+- `src/routes/Library.test.tsx` — the mobile filter-sheet test asserts focus returns to Filters.
+
+#### Verified
+
+- `npm test` → 156 passed.
+- Removing `returnFocus.current?.focus()` from `MoreSheet` fails the new BottomTabs test; restored.
+- Production preview, desktop, JS responses gzipped within 3s of navigation: `/library` 173.6KB, `/week/7` 170.1KB, `/plan` 147.0KB. Static graphs from `assert-bundle`: 148.3KB, 153.9KB, 130.4KB.
+
+#### Decisions
+
+- **Decision:** The 160KB gate means "JS in the static graph before first paint" (entry + the route's static chunk graph). Code loaded from a mount effect is outside it: `LaunchChrome` (Lenis, sonner, cookie banner, analytics after consent) on every route, and Fuse on `/library`.
+  - **Because:** deferring that code shortens the critical path, which is what LCP measures. The 3s totals above show what still downloads.
+  - **Rejected:** counting effect-loaded chunks in the gate, which would fail `/library` and `/week/7` again and push toward removing Lenis or the cookie banner, both user-requested.
+  - **Risk:** a reader of `design-system.md` §7.3 "first load" could take the gate as stricter than it is. R1 restates the budget with this definition.
+  - **Deviation:** no
+- **Decision:** The radiogroup does not wrap at either end.
+  - **Because:** on the final stage, a wrap from "To do" to "Done" spends the once-only ceremony.
+  - **Rejected:** firing the ceremony only on click or Space, which would leave an arrow-selected "Done" with no ceremony at all.
+  - **Risk:** this departs from the WAI-ARIA radio pattern's wrapping.
+  - **Deviation:** no
+
+#### Left open
+
+- none

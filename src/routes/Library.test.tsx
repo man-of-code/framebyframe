@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
@@ -140,6 +140,7 @@ describe("Library", () => {
     await userEvent.click(screen.getByRole("button", { name: "Filters" }));
     await userEvent.click(await screen.findByRole("button", { name: "Tamil" }));
     await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("button", { name: /filters/i })));
     expect(screen.getByRole("button", { name: /filters/i }).textContent).toContain("1");
     expect(screen.getByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeTruthy();
   });

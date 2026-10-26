@@ -11,6 +11,8 @@ const LABEL: Record<StageStatus, string> = {
 };
 
 // WAI-ARIA radio group: arrows move focus and selection; Tab enters at the checked option.
+// Arrows stop at the ends instead of wrapping: on the final stage, a wrap from "To do" to
+// "Done" would spend the once-only ceremony by accident.
 const ARROW_STEP: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
 
 function weekRange(weeks: number[]): string {
@@ -67,7 +69,8 @@ export function StageList(props: {
                       const step = ARROW_STEP[event.key];
                       if (step === undefined) return;
                       event.preventDefault();
-                      const nextIndex = (index + step + STATUSES.length) % STATUSES.length;
+                      const nextIndex = index + step;
+                      if (nextIndex < 0 || nextIndex >= STATUSES.length) return;
                       const radios = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
                       radios?.[nextIndex]?.focus();
                       change(stage.id, STATUSES[nextIndex]);
