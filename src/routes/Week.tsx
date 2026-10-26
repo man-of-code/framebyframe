@@ -11,6 +11,8 @@ import { ResourceCard } from "@/components/resource/ResourceCard";
 import "@/components/week/week.css";
 import { content } from "@/content";
 import { BUFFER_TITLE, MODULES } from "@/content/modules";
+import { useCurrentWeek } from "@/hooks/useCurrentWeek";
+import { useProgressContext } from "@/hooks/ProgressProvider";
 import { parseWeekParam } from "@/lib/route-week";
 import { formatHours, weekMinutes } from "@/lib/week";
 import type { Gap, Resource, Task } from "@/lib/types";
@@ -95,6 +97,8 @@ function KindSection({
 
 export function Week() {
   const params = useParams();
+  const { progress } = useProgressContext();
+  const { week: currentWeek } = useCurrentWeek(progress);
   const n = parseWeekParam(params.n);
   const week = n === null ? undefined : content.weeks.find((item) => item.n === n);
   if (!week || n === null) {
@@ -123,6 +127,7 @@ export function Week() {
         moduleTitle={MODULES.find((item) => item.n === week.module)?.title ?? BUFFER_TITLE}
         stageLabel={stage?.label ?? null}
         hoursLabel={formatHours(weekMinutes(week))}
+        current={week.n === currentWeek}
       />
       <KindSection kind="watch" title="Watch" tasks={watch} gaps={gaps} byId={byId} />
       <KindSection kind="read" title="Read" tasks={read} gaps={gaps} byId={byId} />

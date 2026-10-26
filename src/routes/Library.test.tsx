@@ -96,7 +96,6 @@ describe("Library", () => {
     await userEvent.click(screen.getByRole("button", { name: "Tamil" }));
     expect(screen.getByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeTruthy();
     expect(screen.getByText("Help wanted")).toBeTruthy();
-    expect(screen.queryByText("0 results")).toBeNull();
     expect(screen.getByRole("status").textContent).not.toContain("0 results");
     expect(screen.getByTestId("url").textContent).toContain("language=ta");
   });
@@ -114,7 +113,7 @@ describe("Library", () => {
     renderLibrary("/library?language=ta");
     expect(screen.getByRole("button", { name: "Tamil" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeTruthy();
-    expect(screen.queryByText("0 results")).toBeNull();
+    expect(screen.getByRole("status").textContent).not.toContain("0 results");
   });
 
   it("removes one active facet and clears the rest", async () => {
@@ -168,7 +167,7 @@ describe("Library", () => {
   it("shows an empty query as 0 results", async () => {
     renderLibrary();
     await userEvent.type(screen.getByRole("searchbox", { name: "Search the library" }), "zzzz-no-such-resource");
-    expect(screen.getByText("0 results")).toBeTruthy();
+    expect(screen.getByRole("status").textContent).toBe("0 results");
     expect(screen.queryByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeNull();
   });
 

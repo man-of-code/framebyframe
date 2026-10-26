@@ -9,8 +9,7 @@
   margin: 0;
   padding: var(--space-2);
   list-style: none;
-  /* Film base in ink tones: --bg-inset sprocket holes punched in --border-default (design-system.md 5.5). */
-  background-color: var(--border-default);
+  background-color: var(--bg-inset);
   border-radius: var(--radius-sm);
 }
 
@@ -21,12 +20,12 @@
     repeating-linear-gradient(
       to bottom,
       var(--bg-inset) 0 var(--space-1),
-      transparent var(--space-1) var(--space-3)
+      var(--border-default) var(--space-1) var(--space-3)
     ),
     repeating-linear-gradient(
       to bottom,
       var(--bg-inset) 0 var(--space-1),
-      transparent var(--space-1) var(--space-3)
+      var(--border-default) var(--space-1) var(--space-3)
     );
   background-position: left center, right center;
   background-size: var(--space-2) 100%;
@@ -42,12 +41,12 @@
     repeating-linear-gradient(
       to right,
       var(--bg-inset) 0 var(--space-1),
-      transparent var(--space-1) var(--space-3)
+      var(--border-default) var(--space-1) var(--space-3)
     ),
     repeating-linear-gradient(
       to right,
       var(--bg-inset) 0 var(--space-1),
-      transparent var(--space-1) var(--space-3)
+      var(--border-default) var(--space-1) var(--space-3)
     );
   background-position: center top, center bottom;
   background-size: 100% var(--space-2);
@@ -82,7 +81,6 @@
 }
 
 .week-frame {
-  --frame-wash: linear-gradient(var(--accent-warm-wash), var(--accent-warm-wash));
   position: relative;
   box-sizing: border-box;
   display: flex;
@@ -94,14 +92,9 @@
   padding: var(--space-2) var(--space-3);
   color: var(--text-primary);
   text-decoration: none;
-  background-color: transparent;
+  background: transparent;
   border: 2px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-}
-
-/* Frames on the strip are exposed film: an opaque inset surface, so text never sits on the film base. */
-.filmstrip:where(:not([data-orientation="grid"])) .week-frame {
-  background-color: var(--bg-inset);
 }
 
 .week-frame[data-orientation="card"] {
@@ -112,7 +105,7 @@
 }
 
 .week-frame[data-state="exposed"] {
-  background-image: var(--frame-wash);
+  background: var(--accent-warm-wash);
 }
 
 .week-frame[data-state="current"] {
@@ -120,7 +113,7 @@
 }
 
 .week-frame:hover {
-  background-color: var(--bg-hover);
+  background: var(--bg-hover);
 }
 
 /* design-system.md 5.5: hover, focus and active are teal; brass only ever shows progress state. */
@@ -131,7 +124,11 @@
 }
 
 .week-frame:active {
-  background-image: linear-gradient(var(--accent-primary-wash), var(--accent-primary-wash));
+  background: var(--accent-primary-wash);
+}
+
+.week-frame[data-state="exposed"]:hover {
+  background: var(--accent-warm-wash);
 }
 
 .week-frame-code,

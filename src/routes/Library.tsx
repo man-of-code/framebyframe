@@ -117,7 +117,13 @@ export function Library(): JSX.Element {
       ) : null}
       <div className="hud-frame library-count-frame">
         <p className="hud-readout library-count" role="status" aria-live="polite">
-          {gapEmpty ? "No verified resources in this language" : `${results.length} ${results.length === 1 ? "result" : "results"}`}
+          {gapEmpty ? (
+            "No verified resources in this language"
+          ) : (
+            <>
+              <strong>{results.length}</strong> {results.length === 1 ? "result" : "results"}
+            </>
+          )}
         </p>
       </div>
       {showGap && languageGap ? <GapCard gap={languageGap} /> : null}

@@ -138,10 +138,6 @@
 }
 
 /* The readout and its brackets come from the HUD kit. */
-.library-count-frame .library-count {
-  color: var(--text-primary);
-}
-
 .library-count-frame {
   align-self: flex-start;
   max-width: 100%;

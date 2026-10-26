@@ -13,8 +13,10 @@ export function WeekHeader(props: {
   moduleTitle: string;
   stageLabel: string | null;
   hoursLabel: string | null;
+  /** This week is the learner's current week: its number is brass (design-system.md 3.3). */
+  current?: boolean;
 }): JSX.Element {
-  const { week, moduleTitle, stageLabel, hoursLabel } = props;
+  const { week, moduleTitle, stageLabel, hoursLabel, current = false } = props;
   const pad = String(week.n).padStart(2, "0");
   const total = String(TOTAL_WEEKS).padStart(2, "0");
   const eyebrow = week.module > 0 ? `Module ${toRoman(week.module)} · ${moduleTitle}` : "Buffer";
@@ -24,7 +26,7 @@ export function WeekHeader(props: {
       <div className="week-header-extras">
         <div className="hud-frame">
           <p className="hud-readout">
-            WK <strong>{pad}</strong> / {total}
+            WK <strong className={current ? "hud-current" : undefined}>{pad}</strong> / {total}
             {hoursLabel ? (
               <>
                 {" · "}
