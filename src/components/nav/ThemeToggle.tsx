@@ -14,7 +14,7 @@ export function ThemeToggle() {
     <ToggleGroup
       type="single"
       value={theme}
-      spacing={2}
+      spacing={3}
       className="theme-toggle"
       aria-label="Color theme"
       onValueChange={(value) => {

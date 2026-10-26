@@ -2,8 +2,10 @@
    Layering: the control has NO background or border of its own.
      ::before  z -1  fill + border + radius
      ::after   z -2  solid offset shadow
-   The label (text and icon) paints above both. Hover/press/latched are transforms only. */
+   The label (text and icon) paints above both. Hover/press/latched are transforms only.
+   Everything sits in @layer components so a Tailwind utility on a pop element (for example `absolute`) still wins. */
 
+@layer components {
 .pop {
   --pop-fill: var(--bg-raised);
   --pop-edge: var(--border-strong);
@@ -165,4 +167,5 @@
   .pop::after {
     transition: none;
   }
+}
 }

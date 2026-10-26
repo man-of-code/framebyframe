@@ -13,7 +13,6 @@
   color: var(--text-primary);
   border: var(--pop-border) solid var(--pop-outline);
   border-radius: var(--radius-sm);
-  box-shadow: var(--pop-offset) var(--pop-offset) 0 var(--pop-shadow-color);
   font-weight: 600;
   transform: translateY(-200%);
 }
@@ -45,8 +44,8 @@
   /* Scroll hint (the scrollbar is hidden): a fixed fade at the bottom edge, covered by a local layer of the
      base colour once the content has scrolled to its end, so a rail that fits shows no fade. */
   background:
-    linear-gradient(var(--bg-raised), var(--bg-raised)) bottom / 100% 24px no-repeat local,
-    linear-gradient(transparent, var(--bg-hover)) bottom / 100% 24px no-repeat scroll,
+    linear-gradient(var(--bg-raised), var(--bg-raised)) bottom / 100% 32px no-repeat local,
+    linear-gradient(transparent, var(--bg-inset)) bottom / 100% 32px no-repeat scroll,
     var(--bg-raised);
   /* Drawn outside the box so it does not narrow the 216px content width. */
   box-shadow: 1px 0 0 var(--border-default);

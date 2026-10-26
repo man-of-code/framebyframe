@@ -1581,6 +1581,10 @@ Append below this line.
 - Contrast values the test computes with the shipped tokens (dark / light): aurora stack secondary 4.86 / 5.26, primary 7.22 / 9.53; with band grain secondary 4.68, primary 6.96.
 - Abril at 360px (container 328px, `overflow-wrap: break-word`, preview Chromium, font loaded): week 1 title, week 7 title, week 4 (longest unbroken token `objective/subjective`) and "Marketing, Distribution and Career" at `--text-h1` (30px) take 4, 4, 4 and 3 lines; at `--text-h2` (24px) 3, 4, 3 and 2 lines. No line extends past the box (widest right edge 338 of 344 at h1) and `scrollWidth` equals `clientWidth` on every one. `movement/angles/framing,` breaks mid-token on the week 7 h1 (visible in the week header), which is `break-word` doing its job.
 - Browser (Chromium, `vite preview` :4350): no horizontal overflow on `/`, `/plan`, `/library`, `/toolkit`, `/week/7`, `/about`, `/capstone`, `/contact` at 360, 768 and 1440 in both themes. Focus ring `solid 2px rgb(79,224,194)` offset 3px on a primary pop button (shadow layer opacity 0), a library chip (`:focus-visible` true) and a rail frame (border goes teal). Hover on the primary button: control `translate(-1,-1)`, shadow `translate(4,4)`; sheen `translateX` −113.75px at rest, +113.75px on hover. Latched toggle: control `translate(2,2)`, shadow `translate(1,1)`, fill teal. Light mode: `--grain-opacity` 0, `.aurora::after` and `.grain::before` opacity 0. Dark: aurora `::after` 0.03, film grain 0.06 normal blend. Lenis: absent at 390×844 with touch, present at 1440×900.
+- Cascade: `pop.css` first shipped unlayered, so its `position: relative` beat Tailwind's `absolute` on the dialog and sheet close buttons. It is now wrapped in `@layer components`; an injected `pop pop--ghost absolute` element computes `position: absolute`.
+- Latched chip (library Type group, YouTube clicked, settled 500ms): `aria-pressed=true`, control `translate(2,2)`, shadow `translate(1,1)` at opacity 1, fill teal, check icon displayed; focused with `:focus-visible` the shadow opacity is 0. (An earlier reading of `[data-state=on]` had hit the rail's Dark segment.)
+- Route primary action on the dashboard (`.page-button`, focused by keyboard): `box-shadow: none`, outline `solid 2px`.
+- Rail scroll hint: at 1280×800 the rail scrolls (`scrollHeight` 853 vs 800) in both themes; the fade is a 32px gradient from transparent to `--bg-inset` (screenshots `rail-1280x800-dark.png` / `-light.png`). At 900px tall nothing scrolls and the local cover layer hides it.
 - Screenshots: 31 PNGs in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r2b/shots/` (5 routes × 3 widths × 2 themes, named `<route>-<width>-<theme>.png` with `landing` = clean storage, `dashboard` = seeded `/`, plus `rail-closeup-1440-dark.png`); two More-sheet shots beside them in `r2b/`.
 
 #### Decisions
@@ -1660,6 +1664,26 @@ Append below this line.
   - **Rejected:** a second class.
   - **Risk:** route eyebrows change appearance a little ahead of R3.
   - **Deviation:** no
+- **Decision:** `pop.css` is wrapped in `@layer components`.
+  - **Because:** unlayered rules beat every Tailwind utility; the dialog and sheet close buttons (`absolute top-2 right-2`) would have fallen into the flow.
+  - **Rejected:** `absolute!` on those two buttons (leaves every other utility silently losing).
+  - **Risk:** unlayered route CSS (`.theme-option`, `.filter-chip`, `.page-button`) now beats `.pop` by design, and a Tailwind utility on a `.pop` element that sets position, background, border, radius, colour or transform wins over the kit. The kit's own states use custom properties, so only direct overrides are affected.
+  - **Deviation:** no
+- **Decision:** The primary action links (`.page-button`) drop their shadow while focused and lift only under `(hover: hover)`; the skip link has no offset shadow.
+  - **Because:** §5.2: the ring is never drawn across the shadow; the skip link is only visible while focused, so its shadow would always sit under the ring.
+  - **Rejected:** keeping the skip-link shadow.
+  - **Risk:** the skip link is a plain bordered box.
+  - **Deviation:** no
+- **Decision:** The rail scroll fade ends in `--bg-inset` over 32px (first try `--bg-hover`, 24px, was about six levels from `--bg-raised` and invisible in dark).
+  - **Because:** the hint has to be visible at 800px tall.
+  - **Rejected:** a scroll listener and a real element.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** The rail theme toggle uses 12px spacing (`spacing={3}`); the checkbox hit-area pseudo-element is `-inset-3.5` (48px); `input-group` (command input) takes the input look and an outline for focus; `data-selected:` in `command.tsx` became `data-[selected=true]:` (cmdk sets `data-selected="false"` on every row, so all rows were highlighted).
+  - **Because:** §8 (12px, 48px) and §2.7 (input boundary, focus adds the ring).
+  - **Rejected:** leaving the palette for R3.
+  - **Risk:** none.
+  - **Deviation:** no
 
 #### Left open
 
@@ -1667,5 +1691,7 @@ Append below this line.
 - Primitives not rendered by any route yet (badge, switch, tabs, tooltip, progress, dialog, input, textarea, select, sonner) were checked by class review and `tsc` only, not in a browser. The More sheet, theme toggle, chips, checkboxes and a hand-injected primary button were seen.
 - The sheen, focus ring and hover transforms were verified by computed style, not by eye.
 - The Lumen CTA, the hero `Letterbox` and route cards are still v1 visuals (R3 / R4).
-- `.orn-fleuron`, `.playbill-frame`, `.orn-rule-*`, `.orn-seal`, `.hud-grid`, `.aurora*` and `.clapper-stripe` have no consumer yet and were not rendered.
-- The primary-button focus case was exercised on a hand-built element carrying the primitive's classes, because no route renders a shadcn primary `Button`.
+- `.orn-fleuron`, `.playbill-frame`, `.orn-rule-*`, `.orn-seal`, `.hud-grid`, `.aurora`, `.clapper-stripe`, `.halftone` and `.grain--film` have no consumer yet. They were rendered once on an injected specimen in both themes (scratchpad `r2b/specimen-dark.png`, `specimen-light.png`) and drew correctly. `.aurora--live` and `.hud-readout` figures in route context were not rendered.
+- The primary-button hover, focus and sheen checks ran on a hand-built element carrying the primitive's classes, because no route renders a shadcn primary `Button`. The route primary action (`.page-button`) was checked separately on the dashboard.
+- Spacing: flat chips stay 8px apart (library route CSS); §8 asks 12px between pop controls. Their shadow is at most 1px so nothing touches, but the library chip gap is a R3 decision. The rail theme toggle is 12px.
+- The palette (`command`) was fixed in place only as far as input boundary, row highlight (`data-selected` matched every row), focus outline and radius; a full pass is R3's `/library` work.

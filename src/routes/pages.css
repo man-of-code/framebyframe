@@ -105,12 +105,19 @@
   transition: transform var(--dur-fast) var(--ease-out);
 }
 
-.page-button:hover {
-  transform: translate(-1px, -1px);
+@media (hover: hover) {
+  .page-button:hover {
+    transform: translate(-1px, -1px);
+  }
 }
 
 .page-button:active {
   transform: translate(2px, 2px);
+}
+
+/* The ring is never drawn across the offset shadow (design-system.md 5.2). */
+.page-button:focus-visible {
+  box-shadow: none;
 }
 
 .page-button:focus-visible,
