@@ -1,0 +1,23 @@
+/* Film kit utilities (docs/design-system.md 5.5). R3 applies them. */
+
+/* 6px top band of 45deg stripes. Not brass. */
+.clapper-stripe {
+  --clapper-a: var(--pop-ink);
+  --clapper-b: var(--text-primary);
+  position: relative;
+}
+
+.light .clapper-stripe {
+  --clapper-b: var(--bg-raised);
+}
+
+.clapper-stripe::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 6px;
+  background: repeating-linear-gradient(45deg, var(--clapper-a) 0 6px, var(--clapper-b) 6px 12px);
+  pointer-events: none;
+}

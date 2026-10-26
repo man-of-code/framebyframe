@@ -116,6 +116,17 @@
   background: var(--bg-hover);
 }
 
+/* design-system.md 5.5: hover, focus and active are teal; brass only ever shows progress state. */
+.week-frame:hover,
+.week-frame:focus-visible,
+.week-frame:active {
+  border-color: var(--accent-primary);
+}
+
+.week-frame:active {
+  background: var(--accent-primary-wash);
+}
+
 .week-frame[data-state="exposed"]:hover {
   background: var(--accent-warm-wash);
 }
@@ -216,7 +227,7 @@
 .filmstrip[data-orientation="grid"] > .filmstrip-splice {
   grid-column: 1 / -1;
   height: 0;
-  margin: 0;
+  margin: var(--space-1) 0;
   border-top: 1px solid var(--border-strong);
 }
 

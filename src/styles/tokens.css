@@ -1,34 +1,69 @@
-/* Transcribed from docs/design-system.md. Do not invent values. */
+/* Transcribed from docs/design-system.md v2 "Kinetoscope" (section numbers in comments). Do not invent values.
+   :root is the dark theme (default). .light overrides it. Pop fills, geometry and motion are theme-independent. */
 
 :root {
-  /* §2.1 dark mode (default) */
-  --bg-base: #07090D;
-  --bg-raised: #0D1118;
-  --bg-overlay: #121823;
-  --bg-inset: #05070A;
-  --bg-hover: #141A24;
-  --border-subtle: #1B2230;
-  --border-default: #273243;
-  --border-strong: #3A4859;
-  --text-primary: #E8EDF5;
-  --text-secondary: #A7B4C6;
-  --text-tertiary: #6E7E93;
-  --accent-primary: #6AB8FF;
-  --accent-primary-hover: #8AC8FF;
-  --accent-primary-active: #4A9FE8;
-  --accent-primary-wash: rgba(106,184,255,0.12);
-  --accent-primary-edge: rgba(106,184,255,0.32);
-  --accent-warm: #F2A65A;
-  --accent-warm-wash: rgba(242,166,90,0.14);
-  --accent-warm-edge: rgba(242,166,90,0.36);
-  --status-ok: #5BD6A8;
-  --status-warn: #C9A227;
+  /* 2.2 dark "Night show" */
+  --bg-base: #0E0B16;
+  --bg-raised: #17121F;
+  --bg-overlay: #201A2B;
+  --bg-inset: #0A0811;
+  --bg-hover: #1D1727;
+  --border-subtle: #2A2236;
+  --border-default: #3A3049;
+  --border-strong: #7A6C93;
+  --text-primary: #F2E8D5;
+  --text-secondary: #CDBFA8;
+  --text-tertiary: #9C9080;
+  --accent-primary: #4FE0C2;
+  --accent-primary-hover: #7AEBD3;
+  --accent-primary-active: #33C7A9;
+  --accent-primary-wash: rgba(79,224,194,0.12);
+  --accent-primary-edge: rgba(79,224,194,0.36);
+  --accent-warm: #F0A04B;
+  --brass-fill: #F0A04B;
+  --accent-warm-wash: rgba(240,160,75,0.16);
+  --accent-warm-edge: rgba(240,160,75,0.40);
+  --status-ok: #9BE15D;
+  --status-warn: #FFE14D;
   --status-danger: #FF6B6B;
-  --status-paid: #A78BFA;
-  --grain-opacity: 0.025;
+  --status-paid: #FF5FAE;
+  --status-exp: #A98BFF;
+  --pop-ink: #0E0B16;
+  --pop-outline: #F2E8D5;
+  --pop-shadow-color: #F2E8D5;
+  --ornament: #7A6C93;
+  --grain-opacity: 0.03;
+  --grain-film-opacity: 0.06;
+  /* 5.2 sheen: only lightens the teal under ink */
+  --sheen-color: color-mix(in srgb, var(--text-primary) 38%, transparent);
+  /* 2.7 scrim (values from the dialog/sheet row; the token name is ours) */
+  --scrim: rgba(14,11,22,0.72);
+
+  /* 2.4 pop fills (both themes) */
+  --pop-teal: #4FE0C2;
+  --pop-lime: #9BE15D;
+  --pop-yellow: #FFE14D;
+  --pop-red: #FF6B6B;
+  --pop-magenta: #FF5FAE;
+  --pop-violet: #A98BFF;
+
+  /* 2.5 aurora (literal CSS from the spec) */
+  --aurora-strength: 0.20;
+  /* Layer order is reversed from the spec's listing (magenta first = on top, teal last = at the bottom): the spec's
+     contrast numbers (4.86 / 7.2 / 4.69 / 6.98) were computed with teal at the bottom, but CSS paints the first
+     layer on top. In the listed order the band-grain row measures 4.42 and fails. Positions are unchanged. */
+  --aurora-fields:
+    radial-gradient(60% 80% at 60% 95%, rgba(255,79,163,var(--aurora-strength)), transparent 70%),
+    radial-gradient(55% 75% at 80% 10%, rgba(123,92,255,var(--aurora-strength)), transparent 70%),
+    radial-gradient(60% 80% at 15% 20%, rgba(79,224,194,var(--aurora-strength)), transparent 70%);
+
+  /* 5.6 film grain tile: desaturated, alpha forced to 1, sRGB maths */
+  --grain-film-tile: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjgnIGhlaWdodD0nMTI4Jz48ZmlsdGVyIGlkPSdmJyBjb2xvci1pbnRlcnBvbGF0aW9uLWZpbHRlcnM9J3NSR0InPjxmZVR1cmJ1bGVuY2UgdHlwZT0nZnJhY3RhbE5vaXNlJyBiYXNlRnJlcXVlbmN5PScwLjg1JyBudW1PY3RhdmVzPSczJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJy8+PGZlQ29sb3JNYXRyaXggdHlwZT0nc2F0dXJhdGUnIHZhbHVlcz0nMCcvPjxmZUNvbXBvbmVudFRyYW5zZmVyPjxmZUZ1bmNBIHR5cGU9J2xpbmVhcicgc2xvcGU9JzAnIGludGVyY2VwdD0nMScvPjwvZmVDb21wb25lbnRUcmFuc2Zlcj48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTI4JyBoZWlnaHQ9JzEyOCcgZmlsdGVyPSd1cmwoI2YpJy8+PC9zdmc+");
+
+  /* Legacy v1 token, still read by the letterbox until R4 deletes it. */
   --vignette: radial-gradient(ellipse at 50% 0%, transparent 35%, rgba(0,0,0,0.55) 100%);
 
-  /* §4 spacing: 4 8 12 16 24 32 48 64 96 128 */
+  /* 4 spacing: 4 8 12 16 24 32 48 64 96 128 */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -43,16 +78,21 @@
   --container-prose: 42rem;
   --container-app: 76rem;
 
-  /* §3.2 size, line-height, tracking */
-  --text-display: clamp(2.75rem, 9vw, 6rem);
-  --text-display-lh: 0.95;
-  --text-display-tracking: -0.03em;
-  --text-h1: clamp(2rem, 5vw, 3rem);
-  --text-h1-lh: 1.1;
-  --text-h1-tracking: -0.02em;
-  --text-h2: clamp(1.5rem, 3.2vw, 2rem);
-  --text-h2-lh: 1.2;
-  --text-h2-tracking: -0.015em;
+  /* 3.1 families */
+  --font-display: "Abril Fatface", "Didot", "Bodoni 72", Georgia, serif;
+  --font-body: Inter, system-ui, -apple-system, sans-serif;
+  --font-hud: "JetBrains Mono", ui-monospace, monospace;
+
+  /* 3.2 scale: size, line-height, tracking */
+  --text-display: clamp(2.75rem, 10vw, 6.5rem);
+  --text-display-lh: 1;
+  --text-display-tracking: 0;
+  --text-h1: clamp(1.875rem, 5vw, 3.25rem);
+  --text-h1-lh: 1.08;
+  --text-h1-tracking: 0;
+  --text-h2: clamp(1.5rem, 3.2vw, 2.125rem);
+  --text-h2-lh: 1.15;
+  --text-h2-tracking: 0;
   --text-h3: 1.25rem;
   --text-h3-lh: 1.3;
   --text-h3-tracking: -0.01em;
@@ -67,18 +107,30 @@
   --text-sm-tracking: 0;
   --text-eyebrow: 0.75rem;
   --text-eyebrow-lh: 1.2;
-  --text-eyebrow-tracking: 0.14em;
+  --text-eyebrow-tracking: 0.16em;
   --text-mono: 0.875rem;
   --text-mono-lh: 1.5;
   --text-mono-tracking: 0;
   --measure: 65ch;
   --measure-max: 72ch;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /* 4 shape */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
 
-  /* §4 z-index scale. Names are the labels in that section. */
+  /* 4 pop geometry */
+  --pop-border: 2px;
+  --pop-offset: 3px;
+  --pop-offset-hover: 4px;
+  --pop-offset-press: 1px;
+  --pop-offset-lg: 8px;
+  --shadow-overlay: 6px 6px 0 var(--pop-shadow-color);
+  --halftone-dot: 1.5px;
+  --halftone-gap: 6px;
+
+  /* 4 z-index scale. Names are the labels in that section. */
   --z-sticky: 10;
   --z-rail: 20;
   --z-popover: 30;
@@ -86,67 +138,79 @@
   --z-dialog: 50;
   --z-toast: 60;
 
+  /* 4 motion */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --dur-fast: 150ms;
   --dur-base: 220ms;
   --dur-slow: 420ms;
   --dur-ceremony: 900ms;
+  --dur-aurora: 12s;
 
-  /* §2.3 shadcn names, defined from the semantic tokens */
+  /* 2.7 shadcn names, defined from the semantic tokens */
   --background: var(--bg-base);
   --foreground: var(--text-primary);
   --card: var(--bg-raised);
-  --popover: var(--bg-overlay);
   --card-foreground: var(--text-primary);
+  --popover: var(--bg-overlay);
   --popover-foreground: var(--text-primary);
-  --primary: var(--accent-primary);
-  --primary-foreground: #07090D;
+  --primary: var(--pop-teal);
+  --primary-foreground: var(--pop-ink);
   --secondary: var(--bg-inset);
+  --secondary-foreground: var(--text-primary);
   --muted: var(--bg-inset);
   --muted-foreground: var(--text-tertiary);
-  --accent: var(--accent-primary-wash);
-  --destructive: var(--status-danger);
+  --accent: var(--bg-hover);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--pop-red);
+  --destructive-foreground: var(--pop-ink);
   --border: var(--border-default);
-  --input: var(--border-default);
+  --input: var(--border-strong);
   --ring: var(--accent-primary);
-  --radius: 0.5rem;
+  --radius: var(--radius-md);
 }
 
 .light {
-  /* §2.2. Tokens absent from this table inherit the dark value. */
-  --bg-base: #F7F8FA;
-  --bg-raised: #FFFFFF;
-  --bg-overlay: #FFFFFF;
-  --bg-inset: #EDF0F4;
-  --bg-hover: #EFF2F6;
-  --border-subtle: #E2E7ED;
-  --border-default: #CDD5DF;
-  --border-strong: #9FACBB;
-  --text-primary: #0E141C;
-  --text-secondary: #3D4A5C;
-  --text-tertiary: #5E6B7D;
-  --accent-primary: #0B63CE;
-  --accent-primary-hover: #0A56B3;
-  --accent-primary-active: #084A9B;
-  --accent-primary-wash: rgba(11,99,206,0.08);
-  --accent-primary-edge: rgba(11,99,206,0.28);
-  --accent-warm: #A35A09;
-  --accent-warm-wash: rgba(242,166,90,0.18);
-  --status-ok: #0E7A5A;
-  --status-warn: #8A6D0B;
-  --status-danger: #C0362C;
-  --status-paid: #6D48C9;
+  /* 2.3 light "Matinee paper". Tokens absent here (pop fills, geometry, motion) inherit the :root value. */
+  --bg-base: #F5EDDC;
+  --bg-raised: #FFF9EE;
+  --bg-overlay: #FFFDF7;
+  --bg-inset: #EDE3CE;
+  --bg-hover: #EFE5D0;
+  --border-subtle: #E0D4BC;
+  --border-default: #C9B99C;
+  --border-strong: #8F7F66;
+  --text-primary: #1B1424;
+  --text-secondary: #4A3F52;
+  --text-tertiary: #625667;
+  --accent-primary: #06695A;
+  --accent-primary-hover: #055A4D;
+  --accent-primary-active: #044C41;
+  --accent-primary-wash: rgba(6,105,90,0.10);
+  --accent-primary-edge: rgba(6,105,90,0.32);
+  --accent-warm: #7E4E00;
+  --brass-fill: #F0A04B;
+  --accent-warm-wash: rgba(240,160,75,0.22);
+  --accent-warm-edge: rgba(126,78,0,0.40);
+  --status-ok: #2F6B12;
+  --status-warn: #7A5F00;
+  --status-danger: #B3261E;
+  --status-paid: #A3105E;
+  --status-exp: #5B3CC4;
+  --pop-ink: #1B1424;
+  --pop-outline: #1B1424;
+  --pop-shadow-color: #1B1424;
+  --ornament: #8F7F66;
   --grain-opacity: 0;
-
-  /* §2.4 light elevation. --shadow-overlay is named in §2.2 and has no value. */
-  --shadow-raised: 0 1px 2px rgba(14,20,28,0.06), 0 2px 8px rgba(14,20,28,0.04);
-
-  --primary-foreground: #FFFFFF;
+  --grain-film-opacity: 0;
+  --sheen-color: color-mix(in srgb, var(--bg-overlay) 50%, transparent);
+  --scrim: rgba(27,20,36,0.40);
 }
 
+/* 4: reduced motion collapses durations; the aurora loop is stopped in aurora.css. */
 @media (prefers-reduced-motion: reduce) {
   :root {
+    --dur-fast: 1ms;
     --dur-base: 1ms;
     --dur-slow: 1ms;
     --dur-ceremony: 1ms;

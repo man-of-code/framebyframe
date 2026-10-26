@@ -31,7 +31,7 @@ export function LeftRail({ week, progress }: { week: number; progress: Progress 
         </ul>
       </nav>
       <ThemeToggle />
-      <hr className="rail-rule" />
+      <hr className="orn-rule" />
       <div data-slot="filmstrip">
         <FilmstripRail orientation="grid" progress={progress} />
       </div>

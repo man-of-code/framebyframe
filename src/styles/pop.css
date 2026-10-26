@@ -1,0 +1,168 @@
+/* Pop kit (docs/design-system.md 5.2). Interaction and status only.
+   Layering: the control has NO background or border of its own.
+     ::before  z -1  fill + border + radius
+     ::after   z -2  solid offset shadow
+   The label (text and icon) paints above both. Hover/press/latched are transforms only. */
+
+.pop {
+  --pop-fill: var(--bg-raised);
+  --pop-edge: var(--border-strong);
+  --pop-fg: var(--text-primary);
+  --pop-move: 0px; /* control translate on both axes */
+  --pop-sh: var(--pop-offset); /* shadow layer offset, relative to the control */
+  --pop-sh-vis: 1;
+  position: relative;
+  isolation: isolate;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--pop-fg);
+  cursor: pointer;
+  transform: translate(var(--pop-move), var(--pop-move));
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.pop::before,
+.pop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.pop::before {
+  z-index: -1;
+  background: var(--pop-fill);
+  border: var(--pop-border) solid var(--pop-edge);
+}
+
+.pop::after {
+  z-index: -2;
+  background: var(--pop-shadow-color);
+  opacity: var(--pop-sh-vis);
+  transform: translate(var(--pop-sh), var(--pop-sh));
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+
+/* Fills. Pop fills always carry --pop-ink. */
+.pop--teal { --pop-fill: var(--pop-teal); --pop-edge: var(--pop-ink); --pop-fg: var(--pop-ink); }
+.pop--red { --pop-fill: var(--pop-red); --pop-edge: var(--pop-ink); --pop-fg: var(--pop-ink); }
+
+/* Unfilled: secondary button, toggle, tab. No shadow until latched. */
+.pop--outline {
+  --pop-fill: transparent;
+  --pop-edge: var(--pop-outline);
+  --pop-sh-vis: 0;
+}
+
+.pop--ghost {
+  --pop-fill: transparent;
+  --pop-edge: transparent;
+  --pop-sh-vis: 0;
+}
+
+/* Filter chip at rest. */
+.pop--chip {
+  --pop-fill: var(--bg-raised);
+  --pop-edge: var(--border-strong);
+  --pop-sh-vis: 0;
+}
+
+/* Hover and press apply to enabled controls only. :where() keeps specificity low so latched and disabled win. */
+@media (hover: hover) {
+  .pop:where(:hover:not(:disabled, [aria-disabled="true"], [data-disabled])) {
+    --pop-move: -1px;
+    --pop-sh: var(--pop-offset-hover);
+  }
+
+  .pop--outline:where(:hover:not(:disabled, [aria-disabled="true"], [data-disabled])),
+  .pop--ghost:where(:hover:not(:disabled, [aria-disabled="true"], [data-disabled])),
+  .pop--chip:where(:hover:not(:disabled, [aria-disabled="true"], [data-disabled])) {
+    --pop-fill: var(--bg-hover);
+    --pop-move: 0px;
+    --pop-sh: var(--pop-offset);
+  }
+}
+
+.pop:where(:active:not(:disabled, [aria-disabled="true"], [data-disabled])) {
+  --pop-move: 2px;
+  --pop-sh: var(--pop-offset-press);
+}
+
+.pop--outline:where(:active:not(:disabled, [aria-disabled="true"], [data-disabled])),
+.pop--ghost:where(:active:not(:disabled, [aria-disabled="true"], [data-disabled])),
+.pop--chip:where(:active:not(:disabled, [aria-disabled="true"], [data-disabled])) {
+  --pop-move: 0px;
+  --pop-sh: var(--pop-offset);
+}
+
+/* Latched: fixed in the pressed position, teal, shadow at --pop-offset-press. Selected is never "raised". */
+.pop--latch:is([data-state="on"], [data-state="active"], [aria-pressed="true"], [aria-checked="true"]) {
+  --pop-fill: var(--pop-teal);
+  --pop-edge: var(--pop-ink);
+  --pop-fg: var(--pop-ink);
+  --pop-move: 2px;
+  --pop-sh: var(--pop-offset-press);
+  --pop-sh-vis: 1;
+}
+
+/* Disabled (also every progress control while storage is read-only). Must come after latched. */
+.pop:is(:disabled, [aria-disabled="true"], [data-disabled]) {
+  --pop-fill: var(--bg-inset);
+  --pop-edge: var(--border-subtle);
+  --pop-fg: var(--text-tertiary);
+  --pop-move: 0px;
+  --pop-sh-vis: 0;
+  cursor: not-allowed;
+}
+
+/* Focus: the ring is never drawn across the offset shadow. */
+.pop:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}
+
+.pop:focus-visible::after {
+  opacity: 0;
+}
+
+/* Check icon inside a latched toggle or chip: rendered always, shown only when latched. */
+.pop-check {
+  display: none;
+  flex: none;
+}
+
+.pop--latch:is([data-state="on"], [data-state="active"], [aria-pressed="true"], [aria-checked="true"]) > .pop-check {
+  display: inline-block;
+}
+
+/* Halftone (Ben-Day dot field). Never on controls and never under text: it is the offset shadow, at
+   --pop-offset-lg, of exactly two large blocks (landing hero frame, dashboard current-week card). */
+.halftone {
+  background-image: radial-gradient(
+    circle,
+    var(--pop-shadow-color) var(--halftone-dot),
+    transparent calc(var(--halftone-dot) + 0.5px)
+  );
+  background-size: var(--halftone-gap) var(--halftone-gap);
+}
+
+/* Plain outline and shadow helpers for blocks that are not controls (cookie banner, sticky CTA, toasts). */
+.pop-outline {
+  border: var(--pop-border) solid var(--pop-outline);
+}
+
+.pop-shadow {
+  box-shadow: var(--pop-offset) var(--pop-offset) 0 var(--pop-shadow-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop,
+  .pop::after {
+    transition: none;
+  }
+}

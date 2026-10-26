@@ -8,8 +8,20 @@
   content: ""; position: absolute; inset: 0; z-index: 1;
   background-image: var(--grain-tile);      /* inline SVG feTurbulence data URI, 128px */
   background-size: 128px 128px;
-  opacity: var(--grain-opacity);            /* 0.025 dark, 0 light */
+  opacity: var(--grain-opacity);            /* 0.03 dark, 0 light */
   pointer-events: none;
   mix-blend-mode: overlay;
 }
 .grain > * { position: relative; z-index: 2; }
+
+/* Film grain (design-system.md 5.6): normal blend, desaturated, text-free pictures on --bg-base or #000 only. */
+.grain.grain--film::before {
+  background-image: var(--grain-film-tile);
+  background-size: 128px 128px;
+  opacity: var(--grain-film-opacity);
+  mix-blend-mode: normal;
+}
+
+@media (forced-colors: active) {
+  .grain::before { display: none; }
+}

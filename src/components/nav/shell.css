@@ -11,8 +11,10 @@
   padding: var(--space-2) var(--space-4);
   background: var(--bg-overlay);
   color: var(--text-primary);
-  border: 1px solid var(--border-default);
+  border: var(--pop-border) solid var(--pop-outline);
   border-radius: var(--radius-sm);
+  box-shadow: var(--pop-offset) var(--pop-offset) 0 var(--pop-shadow-color);
+  font-weight: 600;
   transform: translateY(-200%);
 }
 
@@ -40,9 +42,14 @@
   height: 100dvh;
   /* 12px sides: a 4-column grid of 48px frames with 8px gaps is exactly 216px. */
   padding: var(--space-3);
-  background: var(--bg-raised);
+  /* Scroll hint (the scrollbar is hidden): a fixed fade at the bottom edge, covered by a local layer of the
+     base colour once the content has scrolled to its end, so a rail that fits shows no fade. */
+  background:
+    linear-gradient(var(--bg-raised), var(--bg-raised)) bottom / 100% 24px no-repeat local,
+    linear-gradient(transparent, var(--bg-hover)) bottom / 100% 24px no-repeat scroll,
+    var(--bg-raised);
   /* Drawn outside the box so it does not narrow the 216px content width. */
-  box-shadow: 1px 0 0 var(--border-subtle);
+  box-shadow: 1px 0 0 var(--border-default);
   overflow-y: auto;
   overscroll-behavior: contain;
   /* A classic scrollbar would shrink the frames below 48px. Wheel, touchpad and keyboard focus still scroll. */
@@ -51,15 +58,6 @@
 
 .left-rail::-webkit-scrollbar {
   display: none;
-}
-
-.rail-rule {
-  flex: none;
-  width: 100%;
-  height: 0;
-  margin: 0;
-  border: 0;
-  border-top: 1px solid var(--border-default);
 }
 
 .now-showing {
@@ -79,7 +77,7 @@
 
 .shell-footer {
   padding: var(--space-4);
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--ornament);
 }
 
 .shell-footer-list {
@@ -98,24 +96,24 @@
   min-height: 48px;
   max-width: 100%;
   color: var(--text-primary);
-  font-family: "Archivo Expanded", "Arial Black", system-ui;
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  font-size: 1.5rem;
+  font-weight: 400;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   text-decoration: none;
 }
 
+/* Week readout: .hud-frame + .hud-readout (hud.css); the current-week figure is brass via .hud-current. */
 .week-num {
-  margin: 0;
-  color: var(--text-tertiary);
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: var(--text-mono);
-  line-height: var(--text-mono-lh);
+  align-self: flex-start;
 }
 
-.week-num-current {
-  color: var(--accent-warm);
+.mobile-bar .week-num {
+  padding-block: var(--space-1);
 }
 
 .nav-list {
@@ -142,9 +140,24 @@
   cursor: pointer;
 }
 
-.nav-link[aria-current="page"] {
-  background: var(--accent-primary-wash);
+.nav-link:hover {
+  background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+/* Active nav item (design-system.md 5.2): teal wash + 2px teal bar. Never brass, no pop shadow. */
+.nav-link[aria-current="page"] {
+  background:
+    linear-gradient(var(--accent-primary), var(--accent-primary)) left / 2px 100% no-repeat,
+    var(--accent-primary-wash);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.bottom-tab[aria-current="page"] {
+  background:
+    linear-gradient(var(--accent-primary), var(--accent-primary)) top / 100% 2px no-repeat,
+    var(--accent-primary-wash);
 }
 
 .nav-link[aria-current="page"] svg {
@@ -167,9 +180,10 @@
 
 .eyebrow {
   margin: 0;
-  color: var(--text-tertiary);
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
   font-size: var(--text-eyebrow);
+  font-weight: 600;
   line-height: var(--text-eyebrow-lh);
   letter-spacing: var(--text-eyebrow-tracking);
   text-transform: uppercase;
@@ -189,7 +203,7 @@
   padding: 0 8px env(safe-area-inset-bottom);
   list-style: none;
   background: var(--bg-raised);
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--border-default);
 }
 
 .bottom-tabs > li {
@@ -229,6 +243,12 @@
   flex: 1;
   min-width: 48px;
   min-height: 48px;
+  padding-inline: var(--space-1);
+}
+
+/* 216px rail: "System" plus a check does not fit in a third of it. The latched fill and offset still say "on". */
+.left-rail .theme-option .pop-check {
+  display: none;
 }
 
 .readonly-banner {
@@ -236,7 +256,7 @@
   padding: var(--space-3) var(--space-4);
   color: var(--text-secondary);
   background: var(--bg-inset);
-  border: 1px dashed var(--border-default);
+  border: 2px dashed var(--border-strong);
   border-radius: var(--radius-sm);
 }
 
@@ -258,9 +278,12 @@
 
 .shell-content h1 {
   margin: var(--space-2) 0 0;
-  font-family: "Archivo Expanded", "Arial Black", system-ui;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  overflow-wrap: break-word;
+  text-wrap: balance;
   font-size: var(--text-h1);
-  font-weight: 700;
+  font-weight: 400;
   line-height: var(--text-h1-lh);
   letter-spacing: var(--text-h1-tracking);
 }

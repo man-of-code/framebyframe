@@ -30,15 +30,18 @@
   gap: 8px;
 }
 
-.page-button-quiet {
+.page-button.page-button-quiet {
   color: var(--text-primary);
   background: transparent;
-  border-color: var(--border-default);
+  border-color: var(--pop-outline);
+  box-shadow: none;
 }
 
-.page-button:disabled {
+button.page-button:disabled {
   cursor: wait;
   opacity: 0.6;
+  box-shadow: none;
+  transform: none;
 }
 
 .sticky-cta {

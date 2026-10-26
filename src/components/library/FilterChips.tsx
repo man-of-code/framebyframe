@@ -34,7 +34,7 @@ export function FilterChips(props: {
               }}
             >
               {options[key].map((value) => (
-                <ToggleGroupItem key={String(value)} value={String(value)} className="filter-chip">
+                <ToggleGroupItem key={String(value)} value={String(value)} className="filter-chip pop--chip">
                   {facetValueLabel(key, value)}
                 </ToggleGroupItem>
               ))}

@@ -1550,3 +1550,122 @@ Append below this line.
 - Dialog and sheet bodies carry `data-lenis-prevent`, but no overflowing dialog exists to test on desktop; they were not exercised in the browser.
 - The rail still uses v1 tokens, fonts, brand font and hairline rule; R2b restyles it (HUD frame, `orn-rule`, Abril brand).
 - Hidden rail scrollbar at ≤800px tall (see decision) may want a fade or hint in R2b.
+
+### Redesign R2b: Foundation
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R2b
+
+#### Shipped
+
+- `src/styles/tokens.css` — rewritten from design-system §2–§4 for `:root` (dark) and `.light`: v1 names kept, plus pop fills, `--pop-*` geometry and colours, `--brass-fill`, `--status-exp`, `--ornament`, aurora vars (`--aurora-strength`, `--aurora-fields`), `--grain-opacity` 0.03 / `--grain-film-opacity` / `--grain-film-tile`, `--sheen-color`, `--shadow-overlay`, `--halftone-*`, radii 4/6/8/full, `--dur-aurora`, font stacks, §3.2 scale, shadcn aliases per §2.7 (`--primary` = pop teal, `--input` = `--border-strong`, `--radius` = `--radius-md`). Reduced-motion block collapses fast/base/slow/ceremony. `--vignette` is kept until R4 deletes the letterbox.
+- `src/index.css` — imports the kits, Abril `@font-face` (latin-ext + latin, unicode-ranges), Archivo removed, `@theme inline` points at the new shadcn names and the Abril stack, focus outline offset 3px, `.font-display` (400, `font-synthesis: none`, `break-word`, `balance`).
+- `public/fonts/abril-fatface-{latin,latin-ext}.woff2` + `OFL-AbrilFatface.txt`; Archivo files and OFL removed; `index.html` preloads only the Abril latin file and `theme-color` is `#0E0B16`.
+- `src/styles/{ornaments,pop,sheen,hud,aurora,film}.css` + `grain.css` — ornament kit (`.orn-fleuron`, `.orn-rule`, `.orn-rule-double`, `.orn-rule-diamond`, `.playbill-frame`, `.orn-seal`), pop kit (layered `::before` fill z −1 / `::after` shadow z −2, hover / press / latched / disabled / focus, `.halftone`, `.pop-outline`, `.pop-shadow`), sheen, HUD (`.hud-frame`, `.hud-readout`, `.hud-grid`), aurora (static, `.aurora--live` with phone / reduced-motion fallback to static), `.clapper-stripe`, film grain variant. `.grain` keeps working for current consumers.
+- `scripts/gen-guilloche-seal.ts` → `src/assets/ornaments/guilloche-seal.svg` (12.4KB raw, 3.7KB gzip, 32 `<use>`), plus `scripts/gen-guilloche-seal.test.ts` (exists, < 16KB, exactly 32 `<use`).
+- `src/hooks/useAuroraPause.ts` — 25 lines; sets `data-paused` from an `IntersectionObserver` and `visibilitychange`. Nothing imports it yet (R4 mounts the live aurora).
+- `src/styles/tokens.contrast.test.ts` — parses `tokens.css` for both themes and asserts every §2.8 row, computing the aurora stack, wash over inset and raised, sheen peak, band-grain worst pixel and film-grain worst pixel itself.
+- `src/components/ui/*` — button (primary raised teal with `ButtonSheen` span, secondary / outline, ghost, destructive, link; every size keeps 48px), badge (pop fills ok / warn / danger / paid / exp, neutral default), checkbox, switch, toggle and toggle-group (latched teal + check), tabs (segmented), tooltip, skeleton, progress (brass), input / textarea / select trigger, dialog and sheet (scrim without blur, 2px outline, `--shadow-overlay`, Abril 400 titles), sonner (2px outline, overlay shadow, 4px status-text left bar), popover / select content / card (blurred shadows removed). `data-lenis-prevent` untouched.
+- Shell: `LeftRail` (Abril brand, week readout in `.hud-frame`, nav active wash + 2px teal bar, latched theme toggle, `orn-rule`, grid frames with teal hover / focus / active, bottom-fade scroll hint), `WeekNumeral`, `shell.css` (bottom tabs top bar, mobile bar, skip link with pop border and shadow, read-only banner, footer rule, `.eyebrow` now Inter 600 `--text-secondary` per §3.2), More sheet through the primitives.
+- Route CSS touched only where a token change would have broken it: `pages.css` / `launch.css` (`.page-button` interim pop look; its old `--primary-foreground` text on dark teal would have been 2.4:1 in light), `library.css` (`.filter-chip` keeps size, loses its own fill and border; `FilterChips` adds `pop--chip`), `week.css` (task-checkbox colour overrides removed so the primitive shows), and the four `Archivo Expanded` rules now use `--font-display` at weight 400.
+
+#### Verified
+
+- `npm test` → 33 files, 190 tests pass (was 31 / 168).
+- `npx tsc -b --noEmit` → exit 0.
+- `npm run build` → exit 0, no budget warnings. Entry graph 131735 B (128.6 KB). Plan 133481 B (130.4 KB), Week 157283 B (153.6 KB), Library 151752 B (148.2 KB), Toolkit 134598 B (131.4 KB), Capstone 133938 B (130.8 KB). R2a had Week 157741 B; the new JS (`ButtonSheen`, check icons) is offset by the removed utility classes.
+- `npm run e2e` → 1 passed (no selector changes).
+- `npx oxlint` → 42 warnings, as before; none added (`ButtonSheen` joins two existing only-export-components warnings in `button.tsx` and `badge.tsx`).
+- Contrast mutation check: `--text-tertiary` dark `#9C9080` → `#6C6258` failed "text tokens meet 4.5 on every surface" (3.27) and the film-grain row (2.88); `--aurora-strength` 0.20 → 0.30 failed the aurora-stack and band-grain rows in both themes (secondary 3.51 dark, 4.29 light); light `--accent-warm` `#7E4E00` → `#B87A20` failed the status-text and wash rows (3.09, 2.51). Each file was restored; the test then passed 21/21.
+- Contrast values the test computes with the shipped tokens (dark / light): aurora stack secondary 4.86 / 5.26, primary 7.22 / 9.53; with band grain secondary 4.68, primary 6.96.
+- Abril at 360px (container 328px, `overflow-wrap: break-word`, preview Chromium, font loaded): week 1 title, week 7 title, week 4 (longest unbroken token `objective/subjective`) and "Marketing, Distribution and Career" at `--text-h1` (30px) take 4, 4, 4 and 3 lines; at `--text-h2` (24px) 3, 4, 3 and 2 lines. No line extends past the box (widest right edge 338 of 344 at h1) and `scrollWidth` equals `clientWidth` on every one. `movement/angles/framing,` breaks mid-token on the week 7 h1 (visible in the week header), which is `break-word` doing its job.
+- Browser (Chromium, `vite preview` :4350): no horizontal overflow on `/`, `/plan`, `/library`, `/toolkit`, `/week/7`, `/about`, `/capstone`, `/contact` at 360, 768 and 1440 in both themes. Focus ring `solid 2px rgb(79,224,194)` offset 3px on a primary pop button (shadow layer opacity 0), a library chip (`:focus-visible` true) and a rail frame (border goes teal). Hover on the primary button: control `translate(-1,-1)`, shadow `translate(4,4)`; sheen `translateX` −113.75px at rest, +113.75px on hover. Latched toggle: control `translate(2,2)`, shadow `translate(1,1)`, fill teal. Light mode: `--grain-opacity` 0, `.aurora::after` and `.grain::before` opacity 0. Dark: aurora `::after` 0.03, film grain 0.06 normal blend. Lenis: absent at 390×844 with touch, present at 1440×900.
+- Screenshots: 31 PNGs in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r2b/shots/` (5 routes × 3 widths × 2 themes, named `<route>-<width>-<theme>.png` with `landing` = clean storage, `dashboard` = seeded `/`, plus `rail-closeup-1440-dark.png`); two More-sheet shots beside them in `r2b/`.
+
+#### Decisions
+
+- **Decision:** The aurora layers are listed magenta, violet, teal (the spec lists teal, violet, magenta).
+  - **Because:** CSS paints the first layer on top. In the spec order the three-field stack measures secondary 4.57 and, with band grain, 4.42 (fails 4.5); the spec's 4.86 / 4.69 were computed with teal at the bottom. Reversed, the shipped CSS gives exactly the spec's 4.86 / 4.68.
+  - **Rejected:** dropping `--aurora-strength` to 0.19 (4.58 with grain), which changes the look everywhere; hard-coding the test's stacking order to match the spec (the test would then not describe what the browser paints).
+  - **Risk:** §2.5 calls its CSS literal. The parent should either amend §2.5 / §2.8 or choose strength 0.19 instead. Positions and colours are unchanged; only overlaps differ by a few RGB levels.
+  - **Deviation:** yes. Plan step: "Literal CSS (R2 transcribes it)" (§2.5). Did this instead: same gradients, reversed list order.
+- **Decision:** Every button size is at least 48px tall (`icon*` are 48×48); `xs` and `sm` only narrow the padding. The dialog and sheet close buttons are therefore 48px and sit at `top-2 right-2`.
+  - **Because:** §8 and plan §2 make 48px non-negotiable; shadcn's 24 / 32 / 36px defaults would fail it.
+  - **Rejected:** keeping compact sizes for dense UI.
+  - **Risk:** R3 / R4 may want a denser toolbar button; that is a spec change.
+  - **Deviation:** no
+- **Decision:** In the left rail the theme toggle hides the latched check icon (`.left-rail .theme-option .pop-check`). The More sheet keeps it.
+  - **Because:** three segments share 216px; "System" plus a 14px check is about 70px against about 66px available, so it would overflow.
+  - **Rejected:** icon-only segments (changes the control), a 13px label (still overflows).
+  - **Risk:** in the rail the selected segment is distinguished by the teal fill, ink border and pressed offset, not by the check §5.2 asks for. `aria-checked` is unchanged.
+  - **Deviation:** yes. Plan step: "Latched … with a check icon and `aria-pressed`/`aria-checked`" (§5.2). Did this instead: no check in the rail theme toggle only.
+- **Decision:** Toggle, toggle-group and tabs triggers render a Lucide `Check` as their first child, shown by CSS only when latched (`.pop-check`).
+  - **Because:** the `::before` / `::after` of a pop control are owned by fill and shadow, so the check cannot be a pseudo-element.
+  - **Rejected:** a React-state check; Radix does not expose the state to children.
+  - **Risk:** a chip grows by about 20px when selected, so a wrapped chip row can reflow on click.
+  - **Deviation:** no
+- **Decision:** The tabs `line` variant has no distinct look any more (the prop still exists); all tabs are segmented pop toggles.
+  - **Because:** its underline used `::after`, which a pop trigger owns; nothing in the app uses tabs.
+  - **Rejected:** a second underline element.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** Badge keeps `default`, `secondary`, `outline`, `ghost`, `link` (neutral, token-based) and adds `ok`, `warn`, `danger`, `paid`, `exp`; `destructive` is an alias of `danger`. No variant uses `--primary`.
+  - **Because:** §2.7 forbids `--primary` on badges and §2.1 names the five meanings; no route renders `Badge` yet.
+  - **Rejected:** removing the shadcn variants.
+  - **Risk:** R3 names the real variants when it applies badges.
+  - **Deviation:** no
+- **Decision:** Tooltip drops its arrow; popover, select content and card lose their blurred shadows (popover and select get the 2px outline and `--shadow-overlay`, card gets a 1px `--border-default`).
+  - **Because:** §2.6 rule 4 (no blurred shadows, cards unshadowed) applies to every primitive, though §2.7 lists only some.
+  - **Rejected:** leaving them for R3.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** `--scrim` is the token name for the §2.7 scrim values, and the rail's scroll hint is a `local` / `scroll` background pair (no element, no JS).
+  - **Because:** the spec gives the dialog and sheet scrim values but no token; a CSS-only hint avoids new JS.
+  - **Rejected:** a scroll listener.
+  - **Risk:** the fade colour (`--bg-hover`) and 24px height are mine.
+  - **Deviation:** no
+- **Decision:** The hedera leaf in `.orn-fleuron` is a heart-shaped leaf with a short stem that I drew; the playbill-frame corner squares sit just inside the inner rule (5px inset).
+  - **Because:** §5.1 specifies the construction but not the leaf path; the inset ring is a `box-shadow` and paints above background layers, so corner squares at 0 would be mostly hidden.
+  - **Rejected:** squares at the outer corner.
+  - **Risk:** the leaf and corner squares are unreviewed visually (no route uses them until R3 / R4); frames need at least 20px padding.
+  - **Deviation:** no
+- **Decision:** `.page-button` (the link-styled primary action on routes) gets an interim pop look (teal fill, ink border, hard shadow, translate on hover) instead of waiting for R4.
+  - **Because:** `--primary-foreground` became ink; the old rule would have put ink on dark teal in light mode (about 2.4:1).
+  - **Rejected:** leaving it broken until R4 moves it to `Button asChild`.
+  - **Risk:** R4 deletes this rule when it migrates the links.
+  - **Deviation:** no
+- **Decision:** Hover on flat pop controls (secondary, ghost, chip) changes only the fill, with no translate; only raised controls (primary, destructive) lift.
+  - **Because:** §5.2 gives secondary "Hover: `--bg-hover` fill" and chips "hover `--bg-hover`"; a lift would move a shadowless control.
+  - **Rejected:** translating every pop control.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** Hover styles are inside `@media (hover: hover)`.
+  - **Because:** sticky `:hover` on touch would leave a raised control lifted after a tap.
+  - **Rejected:** unconditional hover.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** `useAuroraPause` ships now as a hook nobody imports.
+  - **Because:** §5.4 requires the pause; it is 25 lines and costs nothing until R4 imports it.
+  - **Rejected:** writing it in R4.
+  - **Risk:** it is untested until R4 mounts it.
+  - **Deviation:** no
+- **Decision:** `index.html` `theme-color` is `#0E0B16` (dark base) for both themes.
+  - **Because:** the old `#07090D` no longer exists; there is no per-theme meta in the spec.
+  - **Rejected:** a media-query pair.
+  - **Risk:** light-mode browser chrome stays dark.
+  - **Deviation:** no
+- **Decision:** `.eyebrow` (global) is now Inter 600 uppercase in `--text-secondary`, replacing the v1 mono / tertiary look.
+  - **Because:** §3.2 and §3.3 define eyebrows that way; the class is shared with route code.
+  - **Rejected:** a second class.
+  - **Risk:** route eyebrows change appearance a little ahead of R3.
+  - **Deviation:** no
+
+#### Left open
+
+- Spec §2.5 / §2.8 need the aurora-order correction above (or strength 0.19).
+- Primitives not rendered by any route yet (badge, switch, tabs, tooltip, progress, dialog, input, textarea, select, sonner) were checked by class review and `tsc` only, not in a browser. The More sheet, theme toggle, chips, checkboxes and a hand-injected primary button were seen.
+- The sheen, focus ring and hover transforms were verified by computed style, not by eye.
+- The Lumen CTA, the hero `Letterbox` and route cards are still v1 visuals (R3 / R4).
+- `.orn-fleuron`, `.playbill-frame`, `.orn-rule-*`, `.orn-seal`, `.hud-grid`, `.aurora*` and `.clapper-stripe` have no consumer yet and were not rendered.
+- The primary-button focus case was exercised on a hand-built element carrying the primitive's classes, because no route renders a shadcn primary `Button`.

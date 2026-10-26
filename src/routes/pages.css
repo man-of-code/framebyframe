@@ -19,8 +19,11 @@
 .page h2,
 .page h3 {
   margin: 0;
-  font-family: "Archivo Expanded", "Arial Black", system-ui;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  font-weight: 400;
   color: var(--text-primary);
 }
 
@@ -90,16 +93,24 @@
   align-items: center;
   justify-content: center;
   padding: 0 var(--space-4);
-  color: var(--primary-foreground);
+  /* Interim pop treatment until R4 moves these links to Button asChild + ButtonSheen. */
+  color: var(--pop-ink);
+  font-weight: 600;
   text-decoration: none;
-  background: var(--accent-primary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  background: var(--pop-teal);
+  border: var(--pop-border) solid var(--pop-ink);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--pop-offset) var(--pop-offset) 0 var(--pop-shadow-color);
   cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out);
 }
 
 .page-button:hover {
-  background: var(--accent-primary-hover);
+  transform: translate(-1px, -1px);
+}
+
+.page-button:active {
+  transform: translate(2px, 2px);
 }
 
 .page-button:focus-visible,

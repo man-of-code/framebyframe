@@ -28,15 +28,17 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
+          "--normal-bg": "var(--bg-overlay)",
+          "--normal-text": "var(--text-primary)",
+          "--normal-border": "var(--pop-outline)",
+          "--border-radius": "var(--radius-lg)",
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          // 2px outline, hard overlay shadow, and a 4px left bar in the status TEXT token (never a pop fill).
+          toast:
+            "cn-toast border-2! border-l-4! [box-shadow:var(--shadow-overlay)]! data-[type=success]:border-l-[color:var(--status-ok)]! data-[type=error]:border-l-[color:var(--status-danger)]! data-[type=warning]:border-l-[color:var(--status-warn)]! data-[type=info]:border-l-[color:var(--border-strong)]!",
         },
       }}
       {...props}

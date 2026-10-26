@@ -98,9 +98,12 @@
 .week-section h2,
 .self-review-trigger {
   margin: 0;
-  font-family: "Archivo Expanded", "Arial Black", system-ui;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  overflow-wrap: break-word;
+  text-wrap: balance;
   font-size: var(--text-h2);
-  font-weight: 700;
+  font-weight: 400;
   line-height: var(--text-h2-lh);
   letter-spacing: var(--text-h2-tracking);
 }
@@ -141,25 +144,8 @@
   color: var(--text-tertiary);
 }
 
-.task-row .task-checkbox {
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
-  min-height: 20px;
-  border-color: var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--bg-inset);
-  color: var(--bg-base);
-}
-
 .task-row .task-checkbox::after {
   content: none;
-}
-
-.task-row .task-checkbox[data-state="checked"] {
-  border-color: var(--accent-warm);
-  background: var(--accent-warm);
-  color: var(--bg-base);
 }
 
 .stretch-divider {

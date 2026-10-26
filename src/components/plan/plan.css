@@ -26,9 +26,12 @@
 
 .module-head h2 {
   margin: var(--space-2) 0 0;
-  font-family: "Archivo Expanded", "Arial Black", system-ui;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  overflow-wrap: break-word;
+  text-wrap: balance;
   font-size: var(--text-h2);
-  font-weight: 700;
+  font-weight: 400;
   line-height: var(--text-h2-lh);
   letter-spacing: var(--text-h2-tracking);
 }
