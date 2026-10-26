@@ -236,7 +236,7 @@ Fallback stacks: `"Abril Fatface", "Didot", "Bodoni 72", Georgia, serif` / `Inte
 | `--text-eyebrow` | `0.75rem` | 1.2 | `0.16em` | Inter 600, uppercase | `MODULE IV · CINEMATOGRAPHY` |
 | `--text-mono` | `0.875rem` | 1.5 | `0` | Mono | HUD readouts |
 
-Every Abril heading also sets `overflow-wrap: break-word; text-wrap: balance`. Week titles are topic lists with long slash-joined tokens (`movement/angles/framing,`); without `break-word` they overflow at 360px. Not yet verified at 360px: R2 renders the two longest week titles and "Marketing, Distribution and Career" at 360px in Abril and records whether any line overflows; R3 rechecks inside the final layouts.
+Every Abril heading also sets `overflow-wrap: break-word; text-wrap: balance`. Week titles are topic lists with long slash-joined tokens (`movement/angles/framing,`); without `break-word` they overflow at 360px. Not yet verified at 360px: R2 renders the two longest week titles and "Marketing, Distribution and Career" at 360px in Abril and records whether any line overflows; R3 rechecks inside the final layouts. Week titles insert `<wbr>` after every `/` when rendered (a render helper, not a content change), so a slash-joined topic list breaks at the slash and `break-word` is only the last resort. Verified in R2b: no line overflows at 360px.
 
 Measure: body `65ch`, hard max `72ch`.
 
@@ -361,6 +361,10 @@ States, all transforms over `--dur-fast`:
 
 **Raised vs latched.** Action buttons are always drawn *raised* (shadow at `--pop-offset`). Selected chips and selected segments are drawn *latched*: fixed in the pressed position (control `translate(2px, 2px)`, shadow at `--pop-offset-press`), with a check icon and `aria-pressed`/`aria-checked`. That, not hue alone, separates "do this" from "this is on".
 
+**Segmented control** (theme toggle, Cards/Table, capstone status, tabs) — added after the R2b visual critique: one joined group, not free-standing buttons. Outer boundary 2px `--border-strong`, `--radius-sm`; 1px `--border-strong` dividers between segments; no per-segment shadow at rest. Only the latched segment gets the `--pop-teal` fill, 2px `--pop-ink` border, `--pop-offset-press` shadow and a 16px check icon before its label. In the 216px rail the labels are "Dark", "Light", "Auto" so the check fits.
+
+**Chip labels** are Inter 500 (not 600); chips sit `--space-3` (12px) apart (§8).
+
 | Control | Rest | Selected / checked |
 |---|---|---|
 | **Primary button** | `--pop-teal` fill, `--pop-ink` text, 2px `--pop-ink` border, raised solid shadow | — (always raised) |
@@ -478,6 +482,12 @@ Rules:
 ---
 
 ## 6. Surfaces map
+
+**Interim rules added after the R2b visual critique (2026-10-27):**
+- `.light { --vignette: none; }` until R4 deletes `--vignette`: the v1 black vignette smears grey on paper.
+- `.force-dark` re-declares the full dark token set on its subtree. The landing hero's CRT screen is a dark picture in both themes, so the hero copy that sits on it uses `.force-dark` until R4 moves the copy off the screen into `.playbill-frame`.
+- The mobile bar shows the brand wordmark (Abril, `--text-h3` size) and the week readout; it no longer repeats the page eyebrow.
+- The sticky mobile CTA hides while the page's own primary CTA is in the viewport (`IntersectionObserver`), so a phone viewport never shows two primaries (R4).
 
 | Surface | Victorian | Pop | HUD | Aurora | Film |
 |---|---|---|---|---|---|
