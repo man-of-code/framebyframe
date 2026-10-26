@@ -8,6 +8,7 @@
 @import "./styles/hud.css";
 @import "./styles/aurora.css";
 @import "./styles/film.css";
+@import "./styles/page-header.css";
 
 @theme inline {
   --color-background: var(--background);

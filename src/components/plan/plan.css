@@ -6,10 +6,6 @@
   max-width: 100%;
 }
 
-.plan-intro h1 {
-  margin-bottom: 0;
-}
-
 .plan-rail {
   min-width: 0;
   max-width: 100%;
@@ -20,12 +16,16 @@
   max-width: 100%;
 }
 
+/* Content-height playbill frame: at least 20px of padding keeps the corner squares clear of the text. */
 .module-head {
-  padding: calc(var(--space-4) + 8px) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
 }
 
 .module-head h2 {
-  margin: var(--space-2) 0 0;
+  margin: 0;
   font-family: var(--font-display);
   font-synthesis: none;
   overflow-wrap: break-word;
@@ -38,7 +38,7 @@
 
 .module-note {
   max-width: 65ch;
-  margin: var(--space-3) 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--text-secondary);
   line-height: 1.5;
 }

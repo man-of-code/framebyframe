@@ -36,6 +36,25 @@ describe("Plan", () => {
     expect(buffer.compareDocumentPosition(writing) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
   });
 
+  it("numbers module eyebrows in Roman, keeps the buffer eyebrow, and frames each head", () => {
+    renderPlan();
+    const eyebrows = screen.getAllByRole("region").map((region) => region.querySelector(".module-head .eyebrow")?.textContent);
+    expect(eyebrows).toEqual([
+      "Module I",
+      "Module II",
+      "Module III",
+      "Module IV",
+      "Module V",
+      "Module VI",
+      "Module VII",
+      "Weeks 13–16 · Buffer",
+    ]);
+    for (const region of screen.getAllByRole("region")) {
+      expect(region.querySelector(".module-head")?.classList.contains("playbill-frame")).toBe(true);
+    }
+    expect(screen.getByRole("heading", { level: 1, name: "The plan" }).closest("header")?.classList.contains("aurora")).toBe(true);
+  });
+
   it("shows hours, the completion ratio, and the capstone stage on a frame", () => {
     renderPlan();
     const week = within(screen.getByRole("region", { name: "Writing" })).getByRole("link", { name: /WK 01/ });

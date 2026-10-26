@@ -73,13 +73,14 @@ describe("static atmosphere", () => {
       <MemoryRouter>
         <LandingFrame />
         <WeekHeader week={week} moduleTitle="Writing" stageLabel={null} hoursLabel="1h" />
-        <ModuleGroup eyebrow="Module 01" title="Writing" weeks={[week]} current={1} progress={emptyProgress} />
+        <ModuleGroup eyebrow="Module I" title="Writing" weeks={[week]} current={1} progress={emptyProgress} />
       </MemoryRouter>,
     );
 
     expect(screen.getByRole("heading", { name: "Frame by Frame" }).closest(".letterbox-239")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Open on an image" }).closest(".letterbox")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Writing", level: 2 }).closest(".letterbox")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Writing", level: 2 }).closest(".playbill-frame")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Writing", level: 2 }).closest(".letterbox")).toBeNull();
   });
 
   it("leaves library cards ungained and marks the assignment with the slate rule", () => {

@@ -1,5 +1,4 @@
 import { useId, type JSX } from "react";
-import { Letterbox } from "@/components/atmosphere/Letterbox";
 import { WeekFrame, type FrameState } from "@/components/filmstrip/WeekFrame";
 import { capstone } from "@/content/capstone";
 import type { Progress, Week } from "@/lib/types";
@@ -26,17 +25,25 @@ export function ModuleGroup(props: {
 }): JSX.Element {
   const { eyebrow, title, note, spliced = false, weeks, current, progress } = props;
   const titleId = useId();
+  const first = weeks[0];
+  const last = weeks[weeks.length - 1];
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const range = first && last ? (first.n === last.n ? pad(first.n) : `${pad(first.n)}–${pad(last.n)}`) : "";
+  const minutes = weeks.reduce((sum, week) => sum + weekMinutes(week), 0);
 
   return (
     <section className="module-group" aria-labelledby={titleId} data-spliced={spliced ? "true" : undefined}>
       {spliced ? <div className="plan-splice" aria-hidden="true" /> : null}
-      <Letterbox>
-        <div className="module-head">
-          <p className="eyebrow">{eyebrow}</p>
-          <h2 id={titleId}>{title}</h2>
-          {note ? <p className="module-note">{note}</p> : null}
-        </div>
-      </Letterbox>
+      <div className="module-head playbill-frame">
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 id={titleId}>{title}</h2>
+        {range ? (
+          <p className="hud-readout">
+            WK {range} · <strong>{formatHours(minutes)}</strong>
+          </p>
+        ) : null}
+        {note ? <p className="module-note">{note}</p> : null}
+      </div>
       <ol className="module-frames filmstrip" data-orientation="vertical">
         {weeks.map((week) => {
           const ratio = weekCompletion(week, progress);
