@@ -5,7 +5,13 @@ alwaysApply: true
 
 # Frame by Frame design
 
-Read `docs/design-system.md` before changing UI. Tokens are already transcribed in `src/styles/tokens.css`.
+Read `docs/design-system.md` (v2, "Kinetoscope") before changing UI. Tokens live in `src/styles/tokens.css`; never write a raw hex in a component.
+
+- Five styles, five layers (§1): Victorian owns titles, rules and frames; pop art owns buttons, chips, badges and checkboxes; retro-futurist HUD owns mono readouts; aurora owns header bands, the hero and the ceremony; film owns the filmstrip and grain. A style outside its layer is a spec change.
+- One hue per meaning: teal (`--accent-primary`) is action; brass (`--accent-warm`, `--brass-fill`) is progress and completion only, never on links, buttons, filters, nav or ornaments.
+- Abril Fatface is weight 400 only with `font-synthesis: none`. No faked small caps.
+- Ornaments, halftone, HUD frames and aurora are CSS, not JSX. Halftone never sits under text.
+- Pop shadows are a pseudo-element moved with `transform`; never animate `box-shadow`.
 
 - Breakpoints are `360` (floor), `640`, `768` (bottom tabs swap to the left rail), `1024`, and `1440`. No horizontal scroll at 360px. Body text stays at least 16px on mobile. Page gutters are 16px, then 24px from 640px, then 48px from 1024px.
 - Touch targets are at least 48×48px, with at least 8px between them.

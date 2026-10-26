@@ -72,7 +72,7 @@ Rewrite `docs/design-system.md` as **Kinetoscope v2**. It is the only source of 
    - Light ("matinee paper"): base `#F5EDDC`, raised `#FFF9EE`, ink text `#1B1424`, secondary `#4A3F52`; action teal darkened to pass on paper (≈`#0B7A68`); brass text ≈`#8A5A00`; pop colours as fills with ink text, never as text on paper.
    - Aurora gradient stops (teal → violet `#7B5CFF` → magenta), opacity bounded so text over it still passes.
 3. **Type:** display **Abril Fatface** (fat-face, the Victorian playbill face; OFL; self-hosted latin + latin-ext; display and page titles only). Body/UI stays **Inter**. HUD/numerals stay **JetBrains Mono**. Eyebrows: Inter small caps with wide tracking. Scale tokens carried from v1 with any changes justified.
-4. **Ornament kit:** fleuron, double rule, rule-with-diamond, playbill frame corners, all as SVG components inheriting `currentColor`, `aria-hidden`.
+4. **Ornament kit:** fleuron, double rule, rule-with-diamond, playbill frame corners, as CSS mask utilities in `--ornament` (decided in R1: JSX would spend the `/week` JS headroom).
 5. **Pop kit:** ink outline width, offset-shadow token (`--pop-shadow: 3px 3px 0 var(--ink)`), Ben-Day halftone utility (CSS `radial-gradient` dot tile, fixed size, opacity token), press state (`translate(2px,2px)` + shadow shrink).
 6. **HUD kit:** corner-bracket frame utility, grid-line utility, mono readout styles.
 7. **Aurora kit:** static and animated variants, where each is allowed, reduced-motion behaviour, and grain over it for banding.
@@ -94,7 +94,7 @@ Also update `.cursor/rules/framebyframe-design.mdc` to match.
 - `src/styles/tokens.css` rewritten from R1 (both themes, shadcn mapping, aurora, pop, HUD tokens). Inline theme script and `useTheme` unchanged.
 - Fonts: add Abril Fatface woff2 + OFL text; drop Archivo Expanded; update preload.
 - `src/styles/` utilities: `.halftone`, `.pop-outline`, `.pop-shadow`, `.hud-frame`, `.hud-grid`, `.aurora`, `.aurora--live`, `.playbill-frame`; grain kept.
-- `src/components/ornament/` — `Fleuron`, `DoubleRule`, `DiamondRule`, `PlaybillFrame`.
+- Ornament kit as CSS utilities (`.orn-fleuron`, `.orn-rule`, `.orn-rule-double`, `.orn-rule-diamond`, `.playbill-frame`) using SVG data-URI masks, per design-system v2 §5.1. Not React components: `/week` has ~6KB of JS headroom.
 - shadcn primitives rewired to tokens (button, badge, checkbox, toggle, dialog, sheet, command, tooltip, sonner): pop treatment on controls.
 - `src/styles/tokens.contrast.test.ts` — parses `tokens.css`, asserts every declared pair in both themes.
 - Shell restyle: left rail, bottom tabs, More sheet, mobile bar, skip link, readonly banner, week numeral.

@@ -1,297 +1,353 @@
-# Frame by Frame — Design System
+# Frame by Frame — Design System v2 ("Kinetoscope")
 
-**Status:** Locked Oct 22, 2026. Implementers must not re-decide anything in this file.
-**Companion:** `docs/prd.md` (product + functional spec). **Content source:** `Frame by Frame Research Ledger, Curriculum and PRD.md`.
+**Status:** Locked 2026-10-27. Replaces v1 "Night Interior" (in git history before commit `00afb5d`). Implementers transcribe; they do not re-decide. A value that is not here is a question for the user, not a choice.
+**Companions:** `docs/prd.md` (product), `docs/redesign-plan.md` (phases R0–R5).
 
-Direction: **Night Interior** — a cold, desaturated cinema base with a single warm accent reserved for progress and achievement. Modern and high-contrast enough to stop a scroll; quiet and legible enough to read for forty minutes on a phone.
-
----
-
-## 1. Why this direction
-
-The reference set (Black Girl Film School, Ukrainian Film School, the two minimal film-school landings) is warm editorial: oversized type, warm blacks, high-contrast stills, generous negative space. The chosen palette is cold. Cold alone reads as developer tooling, not film school. The resolution is **teal-and-orange**: a cold blue-black base carrying all structural UI, and one warm amber reserved exclusively for progress, completion, and capstone state. The learner's own achievement is the only thing on the site that is warm. This is a semantic rule, not a decorative one — see §3.3.
+Direction: **Kinetoscope** — a Victorian playbill for the year cinema was born (1895), printed in pop-art halftone, read through a retro-futurist instrument panel, under an aurora sky. Loud at the edges, quiet where the learner reads.
 
 ---
 
-## 2. Color
+## 1. Five styles, five jobs
 
-All tokens are **semantic**. Both modes define identical token names. No component references a raw hex value.
+A style appears only in its own layer. A surface that needs a style outside its layer is a spec change, not an implementation choice.
 
-### 2.1 Dark mode (default)
+| Layer | Style | Owns | Never touches |
+|---|---|---|---|
+| **Structure & type** (lead) | Victorian playbill | Display face, page titles, fleurons, double rules, playbill frames, centred title blocks on hero-like headers | Body copy, tables, form controls |
+| **Interaction & status** | Pop art | Buttons, chips, badges, toggles, checkboxes: flat saturated fills, ink outlines, hard offset shadows, Ben-Day halftone shadows | Anything behind text; long-form surfaces |
+| **Data & numerals** | Retro-futurist | Mono HUD readouts (`WK 07 / 16`, hours, counts), corner-bracket frames, faint grid bands, the CRT hero canvas | Headings, prose |
+| **Atmosphere** | Aurora | Large gradient fields behind the landing hero, route header bands, and the capstone ceremony | Cards, controls, anything carrying meaning |
+| **Medium** | Retro film | Filmstrip rail, sprockets, splice gap, grain (dark only), clapper stripe | — |
+
+**Where it is quiet:** resource cards, tables, the notes field, done-when lists and every `--container-prose` surface are plain: surface colour, a border, Inter text. The blend is the frame around the reading, never the reading.
+
+---
+
+## 2. Colour
+
+All tokens are semantic, defined for both themes with identical names. Components never reference a raw hex. Token names carry over from v1 where the meaning carried over, so `--accent-primary` is **action** and `--accent-warm` is **brass**.
+
+### 2.1 One hue per meaning
+
+| Meaning | Hue | Token(s) | Notes |
+|---|---|---|---|
+| **Action** — links, primary button, focus ring, selected filter | Aurora teal | `--accent-primary`, `--pop-teal` (fill) | The only teal on the site |
+| **Progress & completion** — exposed frames, current week numeral, checked checkbox, capstone done, ceremony | Brass (amber-copper) | `--accent-warm`, `--brass-fill` | Never on a link, button, filter, nav item, or ornament |
+| Success / free / done-when met | Pop lime | `--status-ok`, `--pop-lime` | |
+| Warning / freemium / gray area / email-gated | Pop yellow | `--status-warn`, `--pop-yellow` | Hue 52°, kept clear of brass (30°); badges always carry icon + text |
+| Danger / dead link / import failure | Pop red | `--status-danger`, `--pop-red` | |
+| Paid / benchmark-only | Pop magenta | `--status-paid`, `--pop-magenta` | |
+| Experimental | Aurora violet | `--status-exp`, `--pop-violet` | |
+
+There is **no pop cyan**: it would sit next to action teal and read as a link.
+
+### 2.2 Dark — "Night show" (default)
 
 | Token | Hex | Use |
 |---|---|---|
-| `--bg-base` | `#07090D` | Page background |
-| `--bg-raised` | `#0D1118` | Cards, week sections, resource cards |
-| `--bg-overlay` | `#121823` | Dialogs, popovers, command palette, mobile sheet |
-| `--bg-inset` | `#05070A` | Code blocks, input wells, table header |
-| `--bg-hover` | `#141A24` | Row/card hover |
-| `--border-subtle` | `#1B2230` | Internal dividers, table rules |
-| `--border-default` | `#273243` | Card borders, input borders |
-| `--border-strong` | `#3A4859` | Focused input, emphasized card |
-| `--text-primary` | `#E8EDF5` | Headings, body copy — 15.8:1 on base |
-| `--text-secondary` | `#A7B4C6` | Supporting copy, descriptions — 9.0:1 |
-| `--text-tertiary` | `#6E7E93` | Meta, timestamps, counts — 4.76:1 (AA floor; never go lighter in weight than 400 at this value) |
-| `--accent-primary` | `#6AB8FF` | Links, primary action, focus ring, selected filter — 9.4:1 |
-| `--accent-primary-hover` | `#8AC8FF` | |
-| `--accent-primary-active` | `#4A9FE8` | |
-| `--accent-primary-wash` | `rgba(106,184,255,0.12)` | Selected chip fill, active nav background |
-| `--accent-primary-edge` | `rgba(106,184,255,0.32)` | Selected chip border |
-| `--accent-warm` | `#F2A65A` | **Progress and completion only** — 9.8:1 |
-| `--accent-warm-wash` | `rgba(242,166,90,0.14)` | Completed-week fill, progress bar track fill |
-| `--accent-warm-edge` | `rgba(242,166,90,0.36)` | |
-| `--status-ok` | `#5BD6A8` | Validation passed, link check green, done-when met |
-| `--status-warn` | `#C9A227` | Gray-area badge, email-gated resource, unverified fee |
-| `--status-danger` | `#FF6B6B` | Dead link, destructive action, import failure |
-| `--status-paid` | `#A78BFA` | Paid / benchmark-only badge |
-| `--grain-opacity` | `0.025` | See §5 |
-| `--vignette` | `radial-gradient(ellipse at 50% 0%, transparent 35%, rgba(0,0,0,0.55) 100%)` | Hero and letterbox containers |
+| `--bg-base` | `#0E0B16` | Page — ink-violet black |
+| `--bg-raised` | `#17121F` | Cards, sections |
+| `--bg-overlay` | `#201A2B` | Dialogs, sheets, palette, popovers |
+| `--bg-inset` | `#0A0811` | Input wells, table header, filmstrip track |
+| `--bg-hover` | `#1D1727` | Row/card hover |
+| `--border-subtle` | `#2A2236` | Dividers, table rules, HUD grid lines |
+| `--border-default` | `#3A3049` | Card and input borders |
+| `--border-strong` | `#6A5C80` | Focused input, ornament rules (3.34:1 on base) |
+| `--text-primary` | `#F2E8D5` | Paper — headings, body |
+| `--text-secondary` | `#CDBFA8` | Supporting copy |
+| `--text-tertiary` | `#9C9080` | Meta, counts (≥5.40:1 on every surface) |
+| `--accent-primary` | `#4FE0C2` | Action |
+| `--accent-primary-hover` | `#7AEBD3` | |
+| `--accent-primary-active` | `#33C7A9` | |
+| `--accent-primary-wash` | `rgba(79,224,194,0.12)` | Active nav background |
+| `--accent-primary-edge` | `rgba(79,224,194,0.36)` | |
+| `--accent-warm` | `#F0A04B` | Brass — text, icons, fills |
+| `--brass-fill` | `#F0A04B` | |
+| `--accent-warm-wash` | `rgba(240,160,75,0.16)` | Exposed frame fill |
+| `--accent-warm-edge` | `rgba(240,160,75,0.40)` | |
+| `--status-ok` | `#9BE15D` | |
+| `--status-warn` | `#FFE14D` | |
+| `--status-danger` | `#FF6B6B` | |
+| `--status-paid` | `#FF5FAE` | |
+| `--status-exp` | `#A98BFF` | |
+| `--pop-ink` | `#0E0B16` | Text and outlines **on pop fills** |
+| `--pop-outline` | `#F2E8D5` | Outline of unfilled pop controls on dark surfaces |
+| `--pop-shadow-color` | `#F2E8D5` | Offset shadows: paper "misregistration" on ink |
+| `--ornament` | `#6A5C80` | Rules, frames, fleurons (= `--border-strong`) |
+| `--grain-opacity` | `0.03` | §5.6 |
 
-### 2.2 Light mode
-
-Daylight reading mode. Cool off-white, never pure white — pure white next to a dark-mode-first type scale reads as a blown highlight.
+### 2.3 Light — "Matinee paper"
 
 | Token | Hex | Notes |
 |---|---|---|
-| `--bg-base` | `#F7F8FA` | |
-| `--bg-raised` | `#FFFFFF` | Cards lift *up* in light mode, *down* in dark |
-| `--bg-overlay` | `#FFFFFF` | with `--shadow-overlay` |
-| `--bg-inset` | `#EDF0F4` | |
-| `--bg-hover` | `#EFF2F6` | |
-| `--border-subtle` | `#E2E7ED` | |
-| `--border-default` | `#CDD5DF` | |
-| `--border-strong` | `#9FACBB` | |
-| `--text-primary` | `#0E141C` | 16:1 |
-| `--text-secondary` | `#3D4A5C` | 8.9:1 |
-| `--text-tertiary` | `#5E6B7D` | 5.5:1 |
-| `--accent-primary` | `#0B63CE` | 5.4:1 — the dark-mode blue fails on light, do not reuse it |
-| `--accent-primary-hover` | `#0A56B3` | |
-| `--accent-primary-active` | `#084A9B` | |
-| `--accent-primary-wash` | `rgba(11,99,206,0.08)` | |
-| `--accent-primary-edge` | `rgba(11,99,206,0.28)` | |
-| `--accent-warm` | `#A35A09` | For warm **text and icons** (5.6:1). `#F2A65A` stays the warm **fill** color in both modes |
-| `--accent-warm-wash` | `rgba(242,166,90,0.18)` | |
-| `--status-ok` | `#0E7A5A` | |
-| `--status-warn` | `#8A6D0B` | |
-| `--status-danger` | `#C0362C` | |
-| `--status-paid` | `#6D48C9` | |
-| `--grain-opacity` | `0` | Grain is **off** in light mode — see §5.3 |
+| `--bg-base` | `#F5EDDC` | Playbill paper, never pure white |
+| `--bg-raised` | `#FFF9EE` | |
+| `--bg-overlay` | `#FFFDF7` | |
+| `--bg-inset` | `#EDE3CE` | |
+| `--bg-hover` | `#EFE5D0` | |
+| `--border-subtle` | `#E0D4BC` | |
+| `--border-default` | `#C9B99C` | |
+| `--border-strong` | `#8F7F66` | 3.20:1 on base |
+| `--text-primary` | `#1B1424` | Ink |
+| `--text-secondary` | `#4A3F52` | |
+| `--text-tertiary` | `#625667` | |
+| `--accent-primary` | `#06695A` | Dark teal; the bright teal fails on paper |
+| `--accent-primary-hover` | `#055A4D` | |
+| `--accent-primary-active` | `#044C41` | |
+| `--accent-primary-wash` | `rgba(6,105,90,0.10)` | |
+| `--accent-primary-edge` | `rgba(6,105,90,0.32)` | |
+| `--accent-warm` | `#8A5500` | Brass **text and icons** |
+| `--brass-fill` | `#F0A04B` | Brass **fills** stay bright in both themes |
+| `--accent-warm-wash` | `rgba(240,160,75,0.22)` | |
+| `--accent-warm-edge` | `rgba(138,85,0,0.40)` | |
+| `--status-ok` | `#2F6B12` | Status **text**; fills use the pop fills |
+| `--status-warn` | `#7A5F00` | |
+| `--status-danger` | `#B3261E` | |
+| `--status-paid` | `#A3105E` | |
+| `--status-exp` | `#5B3CC4` | |
+| `--pop-ink` | `#1B1424` | |
+| `--pop-outline` | `#1B1424` | |
+| `--pop-shadow-color` | `#1B1424` | Classic ink offset |
+| `--ornament` | `#8F7F66` | |
+| `--grain-opacity` | `0` | Grain is off in light mode |
 
-**Cost disclosure:** a real light mode roughly doubles visual QA. Every card, badge, chart, grain surface, and focus state must be checked twice. Dark is the default and ships first; light mode is a P1 that must not block launch.
+### 2.4 Pop fills (both themes)
 
-### 2.3 shadcn/ui variable mapping
+Fills are identical in both themes and always carry `--pop-ink` text (every pair ≥ 6.4:1, lowest is ink on magenta):
 
-Map our semantic tokens onto shadcn's required names in `globals.css`. Convert hex to the project's color format (HSL for shadcn on Tailwind v3, oklch for Tailwind v4) — keep our token names as the source of truth and define shadcn's names *from* them.
-
-| shadcn var | Our token |
+| Token | Hex |
 |---|---|
-| `--background` | `--bg-base` |
-| `--foreground` | `--text-primary` |
-| `--card` / `--popover` | `--bg-raised` / `--bg-overlay` |
-| `--card-foreground` / `--popover-foreground` | `--text-primary` |
-| `--primary` | `--accent-primary` |
-| `--primary-foreground` | `#07090D` dark / `#FFFFFF` light |
-| `--secondary` | `--bg-inset` |
-| `--muted` | `--bg-inset` |
-| `--muted-foreground` | `--text-tertiary` |
-| `--accent` | `--accent-primary-wash` |
-| `--destructive` | `--status-danger` |
-| `--border` | `--border-default` |
-| `--input` | `--border-default` |
-| `--ring` | `--accent-primary` |
-| `--radius` | `0.5rem` |
+| `--pop-teal` | `#4FE0C2` |
+| `--pop-lime` | `#9BE15D` |
+| `--pop-yellow` | `#FFE14D` |
+| `--pop-red` | `#FF6B6B` |
+| `--pop-magenta` | `#FF5FAE` |
+| `--pop-violet` | `#A98BFF` |
 
-### 2.4 Color rules
+### 2.5 Aurora
 
-1. `--accent-warm` is reserved. It appears on: progress bars, completed week markers, the filmstrip's exposed frames, capstone stage completion, and the capstone-complete ceremony. It never appears on a link, a button, a filter, or a nav item.
-2. Color is never the only signal. The gray-area badge carries an icon and the word "gray area." The paid badge carries a currency glyph. Completed state carries a check mark, not just amber fill.
-3. No gradient carries meaning. Gradients are atmosphere only (hero, letterbox vignette).
-4. Elevation: dark mode lifts with **border + lighter surface**, never with a drop shadow (shadows are invisible on `#07090D`). Light mode lifts with shadow: `--shadow-raised: 0 1px 2px rgba(14,20,28,0.06), 0 2px 8px rgba(14,20,28,0.04)`.
+Three radial fields over `--bg-base`, never over a card:
+
+```css
+--aurora-teal: rgba(79,224,194,var(--aurora-strength));
+--aurora-violet: rgba(123,92,255,var(--aurora-strength));
+--aurora-magenta: rgba(255,79,163,var(--aurora-strength));
+--aurora-strength: 0.30;   /* dark */
+--aurora-strength: 0.22;   /* light */
+```
+
+At those strengths `--text-primary` and `--text-secondary` stay ≥ 5.3:1 over the strongest single field in both themes (computed). Fields may overlap; the overlap must stay under `--aurora-strength` per channel, so each field fades to transparent by 60% of its radius.
+
+### 2.6 Colour rules
+
+1. Brass is reserved for progress and completion. Ornaments, the clapper stripe, buttons, links and nav are never brass.
+2. Colour is never the only signal: badges have icon + text, exposed frames have a check, the current week has `aria-current`.
+3. No gradient carries meaning. Aurora is atmosphere only.
+4. Elevation: dark lifts with border + lighter surface; overlays add the pop offset shadow (`--shadow-overlay`). Light lifts with the ink offset shadow. No blurred drop shadows anywhere — this is print, not glass.
+5. Every text/background pair above is asserted ≥ 4.5:1 (non-text UI ≥ 3:1) by `src/styles/tokens.contrast.test.ts` (R2). A new colour without a test row does not merge.
 
 ---
 
 ## 3. Typography
 
-### 3.1 Families (self-hosted woff2, subset to latin + latin-ext + Devanagari for the display face only)
+### 3.1 Families (self-hosted woff2, latin + latin-ext, OFL texts beside the files)
 
-| Role | Family | Why |
+| Role | Family | Rules |
 |---|---|---|
-| Display | **Archivo Expanded** 600/700 | Wide letterforms read as a film title card. Instantly distinguishes the landing from the Inter-everything default and carries the "cinematic" brief without a single image. |
-| Body / UI | **Inter** variable | Nothing beats it for dense tables, filter chips and 16px body on a 360px Android screen. Deliberately unexciting — the display face does the talking. |
-| Mono | **JetBrains Mono** 400/500 | The curriculum is full of specs: `24fps`, `1/48s`, `-14 LUFS`, `ProRes 422 LT`, `WK 07 / 16`. Mono makes them scannable and doubles as the timecode motif. |
+| Display & titles | **Abril Fatface** 400 | Victorian fat face. One weight only: `font-weight: 400; font-synthesis: none` on every element that uses it. Never bold, never italic. Preload this file only. Replaces Archivo Expanded. |
+| Body / UI | **Inter** variable | Unchanged from v1. |
+| HUD / numerals | **JetBrains Mono** 400/500 | Unchanged. `font-variant-numeric: tabular-nums` on every readout. |
 
-Preload the display face only (`<link rel="preload" as="font" crossorigin>`). Inter and JetBrains Mono use `font-display: swap`. Fallback stack: `Archivo Expanded, "Arial Black", system-ui` / `Inter, system-ui, -apple-system, sans-serif` / `"JetBrains Mono", ui-monospace, monospace`.
+Fallback stacks: `"Abril Fatface", "Didot", "Bodoni 72", Georgia, serif` / `Inter, system-ui, -apple-system, sans-serif` / `"JetBrains Mono", ui-monospace, monospace`.
 
-### 3.2 Scale (mobile → desktop via `clamp`)
+**No small caps.** Neither self-hosted Inter nor JetBrains Mono contains `smcp` (measured: identical widths with `font-synthesis: none`). Eyebrows are uppercase + tracking. Faked small caps are forbidden.
 
-| Token | Size | Line height | Tracking | Use |
-|---|---|---|---|---|
-| `--text-display` | `clamp(2.75rem, 9vw, 6rem)` | 0.95 | `-0.03em` | Landing H1 only |
-| `--text-h1` | `clamp(2rem, 5vw, 3rem)` | 1.1 | `-0.02em` | Page titles, week titles |
-| `--text-h2` | `clamp(1.5rem, 3.2vw, 2rem)` | 1.2 | `-0.015em` | Module headers, Watch/Read/Do section heads |
-| `--text-h3` | `1.25rem` | 1.3 | `-0.01em` | Card titles |
-| `--text-body-lg` | `clamp(1.0625rem, 1.4vw, 1.1875rem)` | 1.65 | `0` | Week prose, About |
-| `--text-body` | `1rem` (16px floor, never smaller on mobile) | 1.6 | `0` | Default |
-| `--text-sm` | `0.875rem` | 1.5 | `0` | Card meta, helper text |
-| `--text-eyebrow` | `0.75rem` | 1.2 | `0.14em` | Uppercase labels: `MODULE 4 · CINEMATOGRAPHY` |
-| `--text-mono` | `0.875rem` | 1.5 | `0` | Specs, timecode, week numerals |
+### 3.2 Scale
 
-Measure: body copy capped at `65ch`, hard max `72ch`. Headings may run wider.
+| Token | Size | LH | Tracking | Face | Use |
+|---|---|---|---|---|---|
+| `--text-display` | `clamp(2.75rem, 10vw, 6.5rem)` | 1.0 | `0` | Abril | Landing H1 only |
+| `--text-h1` | `clamp(1.875rem, 5vw, 3.25rem)` | 1.08 | `0` | Abril | Page and week titles |
+| `--text-h2` | `clamp(1.5rem, 3.2vw, 2.125rem)` | 1.15 | `0` | Abril | Module heads, Watch/Read/Do heads |
+| `--text-h3` | `1.25rem` | 1.3 | `-0.01em` | Inter 600 | Card titles |
+| `--text-body-lg` | `clamp(1.0625rem, 1.4vw, 1.1875rem)` | 1.65 | `0` | Inter | Prose |
+| `--text-body` | `1rem` | 1.6 | `0` | Inter | Default, 16px floor |
+| `--text-sm` | `0.875rem` | 1.5 | `0` | Inter | Meta |
+| `--text-eyebrow` | `0.75rem` | 1.2 | `0.16em` | Inter 600, uppercase | `MODULE IV · CINEMATOGRAPHY` |
+| `--text-mono` | `0.875rem` | 1.5 | `0` | Mono | HUD readouts |
+
+Every Abril heading also sets `overflow-wrap: break-word; text-wrap: balance`. Week titles are topic lists with long slash-joined tokens (`movement/angles/framing,`); without `break-word` they overflow at 360px. R3 checks the two longest titles and "Marketing, Distribution and Career" at 360px.
+
+Measure: body `65ch`, hard max `72ch`.
 
 ### 3.3 Typographic motifs
 
-- **Week numerals as timecode.** `WK 07 / 16` in mono, `--text-tertiary`, with the current week's number in `--accent-warm`. Appears in the nav rail, week header, and dashboard.
-- **Eyebrow + display pairing.** Every page title is preceded by a mono uppercase eyebrow (module, week, or section). This is the single most load-bearing editorial device in the system — it does the work the Dribbble refs get from photography, which this site does not have.
-- **Hours in mono.** `~8 hrs core` renders mono so heavy weeks are visually scannable down a list.
+- **Playbill title block** (hero-like headers only: landing hero, week header, plan intro, capstone header, about): eyebrow flanked by fleurons → Abril title → diamond rule. Centred.
+- **Working headers** (library, toolkit, dashboard sections, legal pages): eyebrow → Abril title, left-aligned, no fleurons. Dense pages are not posters.
+- **Module numerals in Roman** in eyebrows only (`MODULE IV`), Arabic everywhere else, and always Arabic in HUD readouts.
+- **HUD readouts:** `WK 07 / 16`, `~8h`, `41 / 96 tasks` in mono, tabular; current-week number in brass.
 
 ---
 
-## 4. Layout, spacing, motion
+## 4. Layout, spacing, shape, motion
 
-**Spacing scale (4px base):** `4 8 12 16 24 32 48 64 96 128`. Tokens `--space-1` … `--space-10`.
+**Spacing (4px base):** `4 8 12 16 24 32 48 64 96 128` as `--space-1`…`--space-10` (unchanged).
+**Containers:** `--container-prose: 42rem`, `--container-app: 76rem`. Gutters 16 / 24 (≥640) / 48 (≥1024).
+**Breakpoints:** `360` floor · `640` · `768` (tabs → rail) · `1024` · `1440`.
 
-**Containers:** `--container-prose: 42rem` (week/about reading), `--container-app: 76rem` (plan, library, dashboard). Page gutters `16px` mobile, `24px` tablet, `48px` desktop.
+**Shape:** Victorian frames, rules and module heads are square (`0`). Pop controls are slightly rounded.
 
-**Breakpoints:** `360` (floor, must not horizontal-scroll) · `640` · `768` (nav switches from bottom tabs to left rail) · `1024` · `1440`.
+| Token | Value | Use |
+|---|---|---|
+| `--radius-sm` | `4px` | Chips, badges, buttons, checkboxes |
+| `--radius-md` | `6px` | Cards, inputs |
+| `--radius-lg` | `8px` | Sheets, dialogs |
+| `--radius-full` | `9999px` | Pills (count badges) |
 
-**Radii:** `--radius-sm: 6px` (chips, badges), `--radius-md: 10px` (cards, inputs), `--radius-lg: 16px` (panels, sheets), `--radius-full` (avatars, pills). Nothing is fully square; nothing is a blob.
+**Pop geometry:**
 
-**Z-index scale:** `10` sticky header · `20` left rail / bottom tabs · `30` dropdown / popover · `40` sheet / drawer · `50` dialog · `60` toast. Grain overlays sit at `1` inside their own stacking context and are never global.
+| Token | Value |
+|---|---|
+| `--pop-border` | `2px` |
+| `--pop-offset` | `3px` |
+| `--pop-offset-hover` | `4px` |
+| `--pop-offset-press` | `1px` |
+| `--shadow-overlay` | `6px 6px 0 var(--pop-shadow-color)` |
+| `--halftone-dot` | `1.5px` |
+| `--halftone-gap` | `6px` |
+
+**Z-index:** unchanged from v1 — `10` sticky · `20` rail/tabs · `30` popover · `40` sheet · `50` dialog · `60` toast. Grain and aurora sit at `0`/`1` inside their own stacking context.
 
 **Motion:**
 
 | Token | Value | Use |
 |---|---|---|
-| `--ease-out` | `cubic-bezier(0.2, 0.8, 0.2, 1)` | Default for everything entering |
+| `--ease-out` | `cubic-bezier(0.2, 0.8, 0.2, 1)` | Entering |
 | `--ease-in-out` | `cubic-bezier(0.4, 0, 0.2, 1)` | Position changes |
-| `--dur-fast` | `150ms` | Hover, checkbox, chip toggle |
-| `--dur-base` | `220ms` | Card state, accordion, popover |
-| `--dur-slow` | `420ms` | Route transition, sheet |
-| `--dur-ceremony` | `900ms` | Capstone stage completion, week completion |
+| `--dur-fast` | `150ms` | Hover, press, chip toggle |
+| `--dur-base` | `220ms` | Cards, popovers |
+| `--dur-slow` | `420ms` | Sheets, canvas fade |
+| `--dur-ceremony` | `900ms` | Completion |
+| `--dur-aurora` | `12s` | Live aurora loop |
 
-Animate `transform` and `opacity` only. Never animate `width`, `height`, `top`, or `margin`. Hover states change color, border, or shadow — **never scale**, because scale on a card in a filter grid shifts neighbours and makes the library feel unstable.
-
-**`prefers-reduced-motion: reduce`** → all durations collapse to `1ms` except opacity fades which collapse to `--dur-fast`; WebGL renders one static frame or swaps to its poster; the ceremony animation becomes a static state change.
-
----
-
-## 5. Grain
-
-### 5.1 Verdict
-
-**Use it, on dark mode surfaces only.** It is justified on two grounds:
-
-1. **Functional.** The dark palette carries large low-contrast gradient fields (hero vignette, letterbox fades, card washes). 8-bit sRGB gradients across dark values band visibly, and band worst on the mid-range Android panels this learner actually uses. A 2–3% noise overlay dithers that banding away. This is the same mechanism that makes film scans look smooth where digital gradients do not.
-2. **Semantic.** The site is about the photographic image. Grain references the medium at zero image-asset cost — important for a site that has no photography budget.
-
-### 5.2 Where it fails (these are the constraints, not caveats)
-
-| Failure | Rule |
-|---|---|
-| Over body text — noise at 2–3% reduces effective contrast and fights subpixel antialiasing | Grain is **never** in the same stacking layer as text. Content renders in a child above the overlay. |
-| In light mode — noise on near-white reads as JPEG compression or a dirty screen, not film | `--grain-opacity: 0` in light mode. Light mode gets a flat paper-tone wash (`--bg-base: #F7F8FA` already carries it) instead. |
-| At 2×/3× DPR with an unscaled tile — either invisible mush or moiré | Tile sized in **CSS pixels** (`background-size: 128px 128px`) so the browser scales it with DPR as intended. |
-| Animated grain — continuous full-screen repaint, measurable battery cost on phones | **Static only.** No flicker, no projector-gate animation. |
-| Global `body::after` overlay — repaints on every scroll, covers everything including text | Grain is applied per-surface via a `.grain` utility, never globally. |
-
-### 5.3 Implementation
-
-```css
-.grain { position: relative; isolation: isolate; }
-.grain::before {
-  content: ""; position: absolute; inset: 0; z-index: 1;
-  background-image: var(--grain-tile);      /* inline SVG feTurbulence data URI, 128px */
-  background-size: 128px 128px;
-  opacity: var(--grain-opacity);            /* 0.025 dark, 0 light */
-  pointer-events: none;
-  mix-blend-mode: overlay;
-}
-.grain > * { position: relative; z-index: 2; }
-```
-
-Applied to: landing hero, letterbox image containers, week header panel, capstone ceremony surface, module cards on `/plan`. **Not** applied to: library resource cards (dense, text-heavy, hundreds on screen), tables, forms, or anything inside `--container-prose`.
+Animate `transform` and `opacity` only. Hover never scales. The pop shadow is a pseudo-element, so press and hover are transforms (§5.2). `prefers-reduced-motion: reduce` collapses durations to `1ms` and stops the aurora loop.
 
 ---
 
-## 6. Cinematic treatment without WebGL
+## 5. Kits
 
-Everything in this section is CSS-only and carries the look on every route the learner works in. This — not the shaders — is what makes the site feel cinematic 95% of the time.
+### 5.1 Ornament kit (Victorian) — CSS, not JSX
 
-| Device | Implementation | Where |
+Ornaments are **CSS utilities** whose shapes are inline SVG data URIs used as `mask-image` with `background-color: var(--ornament)`. They inherit the ornament colour, cost zero JS (the `/week` route has about 6KB of JS headroom), and are invisible to assistive tech by construction. No ornament is ever a React component or an icon font.
+
+| Class | Shape | Size |
 |---|---|---|
-| **Filmstrip progress rail** | The 16-week plan rendered as a strip of frames with sprocket perforations (`repeating-linear-gradient`). Completed weeks are "exposed" (`--accent-warm-wash` fill + check), the current week is outlined in `--accent-warm`, future weeks are empty with `--border-subtle`. Extension weeks 13–16 are visually separated by a splice gap. | Desktop left rail, mobile `/plan` header, dashboard |
-| **Letterbox containers** | `aspect-ratio: 2.39/1` with thin `--bg-inset` bars and `--vignette` applied | Week page headers, landing hero, module cards |
-| **Vignette** | `--vignette` radial gradient, plus `box-shadow: inset 0 0 120px rgba(0,0,0,0.5)` on hero | Hero, letterbox containers |
-| **Bleach-bypass imagery** | `filter: saturate(0.65) contrast(1.12)` on any photography, with full saturation on hover for interactive stills | Any future imagery |
-| **Timecode numerals** | Mono, tabular-nums, `--text-tertiary` | Week numbers, hour estimates, progress counts |
-| **Slate rule** | A 2px `--accent-warm` left border on the active assignment card, echoing a clapper stripe | Week assignment card |
+| `.orn-fleuron` | A hedera leaf (❦ silhouette) drawn as an SVG path; `::before`/`::after` on an eyebrow mirror it either side | `1em` square |
+| `.orn-rule` | Hairline, 1px, full width | 1px tall |
+| `.orn-rule-double` | Two 1px rules, 3px apart | 5px tall |
+| `.orn-rule-diamond` | Hairline with a centred 7px diamond | 9px tall |
+| `.playbill-frame` | Double rule border (outer 1px, 3px gap, inner 1px) on all sides, plus a 10px corner square at each corner | — |
+
+`--ornament` is `--border-strong` in both themes: never brass, never teal.
+
+### 5.2 Pop kit (interaction & status)
+
+**Offset shadow:** every pop control has a `::after` layer at `inset: 0`, `transform: translate(var(--pop-offset), var(--pop-offset))`, `z-index: -1`, filled with `--pop-shadow-color`, in the control's own stacking context (`isolation: isolate`).
+- Hover: control `translate(-1px, -1px)`, shadow layer `translate(4px, 4px)`.
+- Press (`:active`): control `translate(2px, 2px)`, shadow layer `translate(1px, 1px)`.
+- Both are transforms over `--dur-fast`.
+
+**Halftone:** `.halftone` paints a Ben-Day dot field: `radial-gradient(circle, var(--pop-shadow-color) var(--halftone-dot), transparent calc(var(--halftone-dot) + 0.5px))` tiled at `var(--halftone-gap)`. It is used **only** as the fill of an offset-shadow layer (selected chips, the primary button on hover), so the dots sit outside the label's box. A halftone never sits under text.
+
+| Control | Rest | Selected / checked |
+|---|---|---|
+| **Primary button** | `--pop-teal` fill, `--pop-ink` text, 2px `--pop-ink` border, solid offset shadow | Hover: halftone shadow |
+| **Secondary button** | transparent fill, `--text-primary` text, 2px `--pop-outline` border, no shadow | Hover: `--bg-hover` |
+| **Filter chip** | `--bg-raised`, 2px `--border-default`, `--text-primary` | `--pop-teal` fill, `--pop-ink` text, 2px `--pop-ink` border, **halftone** offset shadow, check icon |
+| **Badge** | Pop fill per §2.1, `--pop-ink` text, 1.5px `--pop-ink` border, Lucide icon + word, no shadow | — |
+| **Checkbox** | 20px box (48px hit area), 2px `--pop-outline` border, `--radius-sm` | `--brass-fill`, `--pop-ink` check (checked is progress) |
+| **Toggle / segmented** | Secondary button style | `--pop-teal` fill, ink text, ink border |
+| **Nav item** | Text + icon | Active: `--accent-primary-wash` fill + 2px `--accent-primary` left bar (rail) / top bar (tabs). Never brass, no pop shadow. |
+
+Focus is always `outline: 2px solid var(--accent-primary); outline-offset: 3px` (offset 3px clears the pop border).
+
+### 5.3 HUD kit (retro-futurist)
+
+- `.hud-frame`: four corner brackets, 10px arms, 1px `--border-strong`, drawn with four background linear-gradients (no extra elements). Used around readouts: week numeral in the rail and mobile bar, dashboard progress line, library result count, plan intro count.
+- `.hud-readout`: mono, `--text-mono`, tabular nums, `--text-secondary`; the live figure inside it in `--text-primary` (or brass when it is the current week).
+- `.hud-grid`: 1px `--border-subtle` lines every 24px at 40% opacity. Only inside header bands and the hero; never behind body copy, cards or tables.
+- The CRT hero canvas (§7) is the HUD's one moving element.
+
+### 5.4 Aurora kit
+
+- `.aurora`: three radial-gradient fields (§2.5) on a `::before` at `z-index: 0`; children render at `z-index: 2`, grain (dark) at `1`. Field placement: teal at 15% 20%, violet at 80% 10%, magenta at 60% 90%; each radius 60% of the box's larger side.
+- `.aurora--live`: the field layer is 140% of the box, centred, animated with `transform: translate3d(...) rotate(...)` over `--dur-aurora`, `alternate`, `infinite`. Allowed on the landing hero and the ceremony only. Paused when off-screen (`IntersectionObserver` sets `animation-play-state`) and when `document.hidden`. Static under reduced motion.
+- Static `.aurora` header bands: `/plan`, `/week/:n`, `/library`, `/toolkit`, `/capstone`, `/about`, dashboard. The band is the page header only (eyebrow + title), never the content area.
+
+### 5.5 Film kit (retro medium)
+
+| Device | Implementation |
+|---|---|
+| **Filmstrip rail** | Unchanged structure. Sprockets `--bg-inset` holes on `--border-default`; exposed frames `--accent-warm-wash` + brass check; current frame 2px `--accent-warm` border + `aria-current="step"`; unexposed `--border-subtle`; splice gap before week 13. Frame numerals are HUD mono. |
+| **Clapper stripe** | Replaces v1's brass "slate rule" on the assignment card: a 6px top band of 45° diagonal stripes in `--pop-ink`/`--text-primary` (dark) and `--pop-ink`/`--bg-raised` (light). Not brass. |
+| **Letterbox** | Retired. The week header, plan module heads and landing hero use `.playbill-frame` instead. The `Letterbox` component is removed in R3 once nothing uses it. |
+
+### 5.6 Grain
+
+Unchanged mechanism from v1 §5.3 (per-surface `.grain`, 128px CSS-pixel `feTurbulence` tile, `z-index: 1`, text at `2`, static, `mix-blend-mode: overlay`), opacity `0.03` dark, `0` light. It is applied wherever `.aurora` is applied, because it also dithers aurora banding on 8-bit panels. Not on cards, tables, forms or prose.
 
 ---
 
-## 7. ThreeUI — governance
+## 6. Surfaces map
 
-ThreeUI is the **atmosphere layer only**. It is not the UI kit. The catalog (verified against `MengTo/threeui` `src/shaders/`, 47 Community families) contains decorative WebGL scenes plus a handful of shader-skinned controls. It contains **no** checkbox, table, filter chip, form input, or layout primitive — and this app is overwhelmingly checkboxes, filters, and dense reading surfaces. shadcn/ui builds the interface; ThreeUI decorates three specific moments.
+| Surface | Victorian | Pop | HUD | Aurora | Film |
+|---|---|---|---|---|---|
+| Shell: left rail | Brand in Abril; `orn-rule` between groups | Theme toggle segmented | Week numeral in `.hud-frame` | — | Filmstrip rail |
+| Shell: bottom tabs, mobile bar | — | — | Week numeral readout | — | — |
+| More sheet, dialogs, palette | Title in Abril | Buttons; `--shadow-overlay` | — | — | — |
+| Toasts | — | Pop border + offset shadow; status colour as left bar | — | — | — |
+| Landing hero | Playbill title block in `.playbill-frame`, display size | Primary CTA (Lumen, restyled through props/tokens) | `.hud-grid`; CRT canvas framed as the "screen" | `.aurora--live` + grain | — |
+| Landing below the fold | Working headers, `orn-rule-diamond` between sections | Start-date form controls | Module week ranges | — | Module filmstrip |
+| Dashboard | Working headers | Primary "Open this week" | Progress line in `.hud-frame` | Static band | Filmstrip |
+| `/plan` | Playbill title block; module heads in `.playbill-frame` with Roman eyebrows | — | Hours, ratios | Static band | Card frames, splice |
+| `/week/:n` | Playbill title block in `.playbill-frame`; Abril section heads | Checkboxes (brass checked), badges | Hours, timecode | Static band | Clapper stripe on assignment |
+| `/library` | Working header | Chips, badges, view toggle, palette | Result count in `.hud-frame` | Static band | — |
+| `/toolkit` | Working header | Badges | First-week column mono | Static band | — |
+| `/capstone` | Playbill title block | Status segmented control | Stage `NN / 08` readouts | Static band | Vertical filmstrip of stages |
+| Capstone ceremony | `.playbill-frame` around the badge | Continue button | — | `.aurora--live` + grain | — |
+| `/about`, legal, contact, thank-you, 404 | Working header; decode heading on about | Buttons, form controls | — | Static band (about only) | — |
+| Cookie banner, sticky CTA | — | Buttons, 2px pop border, offset shadow | — | — | — |
+| Resource card, gap card | Title Inter 600 | Badges only | Verified date, minutes mono | — | — |
 
-### 7.0 Vendored, not installed (verified Oct 22, 2026)
+---
 
-**Do not `npm install @designcodeio/threeui`.** The published package (v1.2.0) declares two pinned Three.js copies as real dependencies — `"three128": "npm:three@0.128.0"` and `"three165": "npm:three@0.165.0"` — *plus* `three: ">=0.149 <1"` as a peer dependency. Installing it drops three Three.js copies into `node_modules`.
+## 7. ThreeUI governance (unchanged from v1 except styling)
 
-None of the four components below import Three.js. Their import graphs were checked directly: `crt` is hand-rolled raw WebGL1 (`canvas.getContext("webgl")` with inline GLSL strings in `crtShaders.ts`), `lumen-cta` is pure CSS, `spark-badge` is canvas/DOM, and `articleHeadingDecode.ts` has no imports at all. Combined source is ~47KB uncompressed (~12–15KB gzipped).
-
-**Therefore: vendor the source files into `src/vendor/threeui/`** with the upstream MIT notice and a `SOURCE.md` recording the commit they were copied from. This avoids the triple-Three.js install, avoids the full-HTML-document asset-copy problem, and keeps the bundle honest. The tradeoff — no upstream updates — is acceptable for four decorative files. Upstream license: MIT.
-
-### 7.1 Approved surfaces (exhaustive — do not add more without a spec change)
-
-| Surface | Component | Files to vendor | Notes |
-|---|---|---|---|
-| First-run landing hero (`/` with no stored progress) | **`crt`** (`CrtBackground`) | `CrtBackground.tsx`, `crtRenderer.ts`, `crtShaders.ts`, `crtScreens.ts` (~40KB) | Phosphor/scanline is literally about the image-making medium and pairs with the product name. `crtRenderer` **throws** when WebGL is unavailable (`"CRT requires WebGL"`) — the mount must be wrapped in try/catch with the poster fallback. Alternative if it reads too retro: `condensation` (also three-free, same raw-WebGL pattern). |
-| Landing primary CTA | **`lumen-cta`** | `LumenCta.tsx`, `lumen-cta.css` (~2.2KB) | Pure CSS, no canvas. Only on the first-run landing; everywhere else the primary action is a shadcn `Button`. |
-| Capstone-complete ceremony | **`spark-badge`** | `SparkBadge.tsx` (~1.4KB) | Fires once, when the final capstone stage flips to `done`. The single most emotionally important moment in the app. |
-| `/about` heading, and the landing H1 | **`article-headings`** | `articleHeadingDecode.ts` (~3.3KB) | **Verified three-free and import-free.** A DOM text-decode effect over a character pool, so it is cheap enough for any route. Still honours reduced-motion by rendering the final string immediately. |
-
-Explicitly **not** used: every full-screen background other than the hero one, `shader-buttons`, `circle-buttons`, `rectangle-buttons`, `liquid-metal-button`, `skeuomorphic-toggle`, `uplink-loader`. Loading states are CSS skeletons; toggles and buttons are shadcn.
-
-### 7.2 Hard rules
-
-1. **One WebGL surface mounted at a time, app-wide.** Enforce with a module-level singleton guard that refuses a second mount and logs in dev.
-2. **Forbidden routes:** `/plan`, `/week/:n`, `/library`, `/toolkit`, `/capstone` (except the one-shot completion ceremony), and `/` in returning-learner state. No exceptions.
-3. **Lazy only.** `React.lazy` + dynamic import for the canvas components, so the hero chunk never enters the app-shell graph. A build assertion fails if any vendored canvas module appears in the main chunk, or if `three` appears in the bundle at all (it should never be installed — see §7.0).
-4. **Never blocks LCP.** Hero headline, eyebrow, and CTA paint from the static poster. The canvas fades in afterwards over `--dur-slow`.
-5. **Poster-first on constrained devices.** Serve a static WebP first-frame poster instead of mounting the canvas when any of: viewport `< 768px`, `navigator.hardwareConcurrency <= 4`, `navigator.deviceMemory <= 4`, `connection.saveData === true`, or `prefers-reduced-motion: reduce`. Phones get the *look*, not the render loop — this is how "equal weight to mobile and desktop" is honoured without cooking the device.
-6. **Pause aggressively.** `IntersectionObserver` pauses the render loop off-screen; `visibilitychange` pauses on tab blur. A paused loop must not `requestAnimationFrame`.
-7. **FPS guard.** Sample frame time for 2s after mount; if sustained below 30fps, unmount the canvas and swap to the poster. (ThreeUI ships a `PreviewFpsMeter` worth reading for reference.)
-8. **No full-HTML-document components.** Several ThreeUI components render complete HTML docs and expect runtime files at root-relative URLs. None of the four approved components do, and that is part of why they were chosen. Do not substitute a component that does.
-9. **WebGL context loss.** `crtRenderer` throws rather than returning null when `getContext("webgl")` fails. Wrap the mount in try/catch and also handle the `webglcontextlost` event by unmounting to the poster. The learner never sees an error.
+Vendored, never installed; files in `src/vendor/threeui/` stay unmodified and are restyled only through props and tokens. Approved surfaces: CRT (landing hero), Lumen CTA (landing primary action), SparkBadge (capstone ceremony), `articleHeadingDecode` (landing H1, `/about` H1). One WebGL surface at a time; forbidden on learning routes and on `/` for a returning learner; lazy only; never blocks LCP; poster-first on constrained devices (viewport < 768, ≤ 4 cores, ≤ 4GB memory, save-data, reduced motion); pause off-screen and on hidden tab; 2s FPS guard below 30fps; unmount to poster on context loss. The poster is recaptured in R4 against the new hero.
 
 ### 7.3 Performance budgets
 
-| Scope | JS (gzipped, first load) | Target |
+| Scope | JS gzipped, static graph before first paint | Target |
 |---|---|---|
-| App shell + any learning route (`/plan`, `/week/:n`, `/library`, `/toolkit`, `/capstone`) | **≤ 160KB** | Lighthouse mobile ≥ 90, LCP < 2.0s on throttled 4G |
-| First-run landing + `/about` (lazy canvas chunk, loaded after LCP) | **+ ≤ 25KB** | Lighthouse mobile ≥ 90; LCP paints from the poster regardless |
+| App shell + any learning route (`/plan`, `/week/:n`, `/library`, `/toolkit`, `/capstone`) | **≤ 160KB**, enforced per route by `scripts/assert-bundle.ts` | Lighthouse mobile ≥ 90, LCP < 2.0s on throttled 4G |
+| Landing + `/about` canvas chunk, after LCP | + ≤ 25KB | Lighthouse mobile ≥ 90 |
 
-The 160KB figure is deliberately *tighter* than the original PRD's 200KB: WebGL is quarantined to two routes and, per §7.0, Three.js is never installed at all.
-
-The +25KB figure replaces an earlier +260KB allowance that assumed Three.js. Since all four approved components are three-free and total ~12–15KB gzipped, the atmosphere layer is close to free. **Do not spend the difference** — it was never headroom, it was a wrong assumption.
+"Static graph before first paint" is the entry plus the route's static imports. Chunks loaded from a mount effect (deferred chrome, the Fuse index) are outside it; R0.1 records the 3-second totals. Fonts and CSS are not in the JS budget, which is why ornaments, halftone, HUD frames and aurora are CSS. Headroom after R0: `/week/:n` ≈ 6KB, `/library` ≈ 12KB, `/plan` ≈ 30KB. `ENTRY_GZIP_LIMIT` and `LEARNING_ROUTES` are not changed to make a phase pass; a miss is reported.
 
 ---
 
 ## 8. Accessibility (non-negotiable)
 
-- Contrast verified in **both** modes. Every value in §2 is pre-checked; any new color must be checked before merge.
-- Focus: `outline: 2px solid var(--accent-primary); outline-offset: 2px`. Never `outline: none` without a replacement. Focus is visible on every interactive element including cards and filmstrip frames.
-- Touch targets ≥ **48×48px** with ≥ 8px separation. The week checklist checkbox has a 48px hit area even though the visual box is 20px.
-- Skip-to-content link as the first focusable element.
-- Keyboard: the week checklist is arrow-navigable; the library command palette opens on `/` and `⌘K`; Escape closes every overlay; tab order matches visual order.
-- `aria-live="polite"` on progress changes ("Week 7 complete, 7 of 16") and on library result counts.
-- Icon-only buttons carry `aria-label`. Icons come from **Lucide** only — no emoji, ever.
-- All imagery has alt text; decorative canvases and grain overlays are `aria-hidden`.
-- `prefers-reduced-motion` honoured per §4.
+- Contrast in both themes, enforced by the R2 contrast test; aurora and pop pairs included.
+- Focus: `outline: 2px solid var(--accent-primary); outline-offset: 3px`, visible on every interactive element including filmstrip frames and chips.
+- Touch targets ≥ 48×48px, ≥ 8px apart; the offset shadow does not count toward the target and needs its own 3px clearance inside the 8px gap.
+- Skip link first. `/` and ⌘K open the palette. Escape closes every overlay and focus returns to its trigger. Radio groups are one tab stop with arrows that stop at the ends.
+- `aria-live="polite"` on progress changes and result counts.
+- Lucide icons only, no emoji. Ornaments, grain, aurora and canvases are decorative and invisible to assistive tech.
+- `prefers-reduced-motion` honoured per §4 and §5.4.
 
 ---
 
-## 9. shadcn/ui component inventory
+## 9. shadcn/ui inventory
 
-Install only these: `button` · `checkbox` · `card` · `badge` · `tabs` · `accordion` · `dialog` · `command` · `sheet` · `progress` · `separator` · `tooltip` · `sonner` · `select` · `toggle-group` · `scroll-area` · `skeleton` · `switch` · `alert` · `table` · `popover` · `collapsible` · `textarea`.
-
-Mapping to app needs: `command` → library fuzzy search · `toggle-group` → library filter chips · `sheet` → mobile nav + mobile filters · `progress` → week/capstone progress (restyled to the filmstrip) · `textarea` → per-assignment notes · `table` → library's accessible table alternative to the card grid · `sonner` → export/import and link-check feedback.
+Unchanged from v1: `button` · `checkbox` · `card` · `badge` · `tabs` · `accordion` · `dialog` · `command` · `sheet` · `progress` · `separator` · `tooltip` · `sonner` · `select` · `toggle-group` · `scroll-area` · `skeleton` · `switch` · `alert` · `table` · `popover` · `collapsible` · `textarea`, plus `input`, `input-group` and `toggle` as dependencies. Primitives get the pop treatment through tokens and variant classes in R2; their behaviour and accessibility wiring are not rewritten.
