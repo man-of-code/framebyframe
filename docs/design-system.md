@@ -133,10 +133,12 @@ Three radial fields over `--bg-base`, never over a card. Literal CSS (R2 transcr
 ```css
 --aurora-strength: 0.20;  /* both themes */
 --aurora-fields:
-  radial-gradient(60% 80% at 15% 20%, rgba(79,224,194,var(--aurora-strength)), transparent 70%),
+  radial-gradient(60% 80% at 60% 95%, rgba(255,79,163,var(--aurora-strength)), transparent 70%),
   radial-gradient(55% 75% at 80% 10%, rgba(123,92,255,var(--aurora-strength)), transparent 70%),
-  radial-gradient(60% 80% at 60% 95%, rgba(255,79,163,var(--aurora-strength)), transparent 70%);
+  radial-gradient(60% 80% at 15% 20%, rgba(79,224,194,var(--aurora-strength)), transparent 70%);
 ```
+
+Layer order is part of the value: CSS paints the first gradient on top, and the contrast figures below assume teal at the bottom and magenta on top. With the order reversed, `--text-secondary` on the full stack drops to 4.57 (4.42 with band grain) and fails. (Amended in R2b.)
 
 Strength 0.20 is chosen so that even **all three fields stacked at full strength** keep `--text-primary` ≥ 7.2:1 and `--text-secondary` ≥ 4.86:1 (dark), and ≥ 9.5:1 and ≥ 5.25:1 (light). Overlap therefore never needs to be prevented.
 
