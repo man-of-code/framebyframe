@@ -121,6 +121,3 @@
   filter: saturate(1) contrast(1.12);
 }
 
-.slate-rule {
-  border-left: 2px solid var(--accent-warm);
-}

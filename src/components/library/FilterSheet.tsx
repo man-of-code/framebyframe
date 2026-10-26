@@ -23,7 +23,7 @@ export function FilterSheet(props: {
       <button
         ref={trigger}
         type="button"
-        className="filter-sheet-trigger"
+        className="filter-sheet-trigger pop pop--outline"
         aria-label={label}
         aria-haspopup="dialog"
         aria-expanded={open}

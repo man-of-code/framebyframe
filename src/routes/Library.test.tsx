@@ -41,6 +41,10 @@ function renderLibrary(path = "/library") {
   );
 }
 
+async function openMore() {
+  await userEvent.click(screen.getByRole("button", { name: /Week and language/ }));
+}
+
 describe("Library", () => {
   // The panels are React.lazy chunks. Warming them keeps findBy* inside its timeout when the
   // whole suite is transforming in parallel; the lazy boundary itself is unchanged.
@@ -88,6 +92,7 @@ describe("Library", () => {
 
   it("shows the Indian-language gap card for Tamil and no zero count", async () => {
     renderLibrary();
+    await openMore();
     await userEvent.click(screen.getByRole("button", { name: "Tamil" }));
     expect(screen.getByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeTruthy();
     expect(screen.getByText("Help wanted")).toBeTruthy();
@@ -98,6 +103,7 @@ describe("Library", () => {
 
   it("keeps the verified Hindi course on the Hindi facet", async () => {
     renderLibrary();
+    await openMore();
     await userEvent.click(screen.getByRole("button", { name: "Hindi" }));
     expect(screen.getByRole("link", { name: /Cursa/i })).toBeTruthy();
     expect(screen.getByRole("status").textContent).toBe("1 result");
@@ -113,6 +119,7 @@ describe("Library", () => {
 
   it("removes one active facet and clears the rest", async () => {
     renderLibrary();
+    await openMore();
     await userEvent.click(screen.getByRole("button", { name: "Tamil" }));
     await userEvent.click(screen.getByRole("button", { name: "Free" }));
     await userEvent.click(screen.getByRole("button", { name: "Remove Tamil" }));
@@ -125,11 +132,37 @@ describe("Library", () => {
 
   it("uses a table for the same results and records that view", async () => {
     renderLibrary("/library?q=Cursa&language=hi&type=course");
-    await userEvent.click(screen.getByRole("button", { name: "Table" }));
+    await userEvent.click(screen.getByRole("radio", { name: "Table" }));
     const table = screen.getByRole("table");
     expect(within(table).getByRole("link", { name: /Cursa/i })).toBeTruthy();
     expect(screen.getAllByRole("article").every((node) => node.classList.contains("library"))).toBe(true);
     expect(screen.getByTestId("url").textContent).toContain("view=table");
+  });
+
+  it("folds Week and Language behind a collapsed disclosure by default", async () => {
+    renderLibrary();
+    const trigger = screen.getByRole("button", { name: /Week and language/ });
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("button", { name: "Tamil" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Week 3" })).toBeNull();
+    // The other facets stay visible.
+    expect(screen.getByRole("button", { name: "YouTube" })).toBeTruthy();
+    await userEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: "Tamil" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Week 3" })).toBeTruthy();
+  });
+
+  it("opens the disclosure when a language value is selected", () => {
+    renderLibrary("/library?language=ta");
+    expect(screen.getByRole("button", { name: /Week and language/ }).getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: "Tamil" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("opens the disclosure when a week value is selected", () => {
+    renderLibrary("/library?week=3");
+    expect(screen.getByRole("button", { name: /Week and language/ }).getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: "Week 3" }).getAttribute("aria-pressed")).toBe("true");
   });
 
   it("shows an empty query as 0 results", async () => {
@@ -144,6 +177,7 @@ describe("Library", () => {
     renderLibrary();
     expect(screen.queryByRole("button", { name: "Tamil" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+    await userEvent.click(await screen.findByRole("button", { name: /Week and language/ }));
     await userEvent.click(await screen.findByRole("button", { name: "Tamil" }));
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("button", { name: /filters/i })));

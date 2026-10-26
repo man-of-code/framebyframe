@@ -4,7 +4,7 @@ import { DoneWhenChecklist } from "./DoneWhenChecklist";
 
 export function AssignmentCard({ assignment }: { assignment: Week["assignment"] }): JSX.Element {
   return (
-    <article className="assignment-card slate-rule">
+    <article className="assignment-card clapper-stripe">
       {assignment.brochureNo !== undefined ? (
         <p className="eyebrow">Brochure {assignment.brochureNo}</p>
       ) : null}

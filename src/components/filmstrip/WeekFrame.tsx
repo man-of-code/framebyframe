@@ -1,6 +1,7 @@
 import { useId, type JSX } from "react";
 import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
+import { BreakableTitle } from "@/components/BreakableTitle";
 import { TOTAL_WEEKS } from "@/lib/week";
 import "./filmstrip.css";
 
@@ -65,7 +66,7 @@ export function WeekFrame(props: {
       ) : null}
       {cell ? null : (
         <span id={titleId} className={card ? "week-frame-title" : "filmstrip-sr"}>
-          {title}
+          {card ? <BreakableTitle text={title} /> : title}
         </span>
       )}
       {card && (hours || ratio || stage) ? (

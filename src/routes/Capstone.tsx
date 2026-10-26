@@ -1,6 +1,7 @@
 import { useCallback, useState, type JSX } from "react";
 import "@/components/filmstrip/filmstrip.css";
 import { CeremonyBadge } from "@/components/atmosphere/CeremonyBadge";
+import { PlaybillHeader } from "@/components/PageHeader";
 import { StageList } from "@/components/capstone/StageList";
 import { capstone } from "@/content/capstone";
 import { WithProgress } from "@/hooks/ProgressProvider";
@@ -15,13 +16,11 @@ export function Capstone(): JSX.Element {
     <WithProgress>
       {(api) => (
         <article className="page prose-page">
-          <header className="stack">
-            <p className="eyebrow">Capstone</p>
-            <h1>Eight stages</h1>
-            <p className="page-copy">
-              Premise through submissions. Each stage lists the weeks it covers and the done-when checks from those weeks.
-            </p>
-          </header>
+          <PlaybillHeader
+            eyebrow="Capstone"
+            title="Eight stages"
+            note="Premise through submissions. Each stage lists the weeks it covers and the done-when checks from those weeks."
+          />
           <StageList
             stages={stages}
             capstone={api.progress.capstone}

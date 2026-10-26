@@ -68,7 +68,7 @@ describe("static atmosphere", () => {
     expect(frameOf("Wide").classList.contains("letterbox-185")).toBe(true);
   });
 
-  it("frames the landing hero, the week header, and a plan module", () => {
+  it("frames the landing hero in a letterbox, and the week header and a plan module in playbill frames", () => {
     render(
       <MemoryRouter>
         <LandingFrame />
@@ -78,12 +78,15 @@ describe("static atmosphere", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Frame by Frame" }).closest(".letterbox-239")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Open on an image" }).closest(".letterbox")).toBeTruthy();
+    const weekTitle = screen.getByRole("heading", { name: "Open on an image" });
+    expect(weekTitle.closest(".playbill-frame")).toBeTruthy();
+    expect(weekTitle.closest(".aurora")).toBeTruthy();
+    expect(weekTitle.closest(".letterbox")).toBeNull();
     expect(screen.getByRole("heading", { name: "Writing", level: 2 }).closest(".playbill-frame")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Writing", level: 2 }).closest(".letterbox")).toBeNull();
   });
 
-  it("leaves library cards ungained and marks the assignment with the slate rule", () => {
+  it("leaves library cards ungained and marks the assignment with the clapper stripe", () => {
     render(
       <>
         <ResourceCard resource={resource} />
@@ -91,6 +94,6 @@ describe("static atmosphere", () => {
       </>,
     );
     expect(screen.getByText("A ledger row").closest(".grain")).toBeNull();
-    expect(screen.getByText("Shoot one frame.").closest("article")?.classList.contains("slate-rule")).toBe(true);
+    expect(screen.getByText("Shoot one frame.").closest("article")?.classList.contains("clapper-stripe")).toBe(true);
   });
 });

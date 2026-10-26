@@ -1,15 +1,16 @@
 import { LifeBuoy } from "lucide-react";
 import type { JSX } from "react";
+import { Badge } from "@/components/ui/badge";
 import type { Gap } from "@/lib/types";
 import "./resource.css";
 
 export function GapCard({ gap }: { gap: Gap }): JSX.Element {
   return (
     <article className="gap-card">
-      <p className="help-chip">
-        <LifeBuoy aria-hidden="true" size={16} />
+      <Badge variant="warn" className="help-badge">
+        <LifeBuoy aria-hidden="true" />
         Help wanted
-      </p>
+      </Badge>
       <h3>{gap.missing}</h3>
       <p className="gap-copy">Searched for across three research passes.</p>
       {gap.attempted.length > 0 ? (

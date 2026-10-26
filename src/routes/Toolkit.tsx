@@ -1,6 +1,8 @@
-import { ExternalLink, TriangleAlert } from "lucide-react";
+import { ExternalLink, FlaskConical } from "lucide-react";
 import type { JSX } from "react";
 import { Link } from "react-router-dom";
+import { WorkingHeader } from "@/components/PageHeader";
+import { Badge } from "@/components/ui/badge";
 import { tools as allTools } from "@/content/tools";
 import "./pages.css";
 
@@ -11,14 +13,12 @@ export function Toolkit(): JSX.Element {
 
   return (
     <article className="page">
-      <header className="stack">
-        <p className="eyebrow">Toolkit</p>
-        <h1>Free software</h1>
-        <p className="page-copy">
-          Purpose, license, the official download, and the first week you need it.
-        </p>
-      </header>
-      <div className="table-wrap">
+      <WorkingHeader
+        eyebrow="Toolkit"
+        title="Free software"
+        note="Purpose, license, the official download, and the first week you need it."
+      />
+      <div className="table-wrap" data-lenis-prevent>
         <table className="tool-table">
           <caption className="visually-hidden">Free software for the curriculum</caption>
           <thead>
@@ -44,15 +44,15 @@ export function Toolkit(): JSX.Element {
                     <span className="visually-hidden"> (opens in a new tab)</span>
                   </a>
                 </td>
-                <td data-label="First week">
+                <td data-label="First week" className="mono-cell">
                   <Link to={`/week/${tool.firstWeek}`}>Week {tool.firstWeek}</Link>
                 </td>
                 <td data-label="Notes">
                   {tool.experimental ? (
-                    <p className="flag-chip">
-                      <TriangleAlert aria-hidden="true" size={16} />
+                    <Badge variant="exp">
+                      <FlaskConical aria-hidden="true" />
                       Experimental
-                    </p>
+                    </Badge>
                   ) : null}
                   {tool.limitations && tool.limitations.length > 0 ? (
                     <ul className="plain-list">

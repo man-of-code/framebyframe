@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import type { JSX } from "react";
 import type { CapstoneStage, Progress } from "@/lib/types";
 
@@ -44,11 +45,14 @@ export function StageList(props: {
         return (
           <li key={stage.id}>
             <article className="stage" data-status={status}>
-              <p className="eyebrow">
-                Stage {String(stage.order).padStart(2, "0")} / {String(stages.length).padStart(2, "0")}
-                {" · "}
-                {weekRange(stage.weeks)}
-              </p>
+              <div className="stage-head">
+                <div className="hud-frame">
+                  <p className={`hud-readout${status === "done" ? " hud-current" : ""}`}>
+                    <strong>{String(stage.order).padStart(2, "0")}</strong> / {String(stages.length).padStart(2, "0")}
+                  </p>
+                </div>
+                <p className="stage-weeks">{weekRange(stage.weeks)}</p>
+              </div>
               <h2>{stage.label}</h2>
               <ul className="criteria">
                 {stage.criteria.map((criterion, index) => (
@@ -60,7 +64,7 @@ export function StageList(props: {
                   <button
                     key={option}
                     type="button"
-                    className="status-choice"
+                    className="status-choice pop pop--outline pop--latch pop--seg"
                     role="radio"
                     aria-checked={status === option}
                     tabIndex={status === option ? 0 : -1}
@@ -76,6 +80,7 @@ export function StageList(props: {
                       change(stage.id, STATUSES[nextIndex]);
                     }}
                   >
+                    <Check aria-hidden="true" className="pop-check size-4" strokeWidth={3} />
                     {LABEL[option]}
                   </button>
                 ))}

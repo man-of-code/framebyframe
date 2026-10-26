@@ -1742,3 +1742,103 @@ Append below this line.
 #### Left open
 
 - The sticky mobile CTA still shows beside the page's own primary CTA (R4).
+
+### Redesign R3: Learning routes
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R3; `docs/design-system.md` §3.3, §5.1–5.5, §6
+
+#### Shipped
+
+- `src/components/PageHeader.tsx` + `src/styles/page-header.css` — `PlaybillHeader` (static `.aurora` band, eyebrow with fleurons, Abril title, diamond rule, centred; `framed` puts it in a `.playbill-frame` on `--bg-raised` and lets children sit inside the frame) and `WorkingHeader` (left-aligned, no fleurons, same band). Only the title block and its note sit directly on a band.
+- `src/lib/title.ts` (`toRoman`, `splitAtSlashes`) and `src/components/BreakableTitle.tsx` — a `<wbr>` after every `/`, text unchanged. Used by the week h1 and the card-variant `WeekFrame` title.
+- `/plan` (first commit, `295ec78`) — `PlaybillHeader` band; module heads are content-height `.playbill-frame` blocks with Roman eyebrows `MODULE I` … `MODULE VII`, the Abril h2 and a HUD readout (`WK 01–02 · 12h`); the buffer group is `WEEKS 13–16 · BUFFER`. The 450px letterbox head is gone.
+- `/week/:n` — `WeekHeader` is a framed playbill title block on the band (eyebrow `MODULE IV · CINEMATOGRAPHY`, h1 through `BreakableTitle`), with a `.hud-frame` readout (`WK 07 / 16 · 8h · Capstone …`), topic chips, a warn `Badge` for Heavy and the previous / next links inside the frame. The assignment card carries `.clapper-stripe` (6px band, clipped to the card radius); the Notes textarea now shows the `Textarea` primitive (2px `--border-strong`).
+- Resource and gap cards — `src/components/resource/badges.ts` maps a resource to pop badges (free lime, freemium / gray area / email-gated yellow, paid / benchmark magenta, experimental violet, level neutral outline), each with a Lucide icon and a word; `BadgeRow` renders them through `Badge`; the gap card's "Help wanted" is a warn `Badge`. Cards stay surface + border + Inter, verified date and minutes mono.
+- `/library` — `WorkingHeader`; result count in `.hud-frame`; Cards / Table is a joined `ToggleGroup` (single); Week and Language are folded into a `Collapsible` ("Week and language", `N selected` when set), closed by default and open whenever one of their values is selected; search, active chips, Clear all and the mobile Filters trigger use the pop kit (2px `--border-strong`); table header, rules, cost badge and mono verified date.
+- `/toolkit` — `WorkingHeader`; table header `--bg-inset` over a 2px `--border-strong` rule, hover row, mono first-week column, `Badge` (violet) for Experimental.
+- `/capstone` — `PlaybillHeader`; stages are the vertical filmstrip with `NN / 08` `.hud-frame` readouts (brass when done); the done stage is the brass wash over `--bg-raised` plus a 2px brass edge; status is a joined segmented control (`pop pop--outline pop--latch pop--seg`) on the existing radiogroup, roving tabindex and no-wrap handlers.
+- `src/components/filmstrip/filmstrip.css`, `WeekFrame.tsx` — film base `--border-default` with `--bg-inset` sprocket holes (ink tones); frames on the strip are opaque `--bg-inset` with the brass wash layered on top as a background image; hover, focus and active stay teal; card titles are 600 and break at slashes. The plan list keeps its sprockets at ≥ 768px (it had `background-image: none`).
+- Removed v1 classes whose only consumers moved: `.slate-rule`, `.meta-badge*`, `.help-chip`, `.flag-chip`, `.view-toggle`, `.view-button`, `.plan-intro`, `.week-header-body`, `.week-meta`. `.heavy-chip` stays in `pages.css` for the dashboard (R4). `Letterbox` stays for the landing hero.
+- Tests — new: Roman module eyebrows and framed heads (`Plan.test.tsx`), `splitAtSlashes` / `toRoman` (`title.test.ts`), `<wbr>` rendering incl. a real week title (`BreakableTitle.test.tsx`), pop badge mapping (`badges.test.ts`), disclosure collapsed by default and open for a selected language or week (`Library.test.tsx`). Changed because the markup legitimately moved: `atmosphere.test.tsx` asserts `.playbill-frame` / `.aurora` on the week header and plan module head and `.clapper-stripe` on the assignment card (not `.letterbox` / `slate-rule`; the landing hero Letterbox test is unchanged); `Library.test.tsx` opens "Week and language" before clicking Tamil / Hindi, and the Cards / Table control is now a `radio` (Radix single group).
+
+#### Verified
+
+- `npm test` → 36 files, 204 tests pass (was 33 / 190 at R2b.1, 34 / 194 after the `/plan` commit). `npx tsc -b --noEmit` → exit 0. `npm run build` → exit 0, no budget warnings.
+- Per-route sizes (JS gzip, target 160 KiB, ceiling 180 KiB): entry 131946 B (128.9 KB); Plan 133974 B (130.8 KB, was 130.3); Week 158572 B (154.9, was 153.6); Library 155688 B (152.0, was 148.2); Toolkit 135716 B (132.5, was 131.4); Capstone 134705 B (131.5, was 130.8). No route over target; Week has 5.1 KB left, Library 8 KB. Nothing new imports a canvas chunk.
+- `npm run e2e` → 1 passed (selectors unchanged: the `Type` group and `YouTube` chip are not folded). `npx oxlint` → 42 warnings, same as baseline (counted with the same command before and after).
+- Browser (Chromium, `vite preview` :4360): no horizontal overflow on `/plan`, `/week/7`, `/library`, `/toolkit`, `/capstone` at 360, 768 and 1440 in dark and light (30 of 30). The first pass found `/toolkit` at 768 overflowing by 18px (a nowrap badge in a 70px fixed-layout column); fixed with a scrolling wrapper (below).
+- Keyboard: `/library` — search → Tab enters the Cards / Table group as one stop; ArrowRight moves to Table, Space selects (`?view=table`); Tab → first chip shows a solid 2px outline, Space toggles it (`aria-pressed` true, `?type=youtube`); the disclosure takes focus with a 2px outline at offset 3px and its shadow layer at opacity 0, Enter opens and closes it (`aria-expanded` true / false). `/capstone` — ArrowLeft on To do stays on To do, ArrowRight twice reaches Done, a third stays on Done (no wrap), the focused radio has a 2px outline at 3px with shadow opacity 0, Tab leaves the group.
+- Screenshots: 31 PNGs in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r3/shots/` — `<route>-<width>-<theme>.png` for `plan`, `week-7`, `library`, `toolkit`, `capstone` × 360 / 768 / 1440 × dark / light (30) plus `week-7-assignment-1440-dark.png`. Looked at by eye: plan 1440 dark and 360 light, week 7 1440 dark and 360 light, assignment card, library 1440 dark (and with Tamil selected, disclosure open), toolkit 1440 light, capstone 1440 dark and 360 light. One defect found and fixed: capstone stage cards shrank to their content width inside the filmstrip.
+
+#### Decisions
+
+- **Decision:** the week header is a `.playbill-frame` on an opaque `--bg-raised` surface inside the `.aurora` band, and HUD readout, chips, Heavy badge and week links sit inside the frame, not on the band.
+  - **Because:** §2.5 allows only `--text-primary` / `--text-secondary` directly on a band; §6 asks for the title block "in `.playbill-frame`" on a band, and the ceremony row uses the same frame-over-aurora pattern.
+  - **Rejected:** putting the readouts below the band (separates them from the title) or on the band (fails the §2.5 rule).
+  - **Risk:** the aurora shows only as a 32–48px margin around the frame on the week page; whether that reads as a band is a taste call.
+  - **Deviation:** no
+- **Decision:** `/plan` and `/capstone` put the title block straight on the band (no frame), and the plan's HUD figures live in the module heads (`WK 01–02 · 12h`), not in the band.
+  - **Because:** §6 asks for a frame only on `/week/:n`; a count readout is not allowed on a band.
+  - **Rejected:** a hud-frame count under the band.
+  - **Risk:** the module-head readout format is mine.
+  - **Deviation:** no
+- **Decision:** the buffer eyebrow reads `Weeks 13–16 · Buffer` while the heading stays "Buffer".
+  - **Because:** the task names it; the heading keeps the region's accessible name and the existing tests.
+  - **Rejected:** none.
+  - **Risk:** the word appears twice in the head.
+  - **Deviation:** no
+- **Decision:** module heads are left-aligned `.playbill-frame` blocks with no fleurons or diamond; only the page title block is centred and ornamented.
+  - **Because:** §3.3 limits the centred playbill title block to hero-like headers; seven fleuron eyebrows down a list would be noise.
+  - **Rejected:** centred module heads.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the library disclosure is "Week and language"; it follows the selection until the learner opens or closes it themselves (`open = chosen ?? selected > 0`), and shows `N selected` when collapsed with a value set.
+  - **Because:** the spec says collapsed by default and open when a value is selected, and a URL such as `?language=ta` must show its pressed chip; letting the learner collapse it avoids a trapped panel.
+  - **Rejected:** forcing it open while anything is selected (a trigger that does nothing); a native `<details>` (no animation hook, different keyboard story).
+  - **Risk:** after the learner closes it by hand, a later selection from the active-filter chips does not reopen it (the active chips still show every selection).
+  - **Deviation:** no
+- **Decision:** the Cards / Table control uses the Radix single `ToggleGroup`, so its items are `role="radio"` (were `button` with `aria-pressed`); the existing test was updated.
+  - **Because:** §5.2 names `ToggleGroup` for it.
+  - **Rejected:** keeping the buttons and styling them by hand.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the capstone status control keeps its hand-rolled radiogroup and takes the joined look through classes (`pop pop--outline pop--latch pop--seg` plus a `Check` child) rather than switching to `ToggleGroup`.
+  - **Because:** Radix groups move focus on arrows without selecting and can wrap; the existing behaviour (arrows select, stop at the ends so Done cannot fire by accident) and its tests must stay.
+  - **Rejected:** `ToggleGroup type="single" loop={false}` plus an `onKeyDown` shim.
+  - **Risk:** two implementations of the same look (`ToggleGroup` and these buttons) must be kept in step.
+  - **Deviation:** no
+- **Decision:** filmstrip frames on a vertical or horizontal strip get an opaque `--bg-inset` surface, the strip base is `--border-default`, and the grid rail cells stay transparent; the brass wash is a background image over the surface colour.
+  - **Because:** §5.5 puts `--bg-inset` holes on `--border-default`; text must never sit on the film base, and a wash that replaced the surface would have let the base show through.
+  - **Rejected:** frames transparent over the base (tertiary text on `--border-default` is far below 4.5:1).
+  - **Risk:** the card variant's contrast over the wash is covered by the §2.8 wash-over-inset row only for `--accent-warm`, not for `--text-tertiary` mono labels.
+  - **Deviation:** no
+- **Decision:** Toolkit's Experimental flag uses `FlaskConical` (was `TriangleAlert`) so the violet badge matches the resource cards.
+  - **Because:** §2.1 gives experimental its own hue; one icon per meaning.
+  - **Rejected:** keeping the warning triangle on a violet badge.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** on the Toolkit table, the wrapper scrolls horizontally at ≥ 768px (`min-width: 44rem` on the table, `data-lenis-prevent`).
+  - **Because:** pop badges do not wrap, and six columns beside the 240px rail are too narrow at 768; the page itself must not scroll.
+  - **Rejected:** letting the badge wrap mid-word.
+  - **Risk:** at 768–~1000px the table needs a short horizontal scroll to reach Notes.
+  - **Deviation:** no
+- **Decision:** header copy I wrote: plan note "Twelve core weeks in seven modules, then a four-week buffer."; library eyebrow "Verified resources" and note "Search by title or topic, or filter by type, level, cost and status."
+  - **Because:** the bands need an eyebrow and the library's old eyebrow repeated its title.
+  - **Rejected:** leaving the repeated eyebrow.
+  - **Risk:** copy is unreviewed.
+  - **Deviation:** no
+- **Decision:** the week page keeps `max-width: var(--container-prose)`, so its band is prose width, not the full content width.
+  - **Because:** the page already used that width and the plan did not name a change.
+  - **Rejected:** widening only the header.
+  - **Risk:** the band is narrower than on the other learning routes.
+  - **Deviation:** no
+
+#### Left open
+
+- Not browser-checked: the Library filter sheet (below 768px) with the new disclosure inside it was covered by the unit test and class review only; the dashboard filmstrip (shares `filmstrip.css`, R4's surface) was not looked at after the sprocket and frame change; of the 768 shots only `plan-768-dark` and `library-768-dark` were opened.
+- The plan's card-variant frames still print `MODULE 1` (Arabic, mono) under a `MODULE I` head. §3.3 allows Arabic outside eyebrows, so it stays, but the pairing looks repetitive; a reviewer may want the label dropped on `/plan`.
+- The 12px gap between pop controls holds for chips, the active-chip row and the disclosure; the Cards / Table group and the capstone segments are joined by design.
+- `Letterbox`, `.letterbox*` CSS and the landing hero are untouched (R4). `.heavy-chip` (dashboard) remains in `pages.css`.
+- Contrast was asserted by tokens only; no new token pairs were added, but the badge and HUD pairs were not re-measured in the browser.
