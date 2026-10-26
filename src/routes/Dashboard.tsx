@@ -5,39 +5,17 @@ import { StartDateControl } from "@/components/dashboard/StartDateControl";
 import { NextTasks } from "@/components/dashboard/NextTasks";
 import { FilmstripRail } from "@/components/filmstrip/FilmstripRail";
 import { content } from "@/content";
+import { BUFFER_TITLE, MODULES } from "@/content/modules";
 import { WithProgress, type ProgressApi } from "@/hooks/ProgressProvider";
 import { useCurrentWeek } from "@/hooks/useCurrentWeek";
 import { countDone } from "@/lib/progress";
 import type { Progress, Week } from "@/lib/types";
-import { nextIncompleteTasks, TOTAL_WEEKS } from "@/lib/week";
+import { formatHours, nextIncompleteTasks, TOTAL_WEEKS, weekCompletion, weekMinutes } from "@/lib/week";
 import { Landing } from "@/routes/Landing";
 import "./pages.css";
 
-const MODULES: Record<number, string> = {
-  1: "Writing",
-  2: "Pre-production",
-  3: "Directing",
-  4: "Cinematography",
-  5: "Editing and Sound",
-  6: "Post-production and VFX",
-  7: "Marketing, Distribution and Career",
-};
-
 function pad(n: number): string {
   return String(n).padStart(2, "0");
-}
-
-function coreMinutes(week: Week): number {
-  return week.tasks.filter((task) => task.core).reduce((sum, task) => sum + task.minutes, 0);
-}
-
-function formatHours(minutes: number): string {
-  if (minutes <= 0) return "0h";
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hours === 0) return `${mins}m`;
-  if (mins === 0) return `${hours}h`;
-  return `${hours}h ${mins}m`;
 }
 
 function totals(progress: Progress): { weeksDone: number; tasksDone: number; tasksTotal: number } {
@@ -45,10 +23,7 @@ function totals(progress: Progress): { weeksDone: number; tasksDone: number; tas
   let tasksDone = 0;
   let tasksTotal = 0;
   for (const week of content.weeks) {
-    const core = week.tasks.filter((task) => task.core);
-    if (core.length > 0 && countDone(progress, core.map((task) => task.id)) === core.length) {
-      weeksDone += 1;
-    }
+    if (weekCompletion(week, progress).complete) weeksDone += 1;
     tasksTotal += week.tasks.length;
     tasksDone += countDone(progress, week.tasks.map((task) => task.id));
   }
@@ -158,10 +133,10 @@ function Dashboard({ api }: { api: ProgressApi }): JSX.Element {
 
 function WeekCard(props: { week: Week; heading: "h1" | "h2" }): JSX.Element {
   const { week, heading: Heading } = props;
-  const moduleTitle = MODULES[week.module] ?? "Buffer";
+  const moduleTitle = MODULES.find((item) => item.n === week.module)?.title ?? BUFFER_TITLE;
   const moduleBit = week.module > 0
     ? `Module ${pad(week.module)} · ${moduleTitle}`
-    : "Buffer";
+    : BUFFER_TITLE;
 
   return (
     <section className="dash-card" aria-labelledby="current-week-heading">
@@ -170,7 +145,7 @@ function WeekCard(props: { week: Week; heading: "h1" | "h2" }): JSX.Element {
         {` · ${moduleBit}`}
       </p>
       <Heading id="current-week-heading">{week.title}</Heading>
-      <p className="mono">~{formatHours(coreMinutes(week))} core</p>
+      <p className="mono">~{formatHours(weekMinutes(week))}</p>
       {week.heavy ? (
         <p className="heavy-chip">
           <TriangleAlert aria-hidden="true" size={16} />

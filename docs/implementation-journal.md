@@ -1279,3 +1279,76 @@ Append below this line.
 - A client that does not run JavaScript gets the title in `index.html` and no meta description.
 - The contact form cannot deliver mail.
 - No postal address.
+
+### Redesign R0: Correctness fixes
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R0
+
+#### Shipped
+
+- `src/routes/Dashboard.test.tsx` — the dual-state test runs on a frozen clock (`2026-10-24`), so it no longer fails from 2026-10-29. Committed alone first (`79427f4`).
+- `src/lib/progress.ts` — import drops a `startDate` that fails `startDateError`, and a `weekOverride` that is not an integer in 1–16.
+- `src/lib/week.ts` — `checkId`, `weekCompletion` (every core task and every done-when check), `weekMinutes` (all task minutes), `formatHours`. Filmstrip, plan, dashboard, week page and the done-when checklist use them.
+- `src/content/modules.ts` — the one module list; the three copies are gone.
+- Content imports per collection. Only `Week`, `Dashboard` and the library touch `resources`.
+- `scripts/assert-bundle.ts` — limit back to `160 * 1024`; `assertRoutes` measures entry + each learning route through `dist/.vite/manifest.json` and rejects canvas code on those routes. `vite.config.ts` sets `build.manifest`.
+- Deferred until needed: Fuse (`src/lib/search-index.ts`, substring match until it loads), the cmdk palette (`usePaletteShortcut` stays eager), the virtualizer (`VirtualResultsGrid`), sonner's `Toaster` (moved into the deferred `LaunchChrome`), the More sheet and the mobile filter sheet (eager trigger buttons, lazy panels, focus returned to the trigger on close).
+- `scripts/finalize-dist.ts` — stamps `dist/sw.js` with a build id from `index.html`; writes `robots.txt`, plus `sitemap.xml` with absolute URLs only when `SITE_ORIGIN` is set. `public/robots.txt` and `public/sitemap.xml` removed.
+- `public/sw.js` — cache name `fbf-<build id>`; `/assets` cached only when the content type is JS, CSS, font, image or wasm. `vercel.json` rewrite is `/((?!assets/).*)`.
+- `src/components/week/NotesField.tsx` — adopts an imported note unless the field has an unsaved edit.
+- `src/components/capstone/StageList.tsx` — status radiogroup is one tab stop with arrow-key movement.
+- `src/content/site.ts` is the only place the contact address appears; `form.test.ts` uses a fixture address.
+- `docs/prd.md` — lines 6, 35 and §8 amended for consent-gated Vercel Web Analytics.
+- Removed `src/App.css`, `src/assets/{hero.png,react.svg,vite.svg}`, `public/icons.svg`.
+- Chromium installed for Playwright.
+
+#### Verified
+
+- `npm run validate` → 138 resources, 16 weeks, 9 gaps, 22 tools, 8 stages.
+- `npm test` → 153 passed, 28 files. `npx tsc -b --noEmit` → exit 0.
+- `npm run build` → exit 0. Gzipped graphs, before → after: entry 164.3 → 128.7 KB; `/plan` 164.3 → 130.4; `/week/:n` 171.0 → 153.9; `/library` 190.9 → 148.3; `/toolkit` 131.5; `/capstone` 130.9. All under 160KiB with the limit unchanged.
+- `npm run e2e` → 1 passed.
+- Production preview in Chromium: More sheet and mobile Filters sheet open, close, and return focus to their trigger; Tamil in the sheet writes `language=ta` and badges "Filters, 1 applied"; "blockng" finds 2 results after Fuse loads; ⌘K opens the palette; no console errors.
+- `NotesField.test.tsx` fails without the resync effect and passes with it.
+- `npx oxlint` → 42 warnings (41 before R0), 0 errors.
+
+#### Decisions
+
+- **Decision:** A week is complete when every core task and every done-when check is done; weeks with no tasks complete on checks alone. Frame ratios count the same ids, so week 1 reads `0/5` and buffer weeks `0/2`.
+  - **Because:** the dashboard could never reach 16/16, and a week read as complete while its assignment was untouched.
+  - **Rejected:** counting stretch tasks; checks-only completion.
+  - **Risk:** learners who ticked every task before this change see those weeks as unexposed until they tick the checks.
+  - **Deviation:** yes. Plan step (v1 Task 9 decision): "A week is exposed only when it has at least one core task and every core task id is done." Did this instead: core tasks plus done-when checks. `Plan.test.tsx` updated to `0/5` and to tick the checks.
+- **Decision:** Hours everywhere are all task minutes, stretch included, formatted `Nh` or `Nh Mm`. The dashboard's "core" suffix is gone.
+  - **Because:** v1 Task 5 recorded the ledger estimate as the sum of all task minutes; the plan and week pages already used it.
+  - **Rejected:** core-only minutes everywhere, which would contradict the ledger estimate.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** `searchResources` accepts `index: null` and falls back to a case-insensitive substring match over title, why and topics while Fuse loads. `createIndex` moved to `src/lib/search-index.ts`.
+  - **Because:** any static import of a module that calls `new Fuse` keeps Fuse in the library's first load.
+  - **Rejected:** a blank or unfiltered result list until the index arrives.
+  - **Risk:** for a few milliseconds after load a typed query is substring-matched, not fuzzy.
+  - **Deviation:** yes. Plan step (v1 Task 12 interface): `createIndex` exported from `src/lib/search.ts`. Did this instead: exported from `src/lib/search-index.ts`; `search.test.ts` imports it from there.
+- **Decision:** Lazily loaded panels (palette, More sheet, filter sheet) mount on first open and stay mounted; their triggers are plain buttons with `aria-haspopup="dialog"` and `aria-expanded`.
+  - **Because:** unmounting on close would drop the close animation; without `SheetTrigger`, focus return has to be explicit.
+  - **Rejected:** loading the panels on hover or idle.
+  - **Risk:** the first open waits for a small chunk.
+  - **Deviation:** no
+- **Decision:** `finalize-dist.ts` throws when `dist/sw.js` has no placeholder, so it runs once per build.
+  - **Because:** a silently unstamped worker would reuse one cache name across deploys.
+  - **Rejected:** a no-op on a second run.
+  - **Risk:** running the script twice on the same `dist` fails; `npm run build` runs it once.
+  - **Deviation:** no
+- **Decision:** `vercel.json` is verified by a unit test of the rewrite pattern, not a preview fetch.
+  - **Because:** `vite preview` ignores `vercel.json`.
+  - **Rejected:** a preview 404 check, which proves nothing about Vercel.
+  - **Risk:** the test uses JavaScript `RegExp`; Vercel uses path-to-regexp. The lookahead group is supported by both, but this was not checked against a deploy.
+  - **Deviation:** no
+
+#### Left open
+
+- `SITE.email` still holds the Gmail address until the user supplies the dedicated one.
+- No `SITE_ORIGIN`, so production ships `robots.txt` without a sitemap.
+- The Vercel rewrite and the service-worker content-type check have not been exercised on a real deploy.

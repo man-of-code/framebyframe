@@ -1,4 +1,4 @@
-/** Published contact. The email is the git author address. No postal address exists in this repo. */
+/** Published contact: the only place the address lives. Swap in the dedicated address when it exists. */
 export const SITE = {
   name: "Frame by Frame",
   email: "mratyunjay.soni@gmail.com",

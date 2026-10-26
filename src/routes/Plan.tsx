@@ -2,19 +2,10 @@ import { useOutletContext } from "react-router-dom";
 import { FilmstripRail } from "@/components/filmstrip/FilmstripRail";
 import { ModuleGroup } from "@/components/plan/ModuleGroup";
 import "@/components/plan/plan.css";
+import { MODULES } from "@/content/modules";
 import { weeks } from "@/content/weeks";
 import { useCurrentWeek } from "@/hooks/useCurrentWeek";
 import type { ShellOutletContext } from "@/routes/Root";
-
-const MODULES = [
-  { n: 1, title: "Writing" },
-  { n: 2, title: "Pre-production" },
-  { n: 3, title: "Directing" },
-  { n: 4, title: "Cinematography" },
-  { n: 5, title: "Editing and Sound" },
-  { n: 6, title: "Post-production and VFX" },
-  { n: 7, title: "Marketing, Distribution and Career" },
-] as const;
 
 const BUFFER_REASON =
   "No mentors, no supplied footage, and thin brochure coverage in sound and VFX.";

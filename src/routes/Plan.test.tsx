@@ -41,7 +41,8 @@ describe("Plan", () => {
     const week = within(screen.getByRole("region", { name: "Writing" })).getByRole("link", { name: /WK 01/ });
     expect(week.getAttribute("href")).toBe("/week/1");
     expect(week.textContent).toMatch(/5h/);
-    expect(week.textContent).toMatch(/0\/3/);
+    // 3 core tasks + 2 done-when checks.
+    expect(week.textContent).toMatch(/0\/5/);
     expect(week.textContent).toMatch(/Premise/);
   });
 
@@ -49,7 +50,13 @@ describe("Plan", () => {
     renderPlan({
       ...emptyProgress,
       weekOverride: 7,
-      done: { "w1-watch": true, "w1-read": true, "w1-do": true },
+      done: {
+        "w1-watch": true,
+        "w1-read": true,
+        "w1-do": true,
+        "w1-assignment:check:0": true,
+        "w1-assignment:check:1": true,
+      },
     });
 
     const writing = screen.getByRole("region", { name: "Writing" });

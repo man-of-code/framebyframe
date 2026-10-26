@@ -1,6 +1,7 @@
 import { useState, type JSX } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WithProgress, type ProgressApi } from "@/hooks/ProgressProvider";
+import { checkId } from "@/lib/week";
 
 export function DoneWhenChecklist(props: { assignmentId: string; checks: string[] }): JSX.Element {
   return (
@@ -25,7 +26,7 @@ function ChecklistBody({
     <>
       <ul className="check-list" aria-label="Done when">
         {checks.map((check, index) => {
-          const id = `${assignmentId}:check:${index}`;
+          const id = checkId(assignmentId, index);
           const done = api.progress.done[id] === true;
           return (
             <li key={id}>

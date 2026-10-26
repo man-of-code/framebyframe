@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import { Link } from "react-router-dom";
 import { ExportImport } from "@/components/ExportImport";
 import { NAV_ITEMS } from "@/components/nav/items";
@@ -18,17 +19,28 @@ const MORE_LINKS = NAV_ITEMS.filter((item) => item.to === "/toolkit" || item.to 
 export function MoreSheet({
   open,
   onOpenChange,
+  returnFocus,
   progress,
   replace,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  returnFocus: RefObject<HTMLButtonElement | null>;
   progress: Progress;
   replace: (progress: Progress) => void;
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="more-sheet" showCloseButton={false}>
+      <SheetContent
+        side="bottom"
+        className="more-sheet"
+        showCloseButton={false}
+        onCloseAutoFocus={(event) => {
+          // No SheetTrigger, so Radix has no element to return focus to.
+          event.preventDefault();
+          returnFocus.current?.focus();
+        }}
+      >
         <SheetHeader>
           <SheetTitle>More</SheetTitle>
         </SheetHeader>

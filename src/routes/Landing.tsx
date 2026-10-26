@@ -6,21 +6,12 @@ import { HeroCanvas } from "@/components/atmosphere/HeroCanvas";
 import { Letterbox } from "@/components/atmosphere/Letterbox";
 import "@/components/filmstrip/filmstrip.css";
 import { gaps } from "@/content/gaps";
+import { MODULES } from "@/content/modules";
 import { weeks as allWeeks } from "@/content/weeks";
 import type { ProgressApi } from "@/hooks/ProgressProvider";
 import { startDateError } from "@/lib/form";
 import { LumenCta } from "@/vendor/threeui/lumen-cta/LumenCta";
 import "./pages.css";
-
-const MODULES = [
-  { n: 1, title: "Writing" },
-  { n: 2, title: "Pre-production" },
-  { n: 3, title: "Directing" },
-  { n: 4, title: "Cinematography" },
-  { n: 5, title: "Editing and Sound" },
-  { n: 6, title: "Post-production and VFX" },
-  { n: 7, title: "Marketing, Distribution and Career" },
-] as const;
 
 function useDocumentLight(): boolean {
   const [light, setLight] = useState(() => document.documentElement.classList.contains("light"));

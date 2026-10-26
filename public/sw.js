@@ -1,8 +1,12 @@
 /* Hashed /assets are cache-first. Navigations are stale-while-revalidate:
    the last response for a visited URL is served immediately, including offline,
    and an online visit replaces it. A pure cache-first shell would keep a stale
-   index.html until this file itself changed. */
-const CACHE = "fbf-shell-v1";
+   index.html until this file itself changed.
+   __BUILD_ID__ is replaced after `vite build` by scripts/finalize-dist.ts, so each deploy
+   gets a fresh cache and activate() drops the previous deploy's assets. */
+const CACHE = "fbf-__BUILD_ID__";
+// Only real static assets are cached; an HTML fallback served for a missing chunk is not.
+const CACHEABLE = /javascript|css|font|image|wasm/;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(["/"])));
@@ -35,7 +39,8 @@ async function cacheFirst(request) {
   const cached = await cache.match(request);
   if (cached) return cached;
   const response = await fetch(request);
-  if (response.ok) await cache.put(request, response.clone());
+  const type = response.headers.get("content-type") ?? "";
+  if (response.ok && CACHEABLE.test(type)) await cache.put(request, response.clone());
   return response;
 }
 

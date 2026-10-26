@@ -3,7 +3,7 @@
 **Status:** Locked Oct 22, 2026. **Companion:** `docs/design-system.md` (all visual decisions — do not re-decide them here).
 **Content source of truth:** `Frame by Frame Research Ledger, Curriculum and PRD.md` (Part 1 = resource ledger, Part 2 = 16-week curriculum, Part 3 = original PRD). This document supersedes Part 3 where they conflict.
 
-A public, static, no-backend learning site that presents a 16-week self-taught filmmaking curriculum week by week, tracks progress in the browser, and exposes a filterable directory of ~160 verified free resources. One learner, no accounts, no analytics, free hosting.
+A public, static, no-backend learning site that presents a 16-week self-taught filmmaking curriculum week by week, tracks progress in the browser, and exposes a filterable directory of ~160 verified free resources. One learner, no accounts, no analytics without consent, free hosting.
 
 ---
 
@@ -32,7 +32,7 @@ Carried forward unchanged from the ledger's Part 3: Android-first camera guidanc
 2. Every week exposes Watch / Read / Do with a link, a time estimate, and a done-when rubric of ≥2 checks.
 3. Progress and notes survive a reload and can be exported as a file.
 4. The resource directory is searchable and filterable, and shows verified gaps honestly rather than hiding them.
-5. Zero running cost, zero accounts, zero tracking.
+5. Zero running cost, zero accounts, zero tracking without consent. *(Amended 2026-10-27: consent-gated Vercel Web Analytics is allowed; see §8.)*
 
 **Non-goals:** hosting video, mirroring scripts or courses, accounts, comments, payments, reproducing LevelUp's paid lesson content, replacing mentor feedback, any server-side anything.
 
@@ -252,7 +252,7 @@ scripts/          validate-content.ts  check-links.ts  assert-bundle.ts
 - Learning routes: **≤160KB JS gzipped first load**, Lighthouse mobile **≥90**, LCP <2.0s on throttled 4G.
 - Landing/About: **+≤25KB** lazy canvas chunk loaded after LCP; Lighthouse mobile ≥90 here too. Three.js is never installed.
 - No horizontal scroll at **360px**. Last two versions of evergreen browsers.
-- Zero analytics, zero third-party network requests at runtime except outbound resource links the user clicks.
+- Analytics only after explicit consent: Vercel Web Analytics loads after the visitor accepts the cookie banner, and never on Reject. Otherwise zero third-party network requests at runtime except outbound resource links the user clicks. *(Amended 2026-10-27, user decision.)*
 - A broken link fails the build unless explicitly marked known-broken with a reason.
 - Every resource card shows a verified date.
 - Accessibility per `design-system.md` §8, verified in both themes.

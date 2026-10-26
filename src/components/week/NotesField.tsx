@@ -33,6 +33,13 @@ function NotesBody({ assignmentId, api }: { assignmentId: string; api: ProgressA
     return () => window.clearTimeout(timer);
   }, [assignmentId, note, value]);
 
+  // An import replaces the stored note. Adopt it unless the learner has an unsaved edit.
+  useEffect(() => {
+    if (stored === savedText.current || valueRef.current !== savedText.current) return;
+    savedText.current = stored;
+    setValue(stored);
+  }, [stored]);
+
   useEffect(() => {
     return () => {
       if (valueRef.current !== savedText.current) note(assignmentId, valueRef.current);

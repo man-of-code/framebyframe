@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { Ellipsis } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { BOTTOM_TABS } from "@/components/nav/items";
@@ -16,6 +16,7 @@ export function BottomTabs({
   const [moreOpen, setMoreOpen] = useState(false);
   // Mounted on first open and kept, so the sheet's close animation still runs.
   const [moreMounted, setMoreMounted] = useState(false);
+  const moreButton = useRef<HTMLButtonElement>(null);
 
   return (
     <nav aria-label="Primary">
@@ -34,6 +35,7 @@ export function BottomTabs({
         ))}
         <li>
           <button
+            ref={moreButton}
             type="button"
             className="nav-link bottom-tab"
             aria-haspopup="dialog"
@@ -48,7 +50,13 @@ export function BottomTabs({
           </button>
           {moreMounted ? (
             <Suspense fallback={null}>
-              <MoreSheet open={moreOpen} onOpenChange={setMoreOpen} progress={progress} replace={replace} />
+              <MoreSheet
+                open={moreOpen}
+                onOpenChange={setMoreOpen}
+                returnFocus={moreButton}
+                progress={progress}
+                replace={replace}
+              />
             </Suspense>
           ) : null}
         </li>

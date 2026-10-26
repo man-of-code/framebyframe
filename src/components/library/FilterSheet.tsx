@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, type JSX } from "react";
+import { lazy, Suspense, useRef, useState, type JSX } from "react";
 import type { Facets } from "@/lib/search";
 
 const FilterSheetPanel = lazy(() =>
@@ -16,10 +16,12 @@ export function FilterSheet(props: {
   const [open, setOpen] = useState(false);
   // Mounted on first open and kept, so the sheet's close animation still runs.
   const [mounted, setMounted] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
 
   return (
     <>
       <button
+        ref={trigger}
         type="button"
         className="filter-sheet-trigger"
         aria-label={label}
@@ -39,7 +41,14 @@ export function FilterSheet(props: {
       </button>
       {mounted ? (
         <Suspense fallback={null}>
-          <FilterSheetPanel open={open} onOpenChange={setOpen} facets={facets} options={options} onToggle={onToggle} />
+          <FilterSheetPanel
+            open={open}
+            onOpenChange={setOpen}
+            returnFocus={trigger}
+            facets={facets}
+            options={options}
+            onToggle={onToggle}
+          />
         </Suspense>
       ) : null}
     </>

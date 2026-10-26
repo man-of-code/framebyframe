@@ -10,6 +10,9 @@ const LABEL: Record<StageStatus, string> = {
   done: "Done",
 };
 
+// WAI-ARIA radio group: arrows move focus and selection; Tab enters at the checked option.
+const ARROW_STEP: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+
 function weekRange(weeks: number[]): string {
   const sorted = [...weeks].sort((a, b) => a - b);
   if (sorted.length === 0) return "No weeks";
@@ -51,14 +54,24 @@ export function StageList(props: {
                 ))}
               </ul>
               <div className="status-row" role="radiogroup" aria-label={`${stage.label} status`}>
-                {STATUSES.map((option) => (
+                {STATUSES.map((option, index) => (
                   <button
                     key={option}
                     type="button"
                     className="status-choice"
                     role="radio"
                     aria-checked={status === option}
+                    tabIndex={status === option ? 0 : -1}
                     onClick={() => change(stage.id, option)}
+                    onKeyDown={(event) => {
+                      const step = ARROW_STEP[event.key];
+                      if (step === undefined) return;
+                      event.preventDefault();
+                      const nextIndex = (index + step + STATUSES.length) % STATUSES.length;
+                      const radios = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+                      radios?.[nextIndex]?.focus();
+                      change(stage.id, STATUSES[nextIndex]);
+                    }}
                   >
                     {LABEL[option]}
                   </button>

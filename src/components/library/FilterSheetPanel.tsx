@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import type { JSX, RefObject } from "react";
 import { FilterChips } from "@/components/library/FilterChips";
 import {
   Sheet,
@@ -13,14 +13,23 @@ import type { Facets } from "@/lib/search";
 export function FilterSheetPanel(props: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  returnFocus: RefObject<HTMLButtonElement | null>;
   facets: Facets;
   options: Record<keyof Facets, (string | number)[]>;
   onToggle: (key: keyof Facets, value: string | number) => void;
 }): JSX.Element {
-  const { open, onOpenChange, facets, options, onToggle } = props;
+  const { open, onOpenChange, returnFocus, facets, options, onToggle } = props;
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="filter-sheet">
+      <SheetContent
+        side="bottom"
+        className="filter-sheet"
+        onCloseAutoFocus={(event) => {
+          // No SheetTrigger, so Radix has no element to return focus to.
+          event.preventDefault();
+          returnFocus.current?.focus();
+        }}
+      >
         <SheetHeader>
           <SheetTitle>Filters</SheetTitle>
           <SheetDescription>Type, topic, week, level, cost, language, and status.</SheetDescription>
