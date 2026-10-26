@@ -5,7 +5,7 @@ import type { Theme } from "@/lib/theme";
 const OPTIONS: { value: Theme; label: string }[] = [
   { value: "dark", label: "Dark" },
   { value: "light", label: "Light" },
-  { value: "system", label: "System" },
+  { value: "system", label: "Auto" },
 ];
 
 export function ThemeToggle() {
@@ -14,7 +14,7 @@ export function ThemeToggle() {
     <ToggleGroup
       type="single"
       value={theme}
-      spacing={3}
+      spacing={0}
       className="theme-toggle"
       aria-label="Color theme"
       onValueChange={(value) => {

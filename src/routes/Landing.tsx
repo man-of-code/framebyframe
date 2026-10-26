@@ -64,7 +64,7 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
 
   return (
     <article className="page">
-      <header className="hero">
+      <header className="hero force-dark">
         <Letterbox>
           <HeroCanvas enabled={!replay} />
           <div className="hero-copy">

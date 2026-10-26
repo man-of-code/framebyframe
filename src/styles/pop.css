@@ -112,6 +112,24 @@
   --pop-sh-vis: 1;
 }
 
+/* Segment of a joined segmented control: flat at rest, only the latched segment is teal. It does not
+   shift (the group's frame would otherwise show it sitting low); the pressed shadow carries "on". */
+.pop--seg {
+  --pop-fill: transparent;
+  --pop-edge: transparent;
+  --pop-sh-vis: 0;
+  border-radius: 0;
+}
+
+.pop--seg:is([data-state="on"], [data-state="active"], [aria-pressed="true"], [aria-checked="true"]) {
+  --pop-fill: var(--pop-teal);
+  --pop-edge: var(--pop-ink);
+  --pop-fg: var(--pop-ink);
+  --pop-move: 0px;
+  --pop-sh: var(--pop-offset-press);
+  --pop-sh-vis: 1;
+}
+
 /* Disabled (also every progress control while storage is read-only). Must come after latched. */
 .pop:is(:disabled, [aria-disabled="true"], [data-disabled]) {
   --pop-fill: var(--bg-inset);

@@ -41,6 +41,9 @@ function ToggleGroup({
       style={{ "--gap": spacing } as React.CSSProperties}
       className={cn(
         "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-vertical:flex-col data-vertical:items-stretch",
+        // Default variant is the joined segmented control (design-system.md 5.2); "outline" is free-standing chips.
+        (variant ?? "default") === "default" &&
+          "gap-0 rounded-sm border-2 border-[var(--border-strong)]",
         className
       )}
       {...props}
@@ -72,6 +75,8 @@ function ToggleGroupItem({
       data-spacing={context.spacing}
       className={cn(
         "shrink-0 focus:z-10 focus-visible:z-10",
+        (context.variant || variant) === "default" &&
+          "pop--seg not-first:border-l not-first:border-l-[color:var(--border-strong)] [&>.pop-check]:size-4",
         toggleVariants({
           variant: context.variant || variant,
           size: context.size || size,

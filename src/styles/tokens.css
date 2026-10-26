@@ -1,7 +1,9 @@
 /* Transcribed from docs/design-system.md v2 "Kinetoscope" (section numbers in comments). Do not invent values.
    :root is the dark theme (default). .light overrides it. Pop fills, geometry and motion are theme-independent. */
 
-:root {
+/* .force-dark re-declares the full dark set on its subtree (design-system.md 6, interim rule). */
+:root,
+.force-dark {
   /* 2.2 dark "Night show" */
   --bg-base: #0E0B16;
   --bg-raised: #17121F;
@@ -170,7 +172,14 @@
   --radius: var(--radius-md);
 }
 
+.force-dark {
+  color: var(--text-primary);
+  color-scheme: dark;
+}
+
 .light {
+  /* Interim (6): the v1 black vignette smears grey on paper; R4 deletes the token. */
+  --vignette: none;
   /* 2.3 light "Matinee paper". Tokens absent here (pop fills, geometry, motion) inherit the :root value. */
   --bg-base: #F5EDDC;
   --bg-raised: #FFF9EE;

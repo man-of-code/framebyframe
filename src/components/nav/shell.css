@@ -107,12 +107,18 @@
 }
 
 /* Week readout: .hud-frame + .hud-readout (hud.css); the current-week figure is brass via .hud-current. */
-.week-num {
+.left-rail .week-num {
   align-self: flex-start;
 }
 
 .mobile-bar .week-num {
+  align-self: center;
   padding-block: var(--space-1);
+}
+
+.mobile-bar .mobile-brand {
+  min-height: 0;
+  font-size: var(--text-h3);
 }
 
 .nav-list {
@@ -245,10 +251,6 @@
   padding-inline: var(--space-1);
 }
 
-/* 216px rail: "System" plus a check does not fit in a third of it. The latched fill and offset still say "on". */
-.left-rail .theme-option .pop-check {
-  display: none;
-}
 
 .readonly-banner {
   margin: var(--space-4) var(--space-4) 0;

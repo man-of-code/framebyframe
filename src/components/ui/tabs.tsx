@@ -24,7 +24,7 @@ function Tabs({
 
 // Segmented control (design-system.md 5.2): triggers are pop toggles, latched teal when active.
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit flex-wrap items-center gap-3 group-data-vertical/tabs:flex-col group-data-vertical/tabs:items-stretch",
+  "group/tabs-list inline-flex w-fit items-center rounded-sm border-2 border-[var(--border-strong)] group-data-vertical/tabs:flex-col group-data-vertical/tabs:items-stretch",
   {
     variants: {
       variant: {
@@ -63,12 +63,12 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "pop pop--outline pop--latch inline-flex min-h-12 items-center justify-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "pop pop--outline pop--latch pop--seg not-first:border-l not-first:border-l-[color:var(--border-strong)] [&>.pop-check]:size-4 inline-flex min-h-12 items-center justify-center gap-1.5 px-4 text-sm font-semibold whitespace-nowrap outline-none group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
     >
-      <Check aria-hidden="true" className="pop-check size-3.5" strokeWidth={3} />
+      <Check aria-hidden="true" className="pop-check size-4" strokeWidth={3} />
       {children}
     </TabsPrimitive.Trigger>
   )

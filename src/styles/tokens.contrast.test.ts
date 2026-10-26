@@ -40,7 +40,7 @@ function declarations(block: string): Theme {
 }
 
 function topLevelBlock(selector: string): string {
-  const open = css.search(new RegExp(`^${selector.replace(".", "\\.")}\\s*\\{`, "m"));
+  const open = css.search(new RegExp(`^${selector.replace(".", "\\.")}\\b[^{]*\\{`, "m"));
   if (open < 0) throw new Error(`${selector} block not found in tokens.css`);
   const body = css.indexOf("{", open) + 1;
   let depth = 1;

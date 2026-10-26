@@ -1695,3 +1695,50 @@ Append below this line.
 - The primary-button hover, focus and sheen checks ran on a hand-built element carrying the primitive's classes, because no route renders a shadcn primary `Button`. The route primary action (`.page-button`) was checked separately on the dashboard.
 - Spacing: flat chips stay 8px apart (library route CSS); §8 asks 12px between pop controls. Their shadow is at most 1px so nothing touches, but the library chip gap is a R3 decision. The rail theme toggle is 12px.
 - The palette (`command`) was fixed in place only as far as input boundary, row highlight (`data-selected` matched every row), focus outline and radius; a full pass is R3's `/library` work.
+
+### Redesign R2b.1: Visual critique fixes
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R2b; `docs/design-system.md` §5.2 (Segmented control, Chip labels) and §6 (interim rules)
+
+#### Shipped
+
+- `src/styles/tokens.css` — `.light { --vignette: none }`; the dark block is now `:root, .force-dark` (full dark set re-declared on the subtree, plus `color` and `color-scheme`). `tokens.contrast.test.ts` selector lookup updated for the combined selector.
+- `src/routes/Landing.tsx` — the hero `<header>` carries `force-dark`.
+- `src/routes/Root.tsx`, `shell.css` — mobile bar shows the Abril wordmark at `--text-h3` plus the week readout (centred, no longer pinned to the top); the page eyebrow and `eyebrowFor` are gone.
+- `toggle-group.tsx`, `tabs.tsx`, `pop.css`, `ThemeToggle.tsx` — default `ToggleGroup` and `Tabs` are one joined group (2px `--border-strong` frame, 1px dividers, flat segments). Only the latched segment is teal with an ink border, press shadow and a 16px check, and it no longer translates, so it sits level with its siblings. The rail theme toggle reads "Dark / Light / Auto" (value `system` kept) and shows the check. `variant="outline"` stays free-standing chips.
+- `library.css` — chip labels Inter 500, 12px gap.
+
+#### Verified
+
+- `npm test` → 190 pass; `npx tsc -b` → exit 0; `npm run build` → exit 0, entry 128.6 KB, Plan 130.3, Week 153.6, Library 148.2, Toolkit 131.4, Capstone 130.8 KB.
+- Light landing hero computed colours (1440 and 360): eyebrow `rgb(205,191,168)`, title `rgb(242,232,213)`, subtitle `rgb(205,191,168)`, "Browse the plan first" `rgb(79,224,194)`, all dark-token paper tones on the near-black screen; screenshots checked by eye.
+- Screenshots in scratchpad `r2b/shots-after/`.
+
+#### Decisions
+
+- **Decision:** `.force-dark` is added to the existing dark selector rather than copying the token list.
+  - **Because:** one source of values, so the contrast test covers it.
+  - **Rejected:** a duplicated block.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the `<wbr>` render helper from §3.2 was not built; it was outside the six fixes.
+  - **Because:** not in scope of this follow-up.
+  - **Rejected:** n/a.
+  - **Risk:** week titles still break mid-token (`fra/ming`) until it lands.
+  - **Deviation:** no
+- **Decision:** the Cards/Table view toggle on `/library` is route-made and not yet the joined segmented control.
+  - **Because:** route content (R3).
+  - **Rejected:** touching route markup now.
+  - **Risk:** inconsistent look until R3.
+  - **Deviation:** no
+- **Decision:** this entry supersedes the R2b check-icon deviation (the rail toggle now shows the check) and corrects the rail scroll-fade record: the shipped fade is `--bg-inset` over 32px; the first-try `--bg-hover` / 24px in the R2b "Shipped" list was replaced before the final commit.
+  - **Because:** two R2b lines disagreed.
+  - **Rejected:** editing the old entry.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- The sticky mobile CTA still shows beside the page's own primary CTA (R4).

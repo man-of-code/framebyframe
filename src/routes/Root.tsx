@@ -1,5 +1,5 @@
 import { useEffect, useState, type ComponentType } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { BottomTabs } from "@/components/nav/BottomTabs";
 import { LeftRail } from "@/components/nav/LeftRail";
 import { ShellFooter } from "@/components/nav/ShellFooter";
@@ -32,20 +32,6 @@ function useRailLayout(): boolean {
   return matches;
 }
 
-function eyebrowFor(pathname: string): string {
-  if (pathname.startsWith("/week/")) return "Week";
-  if (pathname.startsWith("/plan")) return "Plan";
-  if (pathname.startsWith("/library")) return "Library";
-  if (pathname.startsWith("/capstone")) return "Capstone";
-  if (pathname.startsWith("/toolkit")) return "Toolkit";
-  if (pathname.startsWith("/about")) return "About";
-  if (pathname.startsWith("/contact")) return "Contact";
-  if (pathname.startsWith("/privacy")) return "Privacy";
-  if (pathname.startsWith("/terms")) return "Terms";
-  if (pathname.startsWith("/thank-you")) return "Thank you";
-  return "Today";
-}
-
 export function Root() {
   return (
     <ProgressProvider>
@@ -75,7 +61,6 @@ function RootLayout() {
   const { progress, status, replace } = useProgressContext();
   const { week } = useCurrentWeek(progress);
   const rail = useRailLayout();
-  const { pathname } = useLocation();
 
   return (
     <div className="shell">
@@ -85,7 +70,7 @@ function RootLayout() {
       <div className="shell-main">
         {rail ? null : (
           <header className="mobile-bar">
-            <p className="eyebrow">{eyebrowFor(pathname)}</p>
+            <Link to="/" className="brand mobile-brand">Frame by Frame</Link>
             <WeekNumeral week={week} />
           </header>
         )}
