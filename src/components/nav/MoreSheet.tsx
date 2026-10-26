@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Ellipsis } from "lucide-react";
 import { ExportImport } from "@/components/ExportImport";
 import { NAV_ITEMS } from "@/components/nav/items";
 import { ThemeToggle } from "@/components/nav/ThemeToggle";
@@ -10,25 +9,25 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import type { Progress } from "@/lib/types";
 
 const MORE_LINKS = NAV_ITEMS.filter((item) => item.to === "/toolkit" || item.to === "/about");
 
+/** Loaded on the first tap of More; the trigger lives in BottomTabs. */
 export function MoreSheet({
+  open,
+  onOpenChange,
   progress,
   replace,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   progress: Progress;
   replace: (progress: Progress) => void;
 }) {
   return (
-    <Sheet>
-      <SheetTrigger className="nav-link bottom-tab">
-        <Ellipsis aria-hidden="true" size={20} />
-        <span>More</span>
-      </SheetTrigger>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="more-sheet" showCloseButton={false}>
         <SheetHeader>
           <SheetTitle>More</SheetTitle>

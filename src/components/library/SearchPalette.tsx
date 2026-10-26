@@ -1,4 +1,4 @@
-import { useEffect, type JSX } from "react";
+import type { JSX } from "react";
 import {
   Command,
   CommandDialog,
@@ -10,13 +10,6 @@ import {
 } from "@/components/ui/command";
 import type { Resource } from "@/lib/types";
 
-function isTypingTarget(target: EventTarget | null): boolean {
-  return (
-    target instanceof HTMLElement &&
-    (target.isContentEditable || target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT")
-  );
-}
-
 export function SearchPalette(props: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,19 +18,6 @@ export function SearchPalette(props: {
   onQuery: (query: string) => void;
 }): JSX.Element {
   const { open, onOpenChange, query, results, onQuery } = props;
-
-  useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      const slash = event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && !isTypingTarget(event.target);
-      const command = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
-      if (!slash && !command) return;
-      event.preventDefault();
-      onOpenChange(true);
-    }
-
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onOpenChange]);
 
   return (
     <CommandDialog

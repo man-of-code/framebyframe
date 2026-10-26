@@ -6,7 +6,6 @@ import "@/components/nav/shell.css";
 import { PageMeta } from "@/components/PageMeta";
 import { SkipLink } from "@/components/SkipLink";
 import { WeekNumeral } from "@/components/nav/WeekNumeral";
-import { Toaster } from "@/components/ui/sonner";
 import { useCurrentWeek } from "@/hooks/useCurrentWeek";
 import { ProgressProvider, useProgressContext } from "@/hooks/ProgressProvider";
 import type { Progress } from "@/lib/types";
@@ -100,7 +99,6 @@ function RootLayout() {
       </div>
       {rail ? null : <BottomTabs progress={progress} replace={replace} />}
       <DeferredChrome progress={progress} />
-      <Toaster position="top-center" />
     </div>
   );
 }

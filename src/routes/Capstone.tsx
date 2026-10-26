@@ -2,12 +2,12 @@ import { useCallback, useState, type JSX } from "react";
 import "@/components/filmstrip/filmstrip.css";
 import { CeremonyBadge } from "@/components/atmosphere/CeremonyBadge";
 import { StageList } from "@/components/capstone/StageList";
-import { content } from "@/content";
+import { capstone } from "@/content/capstone";
 import { WithProgress } from "@/hooks/ProgressProvider";
 import "./pages.css";
 
 export function Capstone(): JSX.Element {
-  const stages = [...content.capstone].sort((a, b) => a.order - b.order);
+  const stages = [...capstone].sort((a, b) => a.order - b.order);
   const [ceremony, setCeremony] = useState(false);
   const closeCeremony = useCallback(() => setCeremony(false), []);
 

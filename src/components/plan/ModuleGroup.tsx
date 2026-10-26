@@ -1,7 +1,7 @@
 import { useId, type JSX } from "react";
 import { Letterbox } from "@/components/atmosphere/Letterbox";
 import { WeekFrame, type FrameState } from "@/components/filmstrip/WeekFrame";
-import { content } from "@/content";
+import { capstone } from "@/content/capstone";
 import { countDone } from "@/lib/progress";
 import type { Progress, Week } from "@/lib/types";
 
@@ -24,7 +24,7 @@ function hoursLabel(week: Week): string {
 
 function stageLabel(id: string | undefined): string | undefined {
   if (!id) return undefined;
-  return content.capstone.find((stage) => stage.id === id)?.label;
+  return capstone.find((stage) => stage.id === id)?.label;
 }
 
 export function ModuleGroup(props: {

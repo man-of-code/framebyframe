@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Resource } from "@/lib/types";
 import { ResultsGrid } from "./ResultsGrid";
@@ -39,10 +39,9 @@ describe("ResultsGrid", () => {
     expect(screen.getAllByRole("article")).toHaveLength(200);
   });
 
-  it("virtualizes once the grid exceeds 200 items", () => {
+  it("virtualizes once the grid exceeds 200 items", async () => {
     render(<ResultsGrid resources={Array.from({ length: 201 }, (_, index) => resource(index))} />);
-    const rendered = screen.queryAllByRole("article");
-    expect(rendered.length).toBeGreaterThan(0);
-    expect(rendered.length).toBeLessThan(201);
+    await waitFor(() => expect(screen.queryAllByRole("article").length).toBeLessThan(201));
+    expect(screen.queryAllByRole("article").length).toBeGreaterThan(0);
   });
 });

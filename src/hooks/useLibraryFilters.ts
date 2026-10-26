@@ -1,8 +1,8 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type Fuse from "fuse.js";
 import { useSearchParams } from "react-router-dom";
-import { resources } from "@/content";
+import { resources } from "@/content/resources";
 import {
-  createIndex,
   facetOptions,
   searchResources,
   type Facets,
@@ -53,7 +53,16 @@ export function useLibraryFilters() {
   const query = params.get("q") ?? "";
   const view = params.get("view") === "table" ? "table" : "cards";
   const facets = useMemo(() => readFacets(new URLSearchParams(search)), [search]);
-  const index = useMemo(() => createIndex(resources), []);
+  const [index, setIndex] = useState<Fuse<Resource> | null>(null);
+  useEffect(() => {
+    let live = true;
+    void import("@/lib/search-index").then(({ createIndex }) => {
+      if (live) setIndex(createIndex(resources));
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
   const options = useMemo(() => facetOptions(resources), []);
   const results = useMemo(
     () => searchResources(index, resources, query, facets),

@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { assertDist } from "./assert-bundle";
+import { assertDist, assertRoutes } from "./assert-bundle";
 
 function distWith(files: Record<string, string>, html: string): string {
   const root = mkdtempSync(join(tmpdir(), "fbf-dist-"));
@@ -87,6 +87,39 @@ describe("assertDist", () => {
     );
     const result = assertDist(root);
     expect(result.ok).toBe(true);
+  });
+
+  it("measures each route as the entry graph plus its chunk, and refuses canvas code there", () => {
+    const root = distWith(
+      {
+        "index-abc.js": 'import"./react-def.js";',
+        "react-def.js": "console.log('shell');",
+        "Plan-1.js": 'import"./shared-2.js";',
+        "shared-2.js": "console.log('shared');",
+        "Week-3.js": 'import"./atmosphere-xyz.js";',
+        "atmosphere-xyz.js": "console.log('canvas');",
+      },
+      html,
+    );
+    mkdirSync(join(root, ".vite"));
+    writeFileSync(
+      join(root, ".vite", "manifest.json"),
+      JSON.stringify({
+        "src/routes/Plan.tsx": { file: "assets/Plan-1.js" },
+        "src/routes/Week.tsx": { file: "assets/Week-3.js" },
+      }),
+    );
+    const sizeOf = (...sources: string[]) =>
+      sources.reduce((sum, source) => sum + gzipSync(Buffer.from(source)).length, 0);
+
+    const result = assertRoutes(root, 160 * 1024, ["src/routes/Plan.tsx", "src/routes/Week.tsx"]);
+    expect(result.sizes[0]).toEqual({
+      route: "src/routes/Plan.tsx",
+      gzipBytes: sizeOf('import"./react-def.js";', "console.log('shell');", 'import"./shared-2.js";', "console.log('shared');"),
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reasons.some((reason) => reason.startsWith("src/routes/Week.tsx: atmosphere"))).toBe(true);
+    expect(assertRoutes(root, 1, ["src/routes/Plan.tsx"]).ok).toBe(false);
   });
 
   it("fails when the gzipped entry graph exceeds the limit", () => {

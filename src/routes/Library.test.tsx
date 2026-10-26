@@ -71,13 +71,13 @@ describe("Library", () => {
   it("opens the command palette from /", async () => {
     renderLibrary();
     await userEvent.keyboard("/");
-    expect(screen.getByRole("dialog", { name: "Search the library" })).toBeTruthy();
+    expect(await screen.findByRole("dialog", { name: "Search the library" })).toBeTruthy();
   });
 
   it("opens the command palette from meta+k", async () => {
     renderLibrary();
     await userEvent.keyboard("{Meta>}k{/Meta}");
-    expect(screen.getByRole("dialog", { name: "Search the library" })).toBeTruthy();
+    expect(await screen.findByRole("dialog", { name: "Search the library" })).toBeTruthy();
   });
 
   it("shows the Indian-language gap card for Tamil and no zero count", async () => {

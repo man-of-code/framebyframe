@@ -2,7 +2,7 @@ import { useOutletContext } from "react-router-dom";
 import { FilmstripRail } from "@/components/filmstrip/FilmstripRail";
 import { ModuleGroup } from "@/components/plan/ModuleGroup";
 import "@/components/plan/plan.css";
-import { content } from "@/content";
+import { weeks } from "@/content/weeks";
 import { useCurrentWeek } from "@/hooks/useCurrentWeek";
 import type { ShellOutletContext } from "@/routes/Root";
 
@@ -37,7 +37,7 @@ export function Plan() {
           key={module.n}
           eyebrow={`Module ${String(module.n).padStart(2, "0")}`}
           title={module.title}
-          weeks={content.weeks.filter((item) => item.module === module.n)}
+          weeks={weeks.filter((item) => item.module === module.n)}
           current={week}
           progress={progress}
         />
@@ -47,7 +47,7 @@ export function Plan() {
         title="Buffer"
         note={BUFFER_REASON}
         spliced
-        weeks={content.weeks.filter((item) => item.extension)}
+        weeks={weeks.filter((item) => item.extension)}
         current={week}
         progress={progress}
       />

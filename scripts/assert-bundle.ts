@@ -3,8 +3,17 @@ import { basename, dirname, join, normalize, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { gzipSync } from "node:zlib";
 
-/** Plan limit was 160KB. The shell's per-page meta measured 164280 bytes gzipped. */
-export const ENTRY_GZIP_LIMIT = 164 * 1024;
+/** design-system §7.3: app shell + any learning route, 160KB gzipped. */
+export const ENTRY_GZIP_LIMIT = 160 * 1024;
+
+/** Each is measured as the entry graph plus that route's static chunk graph. */
+export const LEARNING_ROUTES = [
+  "src/routes/Plan.tsx",
+  "src/routes/Week.tsx",
+  "src/routes/Library.tsx",
+  "src/routes/Toolkit.tsx",
+  "src/routes/Capstone.tsx",
+];
 
 const THREE_IMPORT = /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?)["']three(?:\/[^"']*)?["']/;
 
@@ -22,9 +31,57 @@ export function assertDist(
     return { ok: false, gzipBytes: 0, reasons: ["no module entry script in index.html"] };
   }
 
+  const { files, reasons } = walkGraph(entryStarts(distDir, html, entrySrc));
+  const gzipBytes = gzipSize(files);
+  if (gzipBytes > limit) reasons.push(`entry graph ${gzipBytes} bytes gzipped exceeds ${limit}`);
+  if (reasons.length > 0) return { ok: false, gzipBytes, reasons };
+  return { ok: true, gzipBytes };
+}
+
+export type RouteSize = { route: string; gzipBytes: number };
+
+/** Reads dist/.vite/manifest.json to find each route's chunk. */
+export function assertRoutes(
+  distDir: string,
+  limit = ENTRY_GZIP_LIMIT,
+  routes = LEARNING_ROUTES,
+): { ok: boolean; sizes: RouteSize[]; reasons: string[] } {
+  const sizes: RouteSize[] = [];
+  const htmlPath = join(distDir, "index.html");
+  const manifestPath = join(distDir, ".vite", "manifest.json");
+  if (!existsSync(htmlPath) || !existsSync(manifestPath)) {
+    return { ok: false, sizes, reasons: ["dist/index.html or dist/.vite/manifest.json is missing"] };
+  }
+  const html = readFileSync(htmlPath, "utf8");
+  const entrySrc = moduleEntrySrc(html);
+  if (!entrySrc) return { ok: false, sizes, reasons: ["no module entry script in index.html"] };
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Record<string, { file?: string }>;
+
+  const reasons: string[] = [];
+  for (const route of routes) {
+    const chunk = manifest[route]?.file;
+    if (!chunk) {
+      reasons.push(`${route} has no chunk in the manifest`);
+      continue;
+    }
+    const graph = walkGraph([...entryStarts(distDir, html, entrySrc), join(distDir, chunk)]);
+    for (const reason of graph.reasons) reasons.push(`${route}: ${reason}`);
+    const gzipBytes = gzipSize(graph.files);
+    sizes.push({ route, gzipBytes });
+    if (gzipBytes > limit) reasons.push(`${route} graph ${gzipBytes} bytes gzipped exceeds ${limit}`);
+  }
+  return { ok: reasons.length === 0, sizes, reasons };
+}
+
+function entryStarts(distDir: string, html: string, entrySrc: string): string[] {
+  const starts = [resolvePublic(distDir, entrySrc)];
+  for (const href of modulePreloads(html)) starts.push(resolvePublic(distDir, href));
+  return starts;
+}
+
+function walkGraph(starts: string[]): { files: Set<string>; reasons: string[] } {
   const files = new Set<string>();
-  const queue = [resolvePublic(distDir, entrySrc)];
-  for (const href of modulePreloads(html)) queue.push(resolvePublic(distDir, href));
+  const queue = [...starts];
   const reasons: string[] = [];
 
   while (queue.length > 0) {
@@ -32,7 +89,7 @@ export function assertDist(
     if (files.has(file)) continue;
     files.add(file);
     if (basename(file).includes("atmosphere")) {
-      reasons.push(`${basename(file)} is in the entry graph`);
+      reasons.push(`${basename(file)} is in the static graph`);
     }
     if (!existsSync(file)) {
       reasons.push(`missing ${file}`);
@@ -42,15 +99,15 @@ export function assertDist(
     for (const hit of forbidden(code)) reasons.push(`${basename(file)} ${hit}`);
     for (const spec of staticImportSpecifiers(code)) queue.push(resolve(dirname(file), spec));
   }
+  return { files, reasons };
+}
 
-  let gzipBytes = 0;
+function gzipSize(files: Set<string>): number {
+  let bytes = 0;
   for (const file of files) {
-    if (!existsSync(file)) continue;
-    gzipBytes += gzipSync(readFileSync(file)).length;
+    if (existsSync(file)) bytes += gzipSync(readFileSync(file)).length;
   }
-  if (gzipBytes > limit) reasons.push(`entry graph ${gzipBytes} bytes gzipped exceeds ${limit}`);
-  if (reasons.length > 0) return { ok: false, gzipBytes, reasons };
-  return { ok: true, gzipBytes };
+  return bytes;
 }
 
 export function staticImportSpecifiers(code: string): string[] {
@@ -109,8 +166,13 @@ if (isDirectRun()) {
   const result = assertDist(join(process.cwd(), "dist"));
   const kb = (result.gzipBytes / 1024).toFixed(1);
   console.log(`entry graph: ${result.gzipBytes} bytes gzipped (${kb} KB), limit ${ENTRY_GZIP_LIMIT}`);
-  if (!result.ok) {
-    for (const reason of result.reasons) console.error(reason);
+  const routes = assertRoutes(join(process.cwd(), "dist"));
+  for (const { route, gzipBytes } of routes.sizes) {
+    console.log(`${route}: ${gzipBytes} bytes gzipped (${(gzipBytes / 1024).toFixed(1)} KB)`);
+  }
+  const reasons = [...(result.ok ? [] : result.reasons), ...routes.reasons];
+  if (reasons.length > 0) {
+    for (const reason of reasons) console.error(reason);
     process.exit(1);
   }
 }

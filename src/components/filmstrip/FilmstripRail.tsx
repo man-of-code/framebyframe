@@ -1,5 +1,5 @@
 import { Fragment, type JSX } from "react";
-import { content } from "@/content";
+import { weeks } from "@/content/weeks";
 import { useCurrentWeek } from "@/hooks/useCurrentWeek";
 import { useProgress } from "@/hooks/useProgress";
 import { countDone } from "@/lib/progress";
@@ -26,7 +26,7 @@ export function FilmstripRail(props: {
   const stored = useProgress();
   const progress = props.progress ?? stored.progress;
   const { week: current } = useCurrentWeek(progress);
-  const firstExtension = content.weeks.findIndex((week) => week.extension);
+  const firstExtension = weeks.findIndex((week) => week.extension);
 
   return (
     <nav className="filmstrip-nav" aria-label="Weeks">
@@ -35,7 +35,7 @@ export function FilmstripRail(props: {
         data-orientation={orientation}
         data-compact={compact ? "true" : "false"}
       >
-        {content.weeks.map((week, index) => {
+        {weeks.map((week, index) => {
           const ratio = coreRatio(week, progress);
           return (
             <Fragment key={week.n}>

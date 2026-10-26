@@ -5,7 +5,8 @@ import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
 import { HeroCanvas } from "@/components/atmosphere/HeroCanvas";
 import { Letterbox } from "@/components/atmosphere/Letterbox";
 import "@/components/filmstrip/filmstrip.css";
-import { content } from "@/content";
+import { gaps } from "@/content/gaps";
+import { weeks as allWeeks } from "@/content/weeks";
 import type { ProgressApi } from "@/hooks/ProgressProvider";
 import { startDateError } from "@/lib/form";
 import { LumenCta } from "@/vendor/threeui/lumen-cta/LumenCta";
@@ -41,7 +42,7 @@ function localToday(): string {
 }
 
 function weekSpan(module: number): { first: number; label: string } | null {
-  const weeks = content.weeks.filter((week) => week.module === module).map((week) => week.n);
+  const weeks = allWeeks.filter((week) => week.module === module).map((week) => week.n);
   if (weeks.length === 0) return null;
   const first = Math.min(...weeks);
   const last = Math.max(...weeks);
@@ -57,7 +58,7 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
   const [date, setDate] = useState(api.progress.startDate ?? localToday());
   const [dateError, setDateError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const gap = content.gaps.find((item) => item.id === "indian-language-craft");
+  const gap = gaps.find((item) => item.id === "indian-language-craft");
   const buffer = weekSpan(0);
 
   function start(event?: FormEvent) {

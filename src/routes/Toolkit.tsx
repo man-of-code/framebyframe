@@ -1,11 +1,11 @@
 import { ExternalLink, TriangleAlert } from "lucide-react";
 import type { JSX } from "react";
 import { Link } from "react-router-dom";
-import { content } from "@/content";
+import { tools as allTools } from "@/content/tools";
 import "./pages.css";
 
 export function Toolkit(): JSX.Element {
-  const tools = [...content.tools].sort(
+  const tools = [...allTools].sort(
     (a, b) => a.firstWeek - b.firstWeek || a.name.localeCompare(b.name),
   );
 

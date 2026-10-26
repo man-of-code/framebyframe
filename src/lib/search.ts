@@ -1,4 +1,4 @@
-import Fuse, { type IFuseOptions } from "fuse.js";
+import type Fuse from "fuse.js";
 import type { Resource } from "@/lib/types";
 
 export type StatusFlag = "clean" | "gray-area" | "benchmark" | "experimental" | "email-gated";
@@ -53,17 +53,6 @@ const WEEKS = Array.from({ length: 16 }, (_, index) => index + 1);
 // ISO 639-1. Empty codes stay listed so the language gap remains selectable (F16).
 const LANGUAGES = ["en", "hi", "ta", "te", "ml", "mr", "bn"] as const;
 
-const INDEX_OPTIONS: IFuseOptions<Resource> = {
-  keys: [
-    { name: "title", weight: 0.5 },
-    { name: "why", weight: 0.3 },
-    { name: "topics", weight: 0.15 },
-    { name: "type", weight: 0.05 },
-  ],
-  threshold: 0.38,
-  ignoreLocation: true,
-};
-
 export function statusOf(resource: Resource): StatusFlag[] {
   const flags: StatusFlag[] = [];
   if (resource.grayArea) flags.push("gray-area");
@@ -90,12 +79,9 @@ export function filterResources(all: Resource[], facets: Facets): Resource[] {
   );
 }
 
-export function createIndex(all: Resource[]): Fuse<Resource> {
-  return new Fuse(all, INDEX_OPTIONS);
-}
-
+/** `index` is null until the lazily loaded Fuse index arrives; a plain substring match stands in. */
 export function searchResources(
-  index: Fuse<Resource>,
+  index: Fuse<Resource> | null,
   all: Resource[],
   query: string,
   facets: Facets,
@@ -103,6 +89,12 @@ export function searchResources(
   const filtered = filterResources(all, facets);
   const trimmed = query.trim();
   if (trimmed === "") return filtered;
+  if (index === null) {
+    const needle = trimmed.toLowerCase();
+    return filtered.filter((resource) =>
+      [resource.title, resource.why, ...resource.topics].some((text) => text.toLowerCase().includes(needle)),
+    );
+  }
   const allowed = new Set(filtered.map((resource) => resource.id));
   return index.search(trimmed).flatMap((hit) => (allowed.has(hit.item.id) ? [hit.item] : []));
 }

@@ -4,7 +4,7 @@ import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
 import { ContactAddress } from "@/components/ContactAddress";
 import { ExportImport } from "@/components/ExportImport";
 import { GapCard } from "@/components/resource/GapCard";
-import { content } from "@/content";
+import { gaps as allGaps } from "@/content/gaps";
 import { WithProgress } from "@/hooks/ProgressProvider";
 import "./pages.css";
 
@@ -29,7 +29,7 @@ const OPEN_ITEMS = [
 ];
 
 export function About(): JSX.Element {
-  const gaps = content.gaps.filter((gap) => gap.scope !== "week");
+  const gaps = allGaps.filter((gap) => gap.scope !== "week");
 
   return (
     <article className="page prose-page">

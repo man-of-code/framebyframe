@@ -1,18 +1,23 @@
-import { useState, type JSX } from "react";
+import { lazy, Suspense, useCallback, useState, type JSX } from "react";
 import { FilterChips } from "@/components/library/FilterChips";
 import { FilterSheet } from "@/components/library/FilterSheet";
 import { facetValueLabel } from "@/components/library/labels";
 import "@/components/library/library.css";
 import { ResultsGrid } from "@/components/library/ResultsGrid";
 import { ResultsTable } from "@/components/library/ResultsTable";
-import { SearchPalette } from "@/components/library/SearchPalette";
 import { useMediaQuery } from "@/components/library/useMediaQuery";
+import { usePaletteShortcut } from "@/components/library/usePaletteShortcut";
 import { GapCard } from "@/components/resource/GapCard";
-import { content, resources } from "@/content";
+import { gaps } from "@/content/gaps";
+import { resources } from "@/content/resources";
 import { selectedEmptyLanguages, useLibraryFilters } from "@/hooks/useLibraryFilters";
 import type { Facets } from "@/lib/search";
 
-const languageGap = content.gaps.find((gap) => gap.id === "indian-language-craft");
+const SearchPalette = lazy(() =>
+  import("@/components/library/SearchPalette").then((m) => ({ default: m.SearchPalette })),
+);
+
+const languageGap = gaps.find((gap) => gap.id === "indian-language-craft");
 
 function appliedCount(facets: Facets): number {
   return (Object.keys(facets) as (keyof Facets)[]).reduce((sum, key) => sum + facets[key].length, 0);
@@ -26,6 +31,13 @@ export function Library(): JSX.Element {
   const { query, facets, setQuery, toggleFacet, clearAll, results, options, view, setView } = useLibraryFilters();
   const wide = useMediaQuery("(min-width: 768px)");
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // Mounted on first open and kept, so the dialog's close animation still runs.
+  const [paletteMounted, setPaletteMounted] = useState(false);
+  const openPalette = useCallback(() => {
+    setPaletteMounted(true);
+    setPaletteOpen(true);
+  }, []);
+  usePaletteShortcut(openPalette);
   const showGap = languageGap !== undefined && selectedEmptyLanguages(facets, resources).length > 0;
   const countLabel = showGap && results.length === 0 ? "No verified resources in this language" : resultLabel(results.length);
   const active = (Object.keys(facets) as (keyof Facets)[]).flatMap((key) =>
@@ -40,13 +52,17 @@ export function Library(): JSX.Element {
         <p className="eyebrow">Library</p>
         <h1>Library</h1>
       </header>
-      <SearchPalette
-        open={paletteOpen}
-        onOpenChange={setPaletteOpen}
-        query={query}
-        results={results}
-        onQuery={setQuery}
-      />
+      {paletteMounted ? (
+        <Suspense fallback={null}>
+          <SearchPalette
+            open={paletteOpen}
+            onOpenChange={setPaletteOpen}
+            query={query}
+            results={results}
+            onQuery={setQuery}
+          />
+        </Suspense>
+      ) : null}
       <div className="library-toolbar">
         <input
           type="search"
