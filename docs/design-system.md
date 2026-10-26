@@ -34,7 +34,7 @@ All tokens are semantic, defined for both themes with identical names. Component
 | **Action** — links, primary button, focus ring, selected filter | Aurora teal | `--accent-primary`, `--pop-teal` (fill) | The only teal UI colour (the aurora's teal field is atmosphere, not UI) |
 | **Progress & completion** — exposed frames, current week numeral, **every checked checkbox** (tasks and done-when checks), progress bars, capstone done, ceremony | Brass (amber-copper) | `--accent-warm`, `--brass-fill` | Never on a link, button, filter, nav item, or ornament. Carve-out: a filmstrip frame is a link, and brass on it shows the frame's progress state only; its hover, focus and active states are teal |
 | Success / free | Pop lime | `--status-ok`, `--pop-lime` | Badges and validation only. Checkboxes are never lime |
-| Warning / freemium / gray area / email-gated | Pop yellow | `--status-warn`, `--pop-yellow` | Hue 52°, kept clear of brass (30°); badges always carry icon + text |
+| Warning / freemium / gray area / email-gated / heavy week | Pop yellow | `--status-warn`, `--pop-yellow` | Hue 52°, kept clear of brass (30°); badges always carry icon + text |
 | Danger / dead link / import failure | Pop red | `--status-danger`, `--pop-red` | |
 | Paid / benchmark-only | Pop magenta | `--status-paid`, `--pop-magenta` | |
 | Experimental | Aurora violet | `--status-exp`, `--pop-violet` | |
@@ -236,7 +236,7 @@ Fallback stacks: `"Abril Fatface", "Didot", "Bodoni 72", Georgia, serif` / `Inte
 | `--text-eyebrow` | `0.75rem` | 1.2 | `0.16em` | Inter 600, uppercase | `MODULE IV · CINEMATOGRAPHY` |
 | `--text-mono` | `0.875rem` | 1.5 | `0` | Mono | HUD readouts |
 
-Every Abril heading also sets `overflow-wrap: break-word; text-wrap: balance`. Week titles are topic lists with long slash-joined tokens (`movement/angles/framing,`); without `break-word` they overflow at 360px. Not yet verified at 360px: R2 renders the two longest week titles and "Marketing, Distribution and Career" at 360px in Abril and records whether any line overflows; R3 rechecks inside the final layouts. Week titles insert `<wbr>` after every `/` when rendered (a render helper, not a content change), so a slash-joined topic list breaks at the slash and `break-word` is only the last resort. Verified in R2b: no line overflows at 360px.
+Every Abril heading also sets `overflow-wrap: break-word; text-wrap: balance`. Week titles are topic lists with long slash-joined tokens (`movement/angles/framing,`); without `break-word` they overflow at 360px. Not yet verified at 360px: R2 renders the two longest week titles and "Marketing, Distribution and Career" at 360px in Abril and records whether any line overflows; R3 rechecks inside the final layouts. Week titles insert `<wbr>` after every `/` when rendered, except a `/` with a digit on both sides (`3/5/7-act` stays whole) (a render helper, not a content change), so a slash-joined topic list breaks at the slash and `break-word` is only the last resort. Verified in R2b: no line overflows at 360px.
 
 Measure: body `65ch`, hard max `72ch`.
 
@@ -361,7 +361,7 @@ States, all transforms over `--dur-fast`:
 
 **Raised vs latched.** Action buttons are always drawn *raised* (shadow at `--pop-offset`). Selected chips and selected segments are drawn *latched*: fixed in the pressed position (control `translate(2px, 2px)`, shadow at `--pop-offset-press`), with a check icon and `aria-pressed`/`aria-checked`. That, not hue alone, separates "do this" from "this is on".
 
-**Segmented control** (theme toggle, Cards/Table, capstone status, tabs) — added after the R2b visual critique: one joined group, not free-standing buttons. Outer boundary 2px `--border-strong`, `--radius-sm`; 1px `--border-strong` dividers between segments; no per-segment shadow at rest. Only the latched segment gets the `--pop-teal` fill, 2px `--pop-ink` border, `--pop-offset-press` shadow and a 16px check icon before its label. In the 216px rail the labels are "Dark", "Light", "Auto" so the check fits.
+**Segmented control** (theme toggle, Cards/Table, capstone status, tabs) — added after the R2b visual critique: one joined group, not free-standing buttons. Outer boundary 2px `--border-strong`, `--radius-sm`; 1px `--border-strong` dividers between segments; no per-segment shadow at rest. Only the latched segment gets the `--pop-teal` fill, 2px `--pop-ink` border, `--pop-offset-press` shadow and a 16px check icon before its label. The labels are "Dark", "Light", "Auto" everywhere (rail and More sheet), so the check fits in the 216px rail and the wording stays consistent.
 
 **Chip labels** are Inter 500 (not 600); chips sit `--space-3` (12px) apart (§8).
 
@@ -482,6 +482,18 @@ Rules:
 ---
 
 ## 6. Surfaces map
+
+**Rules added after the R3 visual critique (2026-10-27):**
+- **Prose routes centre.** `/week/:n` and `/capstone` centre their `--container-prose` column (`margin-inline: auto`). On every route the `.aurora` band spans `--container-app` (full content width), with the title block or frame centred inside it on prose routes; band width no longer changes from route to route.
+- **Week header is compact on phones:** no topic chips (the title already lists the topics; chip-styled non-controls break §5.2); below 640px the frame padding is `--space-4`.
+- **Library facets:** Type, Level and Cost stay visible; Topic, Status, Week and Language fold into the disclosure (open when any of their values is selected). Below 1024px all facets live in the Filters sheet.
+- **Sticky mobile CTA** appears only on `/` (landing and dashboard) and `/plan`; never on `/week/:n`, `/library`, `/toolkit`, `/capstone`, or legal pages, and never while the page's own primary CTA is in view.
+- **Assignment card:** an Abril h3 "Assignment" heads the card; the clapper stripe is 6px tall with a 12px stripe period (6px ink, 6px paper/raised); brochure numbers render as "Brochure A10"; editorial notes in the data (e.g. "replaced — brochure duplicate") are removed from learner-facing text. The notes field's own label is visually hidden when an h2 "Notes" precedes it.
+- **Fleurons** are `1.5em` square with a `0.5em` gap from the eyebrow text.
+- **Light aurora:** `--aurora-strength: 0.14` in `.light` (dark stays 0.20), and light header bands add `.hud-grid` for texture. The §2.8 aurora rows are re-run for light.
+- **Film grain on always-dark pictures in both themes:** `.hero-screen` and the ceremony stage are `#000` pictures in either theme, so their film grain (`--grain-film-opacity` 0.06) applies in light mode too. Text-bearing surfaces keep grain 0 in light.
+- **Module head readout** is `WK 01–02 · 12h` (mono, `--text-secondary`); `/plan` week cards drop their "MODULE n" label (the head states it).
+- **Tables:** header row has a 2px `--border-strong` bottom rule; rows hover to `--bg-hover`.
 
 **Interim rules added after the R2b visual critique (2026-10-27):**
 - `.light { --vignette: none; }` until R4 deletes `--vignette`: the v1 black vignette smears grey on paper.
