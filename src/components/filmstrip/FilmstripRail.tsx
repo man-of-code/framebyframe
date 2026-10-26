@@ -12,7 +12,7 @@ function frameState(n: number, current: number, complete: boolean): FrameState {
 }
 
 export function FilmstripRail(props: {
-  orientation: "vertical" | "horizontal";
+  orientation: "vertical" | "horizontal" | "grid";
   compact?: boolean;
   progress?: Progress;
 }): JSX.Element {
@@ -26,6 +26,7 @@ export function FilmstripRail(props: {
     <nav className="filmstrip-nav" aria-label="Weeks">
       <ol
         className="filmstrip"
+        data-lenis-prevent={orientation === "horizontal" ? "" : undefined}
         data-orientation={orientation}
         data-compact={compact ? "true" : "false"}
       >
@@ -43,7 +44,7 @@ export function FilmstripRail(props: {
                   ratio={ratio}
                   extension={week.extension}
                   heavy={week.heavy}
-                  orientation="rail"
+                  orientation={orientation === "grid" ? "cell" : "rail"}
                 />
               </li>
             </Fragment>

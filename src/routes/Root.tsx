@@ -2,6 +2,7 @@ import { useEffect, useState, type ComponentType } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { BottomTabs } from "@/components/nav/BottomTabs";
 import { LeftRail } from "@/components/nav/LeftRail";
+import { ShellFooter } from "@/components/nav/ShellFooter";
 import "@/components/nav/shell.css";
 import { PageMeta } from "@/components/PageMeta";
 import { SkipLink } from "@/components/SkipLink";
@@ -96,6 +97,7 @@ function RootLayout() {
         <main id="main" tabIndex={-1} className="shell-content">
           <Outlet context={{ progress } satisfies ShellOutletContext} />
         </main>
+        <ShellFooter />
       </div>
       {rail ? null : <BottomTabs progress={progress} replace={replace} />}
       <DeferredChrome progress={progress} />

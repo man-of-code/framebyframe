@@ -122,6 +122,30 @@ describe("assertDist", () => {
     expect(assertRoutes(root, 1, ["src/routes/Plan.tsx"]).ok).toBe(false);
   });
 
+  it("warns above the target and fails only above the ceiling, per route", () => {
+    const root = distWith(
+      { "index-abc.js": 'import"./react-def.js";', "react-def.js": "console.log('shell');", "Plan-1.js": "console.log('plan');" },
+      html,
+    );
+    mkdirSync(join(root, ".vite"));
+    writeFileSync(join(root, ".vite", "manifest.json"), JSON.stringify({ "src/routes/Plan.tsx": { file: "assets/Plan-1.js" } }));
+    const routes = ["src/routes/Plan.tsx"];
+
+    const overTarget = assertRoutes(root, 1024 * 1024, routes, 1);
+    expect(overTarget.ok).toBe(true);
+    expect(overTarget.warnings).toHaveLength(1);
+    expect(overTarget.warnings[0]).toContain("target");
+
+    const overCeiling = assertRoutes(root, 1, routes, 1);
+    expect(overCeiling.ok).toBe(false);
+    expect(overCeiling.reasons[0]).toContain("ceiling");
+    expect(overCeiling.warnings).toHaveLength(0);
+
+    const underTarget = assertRoutes(root, 1024 * 1024, routes, 1024 * 1024);
+    expect(underTarget.ok).toBe(true);
+    expect(underTarget.warnings).toHaveLength(0);
+  });
+
   it("fails when the gzipped entry graph exceeds the limit", () => {
     const root = distWith(
       {
@@ -133,5 +157,15 @@ describe("assertDist", () => {
     const result = assertDist(root, 1);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.gzipBytes).toBeGreaterThan(1);
+  });
+
+  it("warns, but still passes, when the entry graph exceeds only the target", () => {
+    const root = distWith(
+      { "index-abc.js": "console.log('entry');", "react-def.js": "console.log('shell');" },
+      html,
+    );
+    const result = assertDist(root, 1024 * 1024, 1);
+    expect(result.ok).toBe(true);
+    expect(result.warnings).toHaveLength(1);
   });
 });

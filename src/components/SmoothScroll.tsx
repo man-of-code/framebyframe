@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { shouldSmoothScroll } from "@/lib/smooth-scroll";
 import "lenis/dist/lenis.css";
 
 type LenisInstance = {
@@ -12,22 +13,33 @@ export function SmoothScroll() {
   const lenisRef = useRef<LenisInstance | null>(null);
 
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const narrow = window.matchMedia("(max-width: 767px)");
+    const coarse = window.matchMedia("(pointer: coarse)");
+    const connection = (navigator as Navigator & {
+      connection?: EventTarget & { saveData?: boolean };
+    }).connection;
     let cancelled = false;
     let instance: LenisInstance | null = null;
 
+    const allowed = () =>
+      shouldSmoothScroll({
+        reducedMotion: reduced.matches,
+        narrow: narrow.matches,
+        coarsePointer: coarse.matches,
+        saveData: connection?.saveData === true,
+      });
+
     async function mount() {
-      if (media.matches || cancelled) return;
+      if (instance || !allowed() || cancelled) return;
       const { default: Lenis } = await import("lenis");
-      if (cancelled || media.matches) return;
+      if (instance || cancelled || !allowed()) return;
       instance = new Lenis({ autoRaf: true, respectReducedMotion: true });
       lenisRef.current = instance;
     }
 
-    void mount();
-
     function onChange() {
-      if (!media.matches) {
+      if (allowed()) {
         void mount();
         return;
       }
@@ -36,11 +48,15 @@ export function SmoothScroll() {
       lenisRef.current = null;
     }
 
-    media.addEventListener("change", onChange);
+    void mount();
+    const sources: EventTarget[] = [reduced, narrow, coarse];
+    if (connection) sources.push(connection);
+    for (const source of sources) source.addEventListener("change", onChange);
     return () => {
       cancelled = true;
-      media.removeEventListener("change", onChange);
+      for (const source of sources) source.removeEventListener("change", onChange);
       instance?.destroy();
+      instance = null;
       lenisRef.current = null;
     };
   }, []);

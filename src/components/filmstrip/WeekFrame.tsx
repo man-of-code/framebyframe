@@ -17,7 +17,7 @@ export function WeekFrame(props: {
   moduleLabel?: string;
   extension?: boolean;
   heavy?: boolean;
-  orientation: "rail" | "card";
+  orientation: "rail" | "card" | "cell";
 }): JSX.Element {
   const { n, module, title, state, ratio, hours, stage, moduleLabel, extension, heavy, orientation } = props;
   const uid = useId();
@@ -32,6 +32,9 @@ export function WeekFrame(props: {
   const total = String(TOTAL_WEEKS).padStart(2, "0");
   const card = orientation === "card";
   const moduleText = moduleLabel ?? (module > 0 ? `Module ${module}` : "");
+  const cell = orientation === "cell";
+  const cellLabel =
+    cell && ratio ? `Week ${n}: ${title}, ${ratio.done} of ${ratio.total} done` : undefined;
   const labelledBy = [
     codeId,
     card && moduleText ? moduleId : "",
@@ -50,18 +53,21 @@ export function WeekFrame(props: {
       data-orientation={orientation}
       data-extension={extension ? "true" : undefined}
       aria-current={state === "current" ? "step" : undefined}
-      aria-labelledby={labelledBy}
+      aria-label={cellLabel}
+      aria-labelledby={cell ? undefined : labelledBy}
     >
-      <span id={codeId} className="week-frame-code">
-        WK {pad}
-        {orientation === "card" ? ` / ${total}` : ""}
+      <span id={codeId} className="week-frame-code" aria-hidden={cell ? true : undefined}>
+        {cell ? pad : `WK ${pad}`}
+        {card ? ` / ${total}` : ""}
       </span>
       {card && moduleText ? (
         <span id={moduleId} className="week-frame-module">{moduleText}</span>
       ) : null}
-      <span id={titleId} className={card ? "week-frame-title" : "filmstrip-sr"}>
-        {title}
-      </span>
+      {cell ? null : (
+        <span id={titleId} className={card ? "week-frame-title" : "filmstrip-sr"}>
+          {title}
+        </span>
+      )}
       {card && (hours || ratio || stage) ? (
         <span className="week-frame-meta">
           {hours ? <span id={hoursId}>{hours}</span> : null}
@@ -73,17 +79,17 @@ export function WeekFrame(props: {
           {stage ? <span id={stageId}>{stage}</span> : null}
         </span>
       ) : null}
-      {!card && ratio ? (
+      {!card && !cell && ratio ? (
         <span className="filmstrip-sr">
           {ratio.done}/{ratio.total}
         </span>
       ) : null}
-      {heavy ? (
+      {heavy && !cell ? (
         <span id={heavyId} className="week-frame-chip">
           Heavy
         </span>
       ) : null}
-      {state === "exposed" ? <Check className="week-frame-check" aria-label="Complete" size={20} /> : null}
+      {state === "exposed" ? <Check className="week-frame-check" aria-label="Complete" size={cell ? 14 : 20} /> : null}
     </Link>
   );
 }

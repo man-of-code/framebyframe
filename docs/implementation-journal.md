@@ -1450,3 +1450,103 @@ Append below this line.
 
 - Abril Fatface at 360px on the longest titles is unverified; R2 records it.
 - The sitemap still needs a production origin, and the contact address still needs the dedicated mailbox from the user.
+
+### Redesign R2a: Left rail, Lenis gating, budget gate
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R2a
+
+#### Shipped
+
+- `src/components/nav/LeftRail.tsx` — rail rebuilt to `design-system.md` §6.1: brand, week readout, primary nav, theme toggle, rule, 4×4 filmstrip grid, "NOW SHOWING" eyebrow + title link to `/week/N`. `data-lenis-prevent` on the `<aside>`. Legal links removed.
+- `src/components/nav/shell.css` — rail is `position: sticky; top: 0; height: 100dvh; overflow-y: auto; overscroll-behavior: contain`, 240px; shell is a two-column grid at ≥768px (replaces `margin-left` on the fixed rail); footer styles.
+- `src/components/nav/ShellFooter.tsx`, `src/routes/Root.tsx` — "Legal" nav (Contact, Privacy, Terms) under `<main>` in both layouts. The mobile More sheet keeps its own legal links.
+- `src/components/filmstrip/{FilmstripRail,WeekFrame}.tsx`, `filmstrip.css` — new `orientation="grid"` on `FilmstripRail` and `"cell"` on `WeekFrame`: numeral only, ≥48×48, 8px gaps, `aria-label` "Week N: title, X of Y done", `aria-current="step"`, exposed check kept (14px, corner). `vertical` and `horizontal` are unchanged for `/plan` and the dashboard.
+- `data-lenis-prevent` on `ui/command.tsx` (list), `ui/table.tsx` (container), `ui/dialog.tsx`, `ui/sheet.tsx`, `ui/select.tsx` (content), `ui/scroll-area.tsx` (viewport), and the horizontal filmstrip.
+- `src/lib/smooth-scroll.ts` (+ test), `src/components/SmoothScroll.tsx` — `shouldSmoothScroll(env)` gates Lenis on reduced motion, `(max-width: 767px)`, `(pointer: coarse)` and `navigator.connection.saveData`; all four are listened to and Lenis is destroyed when any starts to match, re-mounted when none does.
+- `scripts/assert-bundle.ts` (+ test) — `ENTRY_GZIP_LIMIT` split into `ENTRY_GZIP_TARGET` (160KiB, warning, exit 0) and `ENTRY_GZIP_CEILING` (180KiB, failure). Results carry `warnings`. What is measured and `LEARNING_ROUTES` are unchanged.
+- `src/components/nav/LeftRail.test.tsx` — rail order, frame labels, current week, now-showing link, `data-lenis-prevent`, no legal links in the rail, footer legal links in the Root shell on desktop and phone layouts.
+
+#### Verified
+
+- `npm test` → 31 files, 168 tests pass.
+- `npx tsc -b --noEmit` → exit 0.
+- `npm run build` → exit 0, no budget warnings. Entry graph 132010 B (128.9 KB). Plan 133756 B (130.6 KB), Week 157741 B (154.0 KB), Library 152020 B (148.5 KB), Toolkit 134872 B (131.7 KB), Capstone 134212 B (131.1 KB).
+- `npm run e2e` → 1 passed.
+- `npx oxlint` → 42 warnings before and after; none added.
+- Browser (Chromium, `vite preview` :4340, 2s after load): wheel over the rail at 1280×800 moved the rail (`scrollTop` 44) and not the page (`scrollY` 0); wheel over main moved the page (`scrollY` 841). Palette list on `/library` (scrollHeight 4452, client 288): wheel moved the list to 400 and the page by 0.
+- Fit: at 1440×800 and 1280×800, brand 12–60, nav 105–433, theme toggle 445–493, grid 518–743 are inside 800; the NOW SHOWING block (755–832) is cut by 32px and the rail scrolls 44px. At 1280×900 the whole rail fits (`scrollHeight` 900). Every frame measured 48×48.
+- No horizontal overflow at 768 and 1440 on `/`, `/plan`, `/library`, `/toolkit`, `/week/7` (`scrollWidth` equals `clientWidth`).
+- 390×844 with `hasTouch` and `isMobile`: `html.lenis` absent; desktop has it. Footer legal nav is present on mobile.
+- Screenshot at 1440×800 (scratchpad `r2a/rail-1440x800.png`): brand, "WK 01 / 16" readout, six nav rows with Dashboard highlighted, a three-way theme toggle, a thin rule, a 4×4 grid of bordered numeral cells with 01 outlined in brass and a line before 13, then NOW SHOWING with the title clipped at the bottom edge.
+
+#### Decisions
+
+- **Decision:** The rail hides its scrollbar (`scrollbar-width: none`).
+  - **Because:** §6.1 makes 48px frames and a 240px rail fixed; a classic scrollbar (8–15px) would shrink the 216px content box and the grid frames below 48px at 800px-tall viewports.
+  - **Rejected:** `scrollbar-gutter: stable` (still narrows the box), and a wider rail (§6.1.7 says 240px).
+  - **Risk:** the rail scrolls by wheel, touchpad and focus only; at 800px tall there is no visible hint that "NOW SHOWING" continues below.
+  - **Deviation:** no
+- **Decision:** Rail side padding is 12px and the right border became an outside `box-shadow`.
+  - **Because:** 4 frames × 48px + 3 × 8px = 216px = 240 − 2 × 12; a 1px border would make frames 47.75px.
+  - **Rejected:** 16px padding (frames 46px, below the 48px target).
+  - **Risk:** the divider is a shadow, so R2b must restyle it as such.
+  - **Deviation:** no
+- **Decision:** At 1440×800 and 1280×800 the NOW SHOWING block is partly below the fold (rail scrolls 44px); §6.1.4 only requires everything through the theme toggle there, and the whole rail at 1280×900.
+  - **Because:** the spec's own heights (six 48px nav rows, toggle, 4×4 frames) leave 32px short at 800px.
+  - **Rejected:** shrinking nav rows below 48px.
+  - **Risk:** none against the spec.
+  - **Deviation:** no
+- **Decision:** Rail gap is `--space-3` (12px) and frames show only the mono numeral ("07"), not "WK 07".
+  - **Because:** "WK 07" does not fit in 48px; the spec says "mono numeral".
+  - **Rejected:** a smaller font.
+  - **Risk:** R2b may want a different glyph treatment.
+  - **Deviation:** no
+- **Decision:** The "week HUD readout" stays the existing `WeekNumeral` on current tokens, placed after the brand; there is no `.hud-frame` yet.
+  - **Because:** the HUD utilities are R2b scope.
+  - **Rejected:** adding an ad hoc frame class.
+  - **Risk:** R2b must wrap it in `.hud-frame` and add `orn-rule` in place of the `.rail-rule` hairline.
+  - **Deviation:** no
+- **Decision:** The rail's "current week" for the grid highlight comes from `useCurrentWeek` inside `FilmstripRail`, while NOW SHOWING uses the `week` prop; both resolve to the same value in `Root`.
+  - **Because:** left the existing `FilmstripRail` contract intact.
+  - **Rejected:** threading a `current` prop through.
+  - **Risk:** if the two sources diverge the highlight and the title would disagree.
+  - **Deviation:** no
+- **Decision:** `.shell` becomes a CSS grid (240px + 1fr) at ≥768px so the sticky rail takes its own column.
+  - **Because:** sticky needs the rail in flow; the previous `margin-left` only worked for `position: fixed`.
+  - **Rejected:** `float: left` on the sticky rail.
+  - **Risk:** any future non-fixed direct child of `.shell` will be auto-placed into a new row.
+  - **Deviation:** no
+- **Decision:** `data-lenis-prevent` is also on select menus, the scroll-area viewport and the horizontal filmstrip (the plan listed palette, tables, dialog, sheet).
+  - **Because:** they are desktop nested scrollers.
+  - **Rejected:** leaving them for later.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** The Toolkit `.table-wrap` is not marked: it has no overflow rule, so it is not a scroller. The shared `Table` container (used by Library's results table) is.
+  - **Because:** `data-lenis-prevent` on a non-scrolling element does nothing.
+  - **Rejected:** adding it anyway.
+  - **Risk:** if a later phase adds `overflow-x: auto` there, it needs the attribute.
+  - **Deviation:** no
+- **Decision:** The `FilmstripRail` `vertical` orientation and its CSS stay although nothing uses it now.
+  - **Because:** surgical change; the plan says keep the API working.
+  - **Rejected:** deleting it.
+  - **Risk:** dead code.
+  - **Deviation:** no
+- **Decision:** `assertDist` and `assertRoutes` keep `ceiling` as the second argument and take `target` last.
+  - **Because:** existing callers and tests pass the limit second.
+  - **Rejected:** an options object.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** Save-Data is read once at mount and on the connection `change` event where `navigator.connection` exists; Safari and Firefox lack it, so they are gated only by the three media queries.
+  - **Because:** there is no standard Save-Data query.
+  - **Rejected:** polling.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- Wheel and touchpad checks used Playwright's synthetic wheel; real trackpad inertia on macOS was not tried.
+- Dialog and sheet bodies carry `data-lenis-prevent`, but no overflowing dialog exists to test on desktop; they were not exercised in the browser.
+- The rail still uses v1 tokens, fonts, brand font and hairline rule; R2b restyles it (HUD frame, `orn-rule`, Abril brand).
+- Hidden rail scrollbar at ≤800px tall (see decision) may want a fade or hint in R2b.
