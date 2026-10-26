@@ -1392,3 +1392,61 @@ Append below this line.
 #### Left open
 
 - none
+
+### Redesign R1: Design system v2
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R1
+
+#### Shipped
+
+- `docs/design-system.md` — v2 "Kinetoscope": five-layer table, one hue per meaning, dark and light token tables, pop fills, literal aurora CSS, shadcn mapping with per-primitive overrides (§2.7), contrast test matrix (§2.8), Abril Fatface type scale, CSS ornament kit with pseudo-element ownership, pop kit (layering, raised vs latched, disabled, focus), HUD, aurora, film and grain kits, surfaces map, ThreeUI governance with two additions (guilloché seal, button sheen), budget target/ceiling (§7.3), battery rules (§7.4), rationale (§10).
+- `.cursor/rules/framebyframe-design.mdc` — v2 rules.
+- `docs/redesign-plan.md` — ornaments as CSS, budget target and ceiling, battery rules, sidebar-first R2, Fable pass, handoff rule.
+
+#### Verified
+
+- Contrast for every candidate pair computed with the WCAG formula (scratchpad `contrast.py`, `verify.py`, `aurora.py`): lowest body-text pair 4.85:1; aurora strength 0.20 keeps `--text-secondary` ≥ 4.86:1 over all three fields stacked (dark).
+- Self-hosted Inter and JetBrains Mono have no `smcp`: identical widths with `font-synthesis: none` in Chromium.
+- Cold review (Opus subagent): 3 blockers, 11 should-fix, 2 nits. Its contrast claims were re-computed and all held (border-strong ratios swapped, dark overlay 2.78, three-field stack 3.53, light brass on wash 4.35). All findings are addressed in the spec.
+- Left-rail diagnosis (Sonnet subagent, production preview in Chromium): Lenis captures wheel input over the rail; the rail is ~1650px tall with the primary nav below sixteen 48px frames; week frames show only "WK nn" to sighted users.
+- Design pass (Fable subagent): ThreeUI `68802d5` catalog evaluated; every family that imports `three`, loads a CDN, renders a full HTML document, uses `backdrop-filter`, or animates continuously was rejected.
+
+#### Decisions
+
+- **Decision:** v1 token names are kept where the meaning carried over (`--accent-primary` = action teal, `--accent-warm` = brass).
+  - **Because:** about 300 CSS references use them; renaming adds churn without changing any rendered value.
+  - **Rejected:** a rename to `--action` / `--brass`.
+  - **Risk:** the name `--accent-warm` no longer describes its hue precisely.
+  - **Deviation:** no
+- **Decision:** Ornaments, halftone, HUD frames and aurora are CSS; no ornament is a React component.
+  - **Because:** `/week/:n` had ~6KB of JS headroom; CSS is outside the JS budget.
+  - **Rejected:** the plan's `src/components/ornament/` SVG components.
+  - **Risk:** none.
+  - **Deviation:** yes. Plan step: "`src/components/ornament/` — `Fleuron`, `DoubleRule`, `DiamondRule`, `PlaybillFrame`." Did this instead: CSS utilities (plan updated).
+- **Decision:** Aurora strength 0.20 in both themes, and only `--text-primary` / `--text-secondary` may sit on a band.
+  - **Because:** at the 0.30 candidate, three overlapping fields put `--text-secondary` at 3.53:1; CSS cannot prevent overlap.
+  - **Rejected:** forbidding overlap by placement.
+  - **Risk:** the aurora reads softer than the candidate.
+  - **Deviation:** no
+- **Decision:** The budget is a 160KB target that warns and a 180KB ceiling that fails, per route; exceeding the target needs a journaled design/UX reason. Phones run nothing continuously (§7.4).
+  - **Because:** user direction 2026-10-27: the budget protects phone battery and is not an absolute line.
+  - **Rejected:** keeping 160KB as a hard fail.
+  - **Risk:** "target" can erode; every overage must be journaled.
+  - **Deviation:** yes. Plan step (§2): "≤160KB … enforced per route". Did this instead: target + ceiling (plan updated).
+- **Decision:** SparkBadge is desktop-only; phones, reduced motion and Save-Data get a static guilloché-seal ceremony. Continue sits on `--bg-raised`, not in the aurora.
+  - **Because:** SparkBadge animates on a timer (§7.4 rule 1); §2.5 bans controls in a band. Reduced-motion users previously got no ceremony.
+  - **Rejected:** a time-limited SparkBadge on phones.
+  - **Risk:** phone users never see the particle badge.
+  - **Deviation:** no
+- **Decision:** Two grain variants: band grain (overlay 0.03, dithering only) and film grain (normal blend 0.06, dark only) on text-free surfaces: hero screen, ceremony stage, 404 and thank-you roots.
+  - **Because:** overlay grain at 0.03 on `#0E0B16` moves pixels by under one 8-bit step, so it is invisible; normal-blend grain over aurora text would push `--text-secondary` below 4.5:1.
+  - **Rejected:** raising band-grain opacity.
+  - **Risk:** "filmy" grain is visible on only a few surfaces.
+  - **Deviation:** no
+
+#### Left open
+
+- Abril Fatface at 360px on the longest titles is unverified; R2 records it.
+- The sitemap still needs a production origin, and the contact address still needs the dedicated mailbox from the user.
