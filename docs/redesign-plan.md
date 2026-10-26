@@ -30,7 +30,8 @@ Semantic rule carried over from v1, renamed: **brass** (the progress colour) is 
 - Animate `transform` and `opacity` only. Hover never uses `scale`. Pop-art "press" is a `translate` of the offset shadow, not a scale.
 - Aurora animation runs only on the landing hero and the ceremony, 8–12s loops, off under `prefers-reduced-motion`. Learning routes get a **static** aurora.
 - Learning routes (`/plan`, `/week/:n`, `/library`, `/toolkit`, `/capstone`) load zero canvas code.
-- **Budget:** app shell plus any single learning route is ≤160KB JS gzipped, enforced per route by `assert-bundle`, not only the entry. The 164KiB raise is reverted.
+- **Budget (revised 2026-10-27, user direction):** the budget exists so phone reading does not drain the battery; it is a target weighed against design and UX, not an absolute line. App shell plus any learning route: **target 160KB** JS gzipped (warn), **ceiling 180KB** (fail), measured per route by `assert-bundle`. Exceeding the target needs a journal `Decision` naming the design/UX gain.
+- **Battery rules** (`design-system.md` §7.4): on phones nothing runs continuously while reading: no canvas, no live aurora, no infinite CSS animation, no Lenis rAF loop. Motion is interaction-only.
 - **Contrast is a test.** Every text/background token pair in both themes is asserted ≥4.5:1 (≥3:1 for large display and non-text UI) by a unit test that parses `tokens.css`.
 - Analytics: consent-gated Vercel Web Analytics stays (user decision 2026-10-27). The PRD is amended to say so.
 
@@ -91,6 +92,10 @@ Also update `.cursor/rules/framebyframe-design.mdc` to match.
 
 ### R2 — Foundation
 
+- **Left sidebar fix first** (user report 2026-10-27: "extremely buggy"). The bugs diagnosed in R1 (browser-verified list in the R1 journal entry) are fixed in the rail as part of the shell restyle, each with a test or a recorded browser check.
+- `assert-bundle`: target 160KiB warns, ceiling 180KiB fails (tests updated).
+- Lenis does not mount on phones (`(max-width: 767px)`, `(pointer: coarse)`), under reduced motion, or under Save-Data.
+
 - `src/styles/tokens.css` rewritten from R1 (both themes, shadcn mapping, aurora, pop, HUD tokens). Inline theme script and `useTheme` unchanged.
 - Fonts: add Abril Fatface woff2 + OFL text; drop Archivo Expanded; update preload.
 - `src/styles/` utilities: `.halftone`, `.pop-outline`, `.pop-shadow`, `.hud-frame`, `.hud-grid`, `.aurora`, `.aurora--live`, `.playbill-frame`; grain kept.
@@ -105,6 +110,8 @@ Also update `.cursor/rules/framebyframe-design.mdc` to match.
 Filmstrip (sprockets in brass and ink, playbill numerals), `/plan` (module headers as playbill bills with ornamental rules), `/week/:n` (playbill title block over static aurora, pop task checkboxes, HUD hours), resource and gap cards (pop badges, no halftone behind text), `/library` (pop chips, HUD result count, palette), `/toolkit` table, `/capstone` stages. Zero canvas, budget held. Verify: tests, build budgets, browser at 4 widths × 2 themes, keyboard pass.
 
 ### R4 — Showcase and launch surfaces
+
+Includes the ThreeUI additions and grain map chosen in the R1 design pass (`design-system.md` §7.1, §5.6, §10), vendored unmodified with SHA recorded.
 
 Landing hero (animated aurora + playbill title + CRT canvas framed as a proscenium, poster recaptured), Lumen CTA restyled through props/tokens only, dashboard, `/about` (decode heading), capstone ceremony, contact / thank-you / privacy / terms, 404, cookie banner, sticky CTA, route fallback skeleton, OG image and favicon redrawn in the new palette. Vendor files stay unmodified.
 
@@ -126,13 +133,17 @@ Chosen with the advisor, 2026-10-27. Phases run one at a time; they share one wo
 | Phase | Implementer | Why |
 |---|---|---|
 | R0 | Parent session (Opus), inline | Holds every review finding; 0.3 is a judgment call that breaks tests on purpose |
-| R1 | Parent session (Opus), inline | The spec fixes every downstream value and depends on this conversation's decisions |
+| R1 | Parent session (Opus), inline; design finalization pass by a **Fable** subagent (ThreeUI exploration, grain map); cold review by an Opus subagent | The spec fixes every downstream value; the user invited Fable for finalizing the design |
 | R2 | Sonnet subagent | Precise transcription of R1 into tokens, utilities, primitives, contrast test. Escalate to Opus if review finds drift |
 | R3 | Sonnet subagent | Large but mechanical application of the R1 surface map |
 | R4 | Opus subagent | Taste-heavy: hero composition, CRT framing without editing vendor files, poster, OG image, favicon |
 | R5 | Sonnet subagent | Runs tools and records results; told explicitly to record misses and never adjust limits |
 
 Every subagent brief carries: branch, plan path and its phase section, design-system v2 path, journal heading and rules, user decisions (analytics stays; `flag.txt` stays untouched; contact email only in `SITE.email`), vendor files unmodified, load `ui-ux-pro-max` first, commit attribution, no push.
+
+### Session handoff
+
+The parent session stays compact (implementation runs in subagents). When the parent's context passes ~1M tokens, it writes a handoff note to `docs/redesign-handoff.md` (current phase, last commit, open findings, next step) and continues from it.
 
 ## 5. Open items needing the user
 
