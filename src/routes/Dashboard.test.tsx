@@ -1,11 +1,17 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { STORAGE_KEY, emptyProgress } from "@/lib/progress";
 import { Home } from "@/routes/Dashboard";
 
 describe("dual-state home", () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-24T12:00:00"));
+  });
+
+  afterEach(() => vi.useRealTimers());
 
   it("shows the landing when no start date is stored", () => {
     render(<MemoryRouter><Home /></MemoryRouter>);
