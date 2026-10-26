@@ -1,11 +1,17 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { emptyProgress } from "@/lib/progress";
 import { BottomTabs } from "./BottomTabs";
 
 describe("BottomTabs", () => {
+  // The panels are React.lazy chunks. Warming them keeps findBy* inside its timeout when the
+  // whole suite is transforming in parallel; the lazy boundary itself is unchanged.
+  beforeAll(async () => {
+    await Promise.all([import("./MoreSheet")]);
+  });
+
   beforeEach(() => {
     window.matchMedia = ((query: string) => ({
       matches: false,

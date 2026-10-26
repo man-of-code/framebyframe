@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { resources } from "@/content";
 import { Library } from "./Library";
@@ -42,6 +42,12 @@ function renderLibrary(path = "/library") {
 }
 
 describe("Library", () => {
+  // The panels are React.lazy chunks. Warming them keeps findBy* inside its timeout when the
+  // whole suite is transforming in parallel; the lazy boundary itself is unchanged.
+  beforeAll(async () => {
+    await Promise.all([import("@/components/library/SearchPalette"), import("@/components/library/FilterSheetPanel")]);
+  });
+
   beforeEach(() => {
     installMatchMedia((query) => query.includes("768"));
     Element.prototype.scrollIntoView = () => {};

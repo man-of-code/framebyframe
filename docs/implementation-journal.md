@@ -1367,7 +1367,7 @@ Append below this line.
 
 #### Verified
 
-- `npm test` → 156 passed.
+- `npm test` → 155 passed, three consecutive full runs. *(Corrected: the first commit of this entry said 156 and was made while one palette test was failing under full-suite load; see the warming decision below.)*
 - Removing `returnFocus.current?.focus()` from `MoreSheet` fails the new BottomTabs test; restored.
 - Production preview, desktop, JS responses gzipped within 3s of navigation: `/library` 173.6KB, `/week/7` 170.1KB, `/plan` 147.0KB. Static graphs from `assert-bundle`: 148.3KB, 153.9KB, 130.4KB.
 
@@ -1377,6 +1377,11 @@ Append below this line.
   - **Because:** deferring that code shortens the critical path, which is what LCP measures. The 3s totals above show what still downloads.
   - **Rejected:** counting effect-loaded chunks in the gate, which would fail `/library` and `/week/7` again and push toward removing Lenis or the cookie banner, both user-requested.
   - **Risk:** a reader of `design-system.md` §7.3 "first load" could take the gate as stricter than it is. R1 restates the budget with this definition.
+  - **Deviation:** no
+- **Decision:** `Library.test.tsx` and `BottomTabs.test.tsx` import the lazy panels in `beforeAll`.
+  - **Because:** under full-suite load the first dynamic import of cmdk exceeded `findBy*`'s 1s timeout, so "opens the command palette from /" failed intermittently.
+  - **Rejected:** raising the `findBy` timeout, which keeps the race and only makes it rarer.
+  - **Risk:** the tests no longer exercise a cold chunk load; the browser check in R0 did.
   - **Deviation:** no
 - **Decision:** The radiogroup does not wrap at either end.
   - **Because:** on the final stage, a wrap from "To do" to "Done" spends the once-only ceremony.
