@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { Link, Outlet } from "react-router-dom";
+import { CookieBanner, useConsent } from "@/components/CookieBanner";
 import { BottomTabs } from "@/components/nav/BottomTabs";
 import { LeftRail } from "@/components/nav/LeftRail";
 import { ShellFooter } from "@/components/nav/ShellFooter";
@@ -42,6 +43,12 @@ function DeferredChrome({ progress }: { progress: Progress }) {
   return <Chrome progress={progress} />;
 }
 
+/** A leaf of its own: the hydration-end re-render (stored consent) must not re-render RootLayout and its Outlet. */
+function ConsentBanner() {
+  const [consent, chooseConsent] = useConsent();
+  return <CookieBanner consent={consent} onChoose={chooseConsent} />;
+}
+
 function RootLayout() {
   const { progress, status, replace } = useProgressContext();
   const { week } = useCurrentWeek(progress);
@@ -72,6 +79,7 @@ function RootLayout() {
         <BottomTabs progress={progress} replace={replace} />
       </div>
       <DeferredChrome progress={progress} />
+      <ConsentBanner />
     </div>
   );
 }

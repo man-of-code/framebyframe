@@ -38,8 +38,11 @@ describe("prerender (Node, no window)", () => {
     expect(body).not.toContain("route-fallback");
     expect(body).not.toContain("<template");
     expect(body).not.toContain("$RC(");
-    // Consent and the deferred chrome are client-only.
-    expect(body).not.toContain("cookie-banner");
+    // The cookie banner ships in every page from the neutral "unknown" snapshot (the pre-paint has-consent class
+    // hides it for a stored choice); the rest of the deferred chrome stays client-only.
+    expect(body).toContain('<aside class="cookie-banner pop-outline" aria-label="Cookie consent">');
+    expect(body).not.toContain("sticky-cta");
+    expect(body).not.toContain("data-sonner-toaster");
     // Learning routes and the landing ship no canvas markup.
     expect(body).not.toContain("<canvas");
     expect(head.some((tag) => tag.startsWith("<title>"))).toBe(true);

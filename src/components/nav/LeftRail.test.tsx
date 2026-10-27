@@ -100,7 +100,8 @@ describe.each([
     }
     const main = container.querySelector("main")!;
     expect(main.compareDocumentPosition(legal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(screen.queryByRole("complementary") !== null).toBe(rail);
+    // The cookie banner is a complementary landmark too (rendered by Root), so pick out the rail.
+    expect(screen.queryAllByRole("complementary").some((el) => el.classList.contains("left-rail"))).toBe(rail);
     expect(screen.queryByRole("button", { name: "More" }) !== null).toBe(!rail);
     expect(screen.getAllByRole("navigation", { name: "Primary" })).toHaveLength(1);
   });

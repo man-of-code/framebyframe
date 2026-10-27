@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType, type JSX } from "react";
+import { useEffect, useState, useSyncExternalStore, type ComponentType, type JSX } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -16,18 +16,37 @@ function readConsent(): Consent {
   return "unknown";
 }
 
-export function useConsent(): [Consent, (next: Exclude<Consent, "unknown">) => void] {
-  const [consent, setConsent] = useState<Consent>(readConsent);
+// Shared by the banner (Root) and the analytics loader (the deferred chrome). `chosen` keeps this view's choice
+// when storage refuses it.
+let chosen: Consent | null = null;
+const listeners = new Set<() => void>();
 
-  function choose(next: Exclude<Consent, "unknown">) {
-    try {
-      localStorage.setItem(KEY, next);
-    } catch {
-      /* the choice still applies for this view */
-    }
-    setConsent(next);
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function snapshot(): Consent {
+  return chosen ?? readConsent();
+}
+
+function choose(next: Exclude<Consent, "unknown">) {
+  try {
+    localStorage.setItem(KEY, next);
+  } catch {
+    /* the choice still applies for this view */
   }
+  chosen = next;
+  for (const listener of listeners) listener();
+}
 
+/**
+ * The prerender and the hydration render see "unknown", so the banner ships in the HTML; the pre-paint script in
+ * index.html hides it (html.has-consent) when a choice is stored. Storage is read once hydrated, or on the first
+ * render of a plain client render.
+ */
+export function useConsent(): [Consent, (next: Exclude<Consent, "unknown">) => void] {
+  const consent = useSyncExternalStore(subscribe, snapshot, () => "unknown" as const);
   return [consent, choose];
 }
 

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { expectedH1 } from "../e2e/expected-headings";
 
@@ -24,6 +25,13 @@ const SEEDED_PROGRESS = JSON.stringify({
 });
 
 const HYDRATION_NOISE = /\[hydration\]|Hydration|did not match|recoverable/i;
+
+/** The @vercel/analytics chunk; it must not load before an explicit accept. */
+const ANALYTICS_CHUNK = (
+  JSON.parse(readFileSync("dist/.vite/manifest.json", "utf8")) as Record<string, { file: string }>
+)["node_modules/@vercel/analytics/dist/react/index.mjs"]!.file;
+
+const isAnalytics = (url: string) => url.includes(ANALYTICS_CHUNK) || url.includes("/_vercel/insights/");
 
 async function h1Name(page: Page): Promise<string> {
   const h1 = page.locator("main h1").first();
@@ -80,6 +88,10 @@ for (const theme of ["dark", "light"] as const) {
             expect(total).toBeGreaterThan(9);
             await expect(page.locator(".resource-card")).toHaveCount(total);
           }
+          // Clean storage has no consent choice, so the prerendered banner stays; seeded storage stores "rejected".
+          const banner = page.getByRole("complementary", { name: "Cookie consent" });
+          if (storage === "clean") await expect(banner).toBeVisible();
+          else await expect(page.locator(".cookie-banner")).toHaveCount(0);
           await expect(page.getByText("Progress is read-only")).toHaveCount(0);
 
           // Production React keeps server attributes on a mismatch without reporting it, so a useId divergence
@@ -100,6 +112,77 @@ for (const theme of ["dark", "light"] as const) {
     });
   }
 }
+
+// Consent without progress, so the banner is the only stored state in play. A visibility probe installed before
+// any page script samples every DOM change and frame: a stored choice must never show the banner, not even once.
+for (const consent of ["accepted", "rejected"] as const) {
+  test.describe(`stored consent "${consent}"`, () => {
+    for (const path of ["/", "/plan", "/week/7", "/library"]) {
+      test(path, async ({ page }) => {
+        const messages: string[] = [];
+        page.on("console", (message) => messages.push(`${message.type()}: ${message.text()}`));
+        page.on("pageerror", (error) => messages.push(`pageerror: ${error.message}`));
+        const analytics: string[] = [];
+        page.on("request", (request) => {
+          if (isAnalytics(request.url())) analytics.push(request.url());
+        });
+        await page.route("**/_vercel/insights/**", (route) => route.fulfill({ status: 200, body: "" }));
+        await page.addInitScript((value) => {
+          localStorage.setItem("fbf:consent", value);
+          const seen = { visible: false };
+          (window as unknown as { __banner: typeof seen }).__banner = seen;
+          const probe = () => {
+            const el = document.querySelector(".cookie-banner");
+            if (el && el.checkVisibility()) seen.visible = true;
+          };
+          new MutationObserver(probe).observe(document, { childList: true, subtree: true });
+          const frame = () => {
+            probe();
+            if (performance.now() < 8000) requestAnimationFrame(frame);
+          };
+          requestAnimationFrame(frame);
+        }, consent);
+
+        await page.goto(path, { waitUntil: "networkidle" });
+        expect(await page.locator("#root").getAttribute("data-prerendered")).toBe(path);
+        expect(await h1Name(page)).toBe(expectedH1(path));
+        await expect(page.locator("html")).toHaveClass(/\bhas-consent\b/);
+        await expect(page.locator(".cookie-banner")).toHaveCount(0);
+        expect(await page.evaluate(() => (window as unknown as { __banner: { visible: boolean } }).__banner.visible)).toBe(false);
+        if (consent === "rejected") expect(analytics).toEqual([]);
+        else await expect.poll(() => analytics.some((url) => url.includes("/_vercel/insights/"))).toBe(true);
+
+        expect(messages.filter((text) => HYDRATION_NOISE.test(text))).toEqual([]);
+        expect(messages.filter((text) => text.startsWith("pageerror") || text.startsWith("error"))).toEqual([]);
+      });
+    }
+  });
+}
+
+test("analytics load only after the prerendered banner's Accept", async ({ page }) => {
+  const messages: string[] = [];
+  page.on("console", (message) => messages.push(`${message.type()}: ${message.text()}`));
+  const analytics: string[] = [];
+  page.on("request", (request) => {
+    if (isAnalytics(request.url())) analytics.push(request.url());
+  });
+  await page.route("**/_vercel/insights/**", (route) => route.fulfill({ status: 200, body: "" }));
+
+  await page.goto("/plan", { waitUntil: "networkidle" });
+  expect(await page.locator("#root").getAttribute("data-prerendered")).toBe("/plan");
+  await expect(page.locator("html")).not.toHaveClass(/\bhas-consent\b/);
+  const banner = page.getByRole("complementary", { name: "Cookie consent" });
+  await expect(banner).toBeVisible();
+  await page.waitForTimeout(1000);
+  expect(analytics).toEqual([]);
+
+  await banner.getByRole("button", { name: "Accept" }).click();
+  await expect(banner).toHaveCount(0);
+  await expect.poll(() => analytics.some((url) => url.includes(ANALYTICS_CHUNK))).toBe(true);
+  await expect.poll(() => analytics.some((url) => url.includes("/_vercel/insights/"))).toBe(true);
+  expect(await page.evaluate(() => localStorage.getItem("fbf:consent"))).toBe("accepted");
+  expect(messages.filter((text) => HYDRATION_NOISE.test(text))).toEqual([]);
+});
 
 test("an unknown path gets 404.html with status 404 and a client render", async ({ page }) => {
   const messages: string[] = [];
@@ -133,6 +216,17 @@ test.describe("first paint without JavaScript", () => {
       await expect(page.locator("main h1").first()).toBeVisible();
       expect(await h1Name(page)).toBe(expectedH1(path));
     }
+  });
+
+  test("the prerendered cookie banner shows without a stored choice and is hidden with one", async ({ page }) => {
+    await page.goto("/plan");
+    await expect(page.getByRole("complementary", { name: "Cookie consent" })).toBeVisible();
+
+    await page.addInitScript(() => localStorage.setItem("fbf:consent", "rejected"));
+    await page.goto("/library");
+    await expect(page.locator("html")).toHaveClass(/\bhas-consent\b/);
+    await expect(page.locator(".cookie-banner")).toHaveCount(1);
+    await expect(page.locator(".cookie-banner")).toBeHidden();
   });
 
   test("a returning learner never sees the prerendered landing", async ({ page }) => {

@@ -30,10 +30,17 @@
             document.head.appendChild(l);
           }
         } catch (e) {}
+        // The cookie banner is in the prerendered HTML; a stored choice hides it before first paint (html.has-consent)
+        // until React, once hydrated, reads the same value and removes it. Same values as readConsent.
+        try {
+          var consent = localStorage.getItem("fbf:consent");
+          if (consent === "accepted" || consent === "rejected") document.documentElement.classList.add("has-consent");
+        } catch (e) {}
       })();
     </script>
     <style>
       html.has-progress #root[data-prerendered="/"] { display: none; }
+      html.has-consent .cookie-banner { display: none; }
     </style>
     <link
       rel="preload"
