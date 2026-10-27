@@ -90,6 +90,17 @@ describe("Library", () => {
     expect(await screen.findByRole("dialog", { name: "Search the library" })).toBeTruthy();
   });
 
+  it("returns focus to the element that had it when Escape closes the palette", async () => {
+    renderLibrary();
+    const field = screen.getByLabelText("Search the library");
+    field.focus();
+    await userEvent.keyboard("{Meta>}k{/Meta}");
+    expect(await screen.findByRole("dialog", { name: "Search the library" })).toBeTruthy();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(document.activeElement).toBe(field);
+  });
+
   it("shows the Indian-language gap card for Tamil and no zero count", async () => {
     renderLibrary();
     await openMore();

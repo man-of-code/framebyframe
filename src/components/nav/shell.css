@@ -325,7 +325,10 @@
 
 .route-fallback {
   display: grid;
+  align-content: start;
   gap: var(--space-4);
+  /* Reserves the viewport so the footer does not jump when the lazy route resolves (Lighthouse CLS). */
+  min-height: 100svh;
 }
 
 .route-fallback__band {

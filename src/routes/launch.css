@@ -23,6 +23,8 @@
 
 .cookie-banner a {
   color: var(--accent-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* Pop controls sit 12px apart (design-system.md 8). */

@@ -2098,3 +2098,70 @@ Append below this line.
 - §7.1 row 1 still lists the CRT under "Vendored" at `src/vendor/threeui/crt/`; it is now a derived copy at `src/vendor/threeui-derived/crt/` (spec edit for the parent).
 - The import-failure toast shows the validator's raw reason ("expected version 1, got 9"); copy unchanged.
 - Lighthouse (R5).
+
+### Redesign R5: Hardening
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R5 — Hardening; `docs/design-system.md` §7.3, §7.4, §8; Left open of R0 to R4.1
+
+#### Shipped
+
+- `src/components/ExportImport.tsx` (+ test): a failed import now toasts "That file isn't a Frame by Frame progress export." with `description: "Reason: <validator text>"` as the smaller secondary line. `importProgress` and its tests are unchanged.
+- `src/components/nav/shell.css`: `.route-fallback` reserves `min-height: 100svh` (`align-content: start`) so the footer no longer jumps when a lazy route resolves. Lighthouse had named `footer.shell-footer` as the whole CLS (0.098) on `/plan`, `/week/7`, `/library`.
+- `src/routes/launch.css`: the cookie banner's Privacy link is underlined. Lighthouse `link-in-text-block` failed it (teal against paper text, 1.09:1, no underline), which held `/` and `/week/7` at a11y 96.
+- `src/routes/Library.tsx`, `SearchPalette.tsx`, `src/components/ui/command.tsx` (+ `Library.test.tsx`): the palette has no trigger element, so after Escape focus fell to `<body>`. The opener is captured when the shortcut fires and `onCloseAutoFocus` returns focus to it. `CommandDialog` forwards `onCloseAutoFocus`.
+
+#### Verified
+
+- Gate before fixes: `npm run validate && npm test && npx tsc -b && npm run build` exit 0, 217 tests. Gate after fixes: `npm run validate && npm test && npx tsc -b && npm run build && npm run e2e` exit 0, 40 files / 218 tests, e2e 1 passed. `npx oxlint`: 42 warnings (baseline 42, none added).
+- Bundle gate (gzip, limits untouched: target 160KiB / ceiling 180KiB): entry graph 132,308 B (129.2 KB); `/plan` 131.2 KB; `/week` 155.3 KB; `/library` 152.5 KB; `/toolkit` 132.9 KB; `/capstone` 131.6 KB. All under target. `/week` has 4.7 KB of headroom. Atmosphere chunk (`atmosphere-*.js`, loaded by the landing hero and ceremony only): 23.02 kB raw, 9.33 kB gzip. Entry chunk `index-*.js`: 359.72 kB raw, 114.96 kB gzip.
+- Lighthouse 12.8.2, mobile, default simulated throttling, production `vite preview` on :4390, Playwright Chromium, fresh profile per run. Final run (after the CLS and cookie-link fixes):
+
+| Route | Perf | A11y | BP | SEO | LCP | TBT | CLS | FCP |
+|---|---|---|---|---|---|---|---|---|
+| `/` | 82 | 100 | 100 | 100 | 3.7 s | 30 ms | 0.101 | 2.7 s |
+| `/plan` | 90 | 100 | 100 | 100 | 3.1 s | 10 ms | 0 | 2.7 s |
+| `/week/7` | 87 | 100 | 100 | 100 | 3.3 s | 10 ms | 0 | 2.8 s |
+| `/library` | 88 | 98 | 100 | 100 | 3.3 s | 10 ms | 0 | 2.8 s |
+
+  Before the fixes: perf 80 / 87 / 85 / 85, a11y 96 / 100 / 96 / 98, CLS 0.101 / 0.098 / 0.098 / 0.098, LCP 3.8 / 3.1 / 3.3 / 3.3 s. Targets: a11y >= 95 met on all four. Perf >= 90 met on `/plan` only (90). LCP < 2.0 s missed on all four. Top diagnostics for the misses, on every route: render-blocking `index-*.css` (19 KB, 450 to 750 ms wasted), unused JavaScript (350 to 450 ms), and the network dependency chain (HTML, CSS, JS entry, lazy route chunk). `/` adds `prioritize-lcp-image` (495 ms; the LCP element is `img.hero-poster`, not preloaded) and `uses-responsive-images` (60 ms). `/library` adds `dom-size` (3,193 elements) and `heading-order` (`h3` cards follow the `h1` with no `h2`). LCP element is a `<p>` on `/plan` and `/library`, the `<h1>` on `/week/7`. Raw JSON is in the scratchpad `r5/lh-*.json`.
+- Battery audit (Playwright, 390x844, `isMobile`, `hasTouch`; 3 s idle, then a 5 s sample; rAF wrapped before app code via `addInitScript`):
+
+| Profile / route | rAF callbacks in 5 s | Running animations | Canvas in DOM | `html.lenis` |
+|---|---|---|---|---|
+| phone `/` | 0 | none | 0 | no |
+| phone `/plan` | 0 | none | 0 | no |
+| phone `/week/7` | 0 | none | 0 | no |
+| phone `/library` | 0 | none | 0 | no |
+| phone `/capstone` | 0 | none | 0 | no |
+| phone `/` reduced motion | 0 | none | 0 | no |
+| desktop 1440 `/` first run | 600 (~120/s) | `aurora-drift` on `.hero.aurora.aurora--live` (infinite) | 1 | yes |
+
+  §7.4 holds on every phone route. The desktop numbers are the expected live hero.
+- Accessibility, both themes: no horizontal scroll at 360 px on `/`, dashboard (start date seeded), `/plan`, `/week/1`, `/week/7`, `/week/16`, `/library`, `/toolkit`, `/capstone`, `/about`, `/contact`, `/privacy`, `/terms`, `/thank-you`, `/nope` (scrollWidth == clientWidth). Tab traversal (70 stops each, 1280x800) on `/`, `/library`, `/week/7`: the skip link "Skip to content" is the first stop; every link, radio, checkbox, search input, select, textarea and button showed a 2px outline (the date input's inner fields re-reported `:focus-visible` false on later stops; the first stop and a screenshot confirm the ring). Smallest tab stop 20 px = the checkbox visual, with a `-inset-3.5` hit area (48 px). Palette opens with Meta+K and Ctrl+K, focus lands in the search input, Escape closes it and (after the fix) returns focus to the previous element. More sheet and Filters sheet (390 px): Escape closes, focus returns to "More" / "Filters". `grep` for emoji in `src` and `public/*.html`: 0 hits. `scale(`: one hit, `scaleX(-1)` in `ornaments.css` (a mirror, not hover); no `hover:scale`, `active:scale` or `scale-` classes. Raw hex in `src/components` and `src/routes` `.tsx`: 1 hit, a comment in `CeremonyBadge.tsx`. Contrast test: green inside `npm test`. Brass (`--accent-warm`, `--brass-fill`) is used only for the current-week figure and done readouts (`.hud-current`), the filmstrip's exposed/current states and ticks, done task cards, the progress bar and the checked checkbox. Light-mode grain: `--grain-opacity` and `--grain-film-opacity` compute to 0 on `/`, `/plan`, `/week/7`, `/library`; the only grain pseudo in light is the hero screen picture (0.10, an always-dark picture by the R4.1 decision).
+- Plan conformance, R0 to R5: done: R0 0.1 to 0.14 (spot-checked: single Gmail in `site.ts`, scaffold files gone, per-route gate prints, PRD amended, radiogroup roving tabindex, e2e green), R0.1, R1, R2a, R2b, R2b.1, R3, R3.1, R4, R4.1, R5 (this entry). Done with deviation: 0.3 week completion rule (Task 9, journal line 1323); R1 ornaments as CSS not JSX (line 1427) and budget target/ceiling (line 1437); R2b aurora order and rail toggle check (lines 1596, 1606); R4 display size, ceremony stage and padding (lines 1966, 1991, 1996). Non-negotiables: no canvas on learning routes (verified in the DOM and by chunk), no hover scale, no emoji, Lucide only, budget held, battery rules held, contrast is a test. Not done: none.
+
+#### Decisions
+
+- **Decision:** the palette's focus return is implemented by remembering the opener at shortcut time rather than adding a visible trigger.
+  - **Because:** the palette is opened only by Meta+K and `/`, so Radix has no trigger to restore focus to and it fell to `<body>`.
+  - **Rejected:** a visible "Search" button as the trigger (a design change).
+  - **Risk:** if the opener unmounts while the palette is open, focus is left to the browser default.
+  - **Deviation:** no
+- **Decision:** the cookie-banner link is underlined and the route fallback reserves the viewport height, both as local fixes.
+  - **Because:** Lighthouse named exactly these two nodes (`link-in-text-block`, footer CLS).
+  - **Rejected:** changing any threshold or budget (not allowed in this phase).
+  - **Risk:** the fallback `min-height: 100svh` makes the skeleton taller than the old one; it shows only on a direct load.
+  - **Deviation:** no
+
+#### Left open
+
+- Unmet: Lighthouse performance >= 90 on `/` (82), `/week/7` (87) and `/library` (88); met on `/plan` (90, at the line).
+- Unmet: LCP < 2.0 s on `/plan` (3.1 s), `/week/7` (3.3 s), `/library` (3.3 s); `/` is 3.7 s. Simulated mobile throttling: render-blocking CSS and the entry-then-route chunk chain dominate. Candidate work, not done: inline critical CSS, preload the route chunk and the hero poster. Not attempted in R5 because it changes the build pipeline.
+- Unmet: CLS 0.101 on `/` (the 0.1 "good" line). The shifts are many 0.003 shifts from `span[data-article-heading]` (the decode heading changes width as it resolves). Fixing needs the heading's width reserved; a landing design change.
+- Lighthouse `label-content-name-mismatch` on `/plan` week frames (`aria-labelledby` composes ids, visible text is not a prefix of the name; weight 0, a11y still 100) and `heading-order` on `/library` (`h3` resource cards under `h1`, no `h2`; a11y 98). Not changed.
+- `/library` renders 3,193 DOM elements at 390 px (Lighthouse `dom-size`).
+- The Dashboard chunk contains a WebGL capability probe that creates a detached canvas. It never attaches to the DOM (DOM canvas count 0 on phone routes), but the dashboard route was not in the battery sample (the audited `/` was the clean-storage landing).
+- The previous Left open items still stand unless named above: the contact address is still the personal Gmail in `src/content/site.ts` (user-owned, needs the dedicated address); `SITE_ORIGIN` is unset so no sitemap ships (user-owned, needs the production origin); the Vercel rewrite and the service worker content-type check have not run on a real deploy; Abril Fatface at 360 px on the longest titles was only covered by the overflow check; primitives not rendered by any route (tooltip, switch, tabs, select, dialog) were never seen in a browser; the sticky mobile CTA still shows beside the page's own primary CTA; the plan card variant prints `MODULE 1` under `MODULE I`; the Lumen/ceremony `SparkBadge` reads "Codex" (user decision pending: keep, swap source, or go static); `.bleach-bypass` and `.heavy-chip` have no consumer (not deleted); `design-system.md` spec edits for the parent (§7.1 row 1 CRT path, §5.6 / §6 static ceremony, §2.2 `--grain-picture-opacity` / `--stage-black`, §3.3 / §6 About conflict, R2b aurora order); real macOS trackpad inertia over nested scrollers was not tried; the light-theme hero aurora strength (0.14 / 0.30) is a taste call.
+- The new palette focus-return test was not mutation-checked against the unfixed code; the browser run showed focus landing on `<body>` before the fix and on the opener after it.

@@ -31,7 +31,9 @@ export function Library(): JSX.Element {
   const [paletteOpen, setPaletteOpen] = useState(false);
   // Mounted on first open and kept, so the dialog's close animation still runs.
   const [paletteMounted, setPaletteMounted] = useState(false);
+  const [paletteOpener, setPaletteOpener] = useState<HTMLElement | null>(null);
   const openPalette = useCallback(() => {
+    setPaletteOpener(document.activeElement instanceof HTMLElement ? document.activeElement : null);
     setPaletteMounted(true);
     setPaletteOpen(true);
   }, []);
@@ -59,6 +61,7 @@ export function Library(): JSX.Element {
             query={query}
             results={results}
             onQuery={setQuery}
+            returnFocusTo={paletteOpener}
           />
         </Suspense>
       ) : null}
