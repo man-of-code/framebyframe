@@ -25,7 +25,7 @@ export function ResultsTable(props: { resources: Resource[] }): JSX.Element {
           <TableHead>Cost</TableHead>
           <TableHead>Level</TableHead>
           <TableHead>Why</TableHead>
-          <TableHead>Verified</TableHead>
+          <TableHead>Last checked</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

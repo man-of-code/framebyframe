@@ -7,23 +7,23 @@ export function Terms(): JSX.Element {
   return (
     <article className="page prose-page">
       <WorkingHeader band={false} eyebrow="Terms" title="Terms of use" />
-      <p className="page-copy">Last updated 25 October 2026. This is a plain-language summary, not a document prepared by a lawyer.</p>
+      <p className="page-copy">Last updated 25 October 2026. This is a plain-language summary, not a document written by a lawyer.</p>
       <section className="stack">
         <h2>What this is</h2>
         <p className="page-copy">
-          Frame by Frame is a free sixteen-week curriculum for making a short film. It is education. It is not legal advice, not a film school enrollment, and not LevelUp’s course. Module order and week titles are inspired by the LevelUp BFP brochure. The assignments and resources were written separately.
+          Frame by Frame is a free, sixteen-week course on making a short film. It is for learning. It is not legal advice and it is not a film school.
         </p>
       </section>
       <section className="stack">
         <h2>Tools and links</h2>
         <p className="page-copy">
-          External tools, templates, and footage libraries keep their own licenses. A resource card states the cost and the date it was checked. Those checks can go stale. You are responsible for the license on anything you put in a film, including music, locations, and performances.
+          The tools, templates and footage libraries we link to belong to other people and keep their own licenses. Each resource card shows its cost and the date we last checked it, but things change. You are responsible for having the right to use anything you put in your film, including music, locations and performances.
         </p>
       </section>
       <section className="stack">
         <h2>No warranty</h2>
         <p className="page-copy">
-          The curriculum is offered as-is. Dead links, fee changes, and tool limits happen. The toolkit states the known limits of DaVinci Resolve’s free edition and of ArtCraft.
+          The course is offered as it is, with no guarantees. Links stop working, fees change and tools have limits. The Toolkit page lists the known limits of DaVinci Resolve’s free edition and of ArtCraft.
         </p>
       </section>
       <section className="stack">

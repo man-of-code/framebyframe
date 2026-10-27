@@ -20,8 +20,8 @@ describe("BreakableTitle", () => {
   });
 
   it("breaks the real week titles at their slashes", () => {
-    const week = weeks.find((item) => splitAtSlashes(item.title).length > 1);
-    if (!week) throw new Error("no slash-joined week title in content");
+    // No current title contains a slash, so use a slash-joined title to keep the header covered.
+    const week = { ...weeks[0], title: "Camera movement/angles/framing" };
     const { container } = render(
       <MemoryRouter>
         <WeekHeader week={week} moduleTitle="Module" stageLabel={null} hoursLabel="1h" />

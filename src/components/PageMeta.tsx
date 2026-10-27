@@ -22,7 +22,7 @@ export function PageMeta(): JSX.Element {
       <meta property="og:description" content={meta.description} />
       <meta property="og:url" content={url} />
       <meta property="og:image" content={image} />
-      <meta property="og:image:alt" content="Frame by Frame, a sixteen-week short-film curriculum" />
+      <meta property="og:image:alt" content="Frame by Frame, a sixteen-week course on making a short film" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={meta.title} />
       <meta name="twitter:description" content={meta.description} />

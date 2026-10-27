@@ -63,7 +63,6 @@ export type Week = {
   tasks: Task[];
   assignment: {
     id: string;
-    brochureNo?: number;
     text: string;
     checks: string[];
   };

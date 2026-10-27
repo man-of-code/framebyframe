@@ -78,7 +78,7 @@ function Dashboard({ api }: { api: ProgressApi }): JSX.Element {
       {current.complete ? (
         <WorkingHeader
           eyebrow="Past week 16"
-          title="Curriculum complete"
+          title="Course complete"
           note="The calendar is past the sixteen weeks. What is left is the capstone, and a place to get feedback."
         />
       ) : (

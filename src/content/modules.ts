@@ -1,4 +1,4 @@
-// Ledger module headings, in curriculum order. Extension weeks (module 0) are the Buffer.
+// Module headings, in curriculum order. Extension weeks (module 0) are the Buffer.
 export const MODULES = [
   { n: 1, title: "Writing" },
   { n: 2, title: "Pre-production" },

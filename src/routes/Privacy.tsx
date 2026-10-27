@@ -11,19 +11,19 @@ export function Privacy(): JSX.Element {
       <section className="stack">
         <h2>Progress stays on this device</h2>
         <p className="page-copy">
-          Checked tasks, notes, the start date, the theme, and a week override are stored in this browser’s localStorage. Export writes a file you choose. Nothing in that progress record is sent to a server by this site.
+          Your checked tasks, notes, start date, light or dark choice and any week you have switched to are saved in this web browser, on your own device. You can save a copy as a file. This site does not send any of it anywhere.
         </p>
       </section>
       <section className="stack">
         <h2>Analytics</h2>
         <p className="page-copy">
-          Vercel Web Analytics loads only after you accept the cookie banner. Until then it is not requested. Reject leaves it unloaded. The script, when accepted, records page views for this deployment. It is not used to sell data, and it is not required to use the curriculum.
+          If you accept the cookie banner, we use Vercel Web Analytics to count visits to the site. Until you accept, it does not run, and if you reject it, it never runs. We do not sell your data, and you do not need analytics to use the course.
         </p>
       </section>
       <section className="stack">
         <h2>Contact</h2>
         <p className="page-copy">
-          The contact form builds a mailto link and opens your mail app. The message is not posted to Frame by Frame. The published contact is below. A street address is not published, because this project does not have one on file.
+          The contact form opens your email app with your message ready to send. Nothing is sent to us until you press send there. Our email address is below. We do not publish a street address.
         </p>
         <ContactAddress />
         <Link className="text-link" to="/contact">Contact form</Link>

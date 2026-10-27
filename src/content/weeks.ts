@@ -1,6 +1,6 @@
 import type { Week } from "@/lib/types";
 
-// Minutes are the ledger's core-hour estimates converted to minutes and split
+// Minutes are the core-hour estimates converted to minutes and split
 // evenly across that week's tasks. Remainder would go to the last core task;
 // these totals divide evenly. Stretch tasks are included in the split and are
 // not added on top of the estimate.
@@ -9,13 +9,13 @@ export const weeks: Week[] = [
   {
     n: 1,
     module: 1,
-    title: "Core elements: ideation, world arcs, hero's journey, 3/5/7-act structure",
-    topics: ["ideation", "world arcs", "hero's journey", "3/5/7-act structure"],
+    title: "Finding your story: ideas, themes and how stories are built",
+    topics: ["finding ideas", "story world", "the hero's journey", "story structure"],
     tasks: [
       {
         id: "w1-watch",
         kind: "watch",
-        text: "Lessons from the Screenplay (2–3 videos)",
+        text: "2–3 videos from Lessons from the Screenplay",
         resourceIds: ["lessons-from-the-screenplay"],
         minutes: 100,
         core: true,
@@ -23,7 +23,7 @@ export const weeks: Week[] = [
       {
         id: "w1-read",
         kind: "read",
-        text: "Dan Harmon's Story Circle; John August Q&A (skim)",
+        text: "Dan Harmon's Story Circle, and a skim of John August's Q&A",
         resourceIds: ["dan-harmon-story-circle", "john-august-qa"],
         minutes: 100,
         core: true,
@@ -31,7 +31,7 @@ export const weeks: Week[] = [
       {
         id: "w1-do",
         kind: "do",
-        text: "A1 Theme + synopsis of your project",
+        text: "Write your film's theme and a short summary of the story",
         resourceIds: [],
         minutes: 100,
         core: true,
@@ -39,27 +39,26 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w1-assignment",
-      brochureNo: 1,
-      text: "A1 Theme + synopsis of your project",
+      text: "Write your film's theme and a short summary of the story",
       checks: [
-        "Synopsis is under 150 words and states the central dramatic question",
-        "theme stated in one sentence",
+        "Your summary is under 150 words and says what the main question of the story is",
+        "You can state your theme in one sentence",
       ],
     },
     capstoneStage: "premise",
     community: "r/Screenwriting",
-    communityCaveat: "read the FAQ and Logline Monday rules first",
+    communityCaveat: "read the community's rules first",
   },
   {
     n: 2,
     module: 1,
-    title: "Subtext, scene/opening craft, treatment, script protection",
-    topics: ["subtext", "scene/opening craft", "treatment", "script protection"],
+    title: "Writing your script: what goes unsaid, strong openings and protecting your work",
+    topics: ["subtext", "writing scenes and openings", "treatment", "registering your script"],
     tasks: [
       {
         id: "w2-watch",
         kind: "watch",
-        text: "Robert McKee (1–2 lectures)",
+        text: "1–2 lectures by Robert McKee",
         resourceIds: ["robert-mckee"],
         minutes: 105,
         core: true,
@@ -67,7 +66,7 @@ export const weeks: Week[] = [
       {
         id: "w2-read",
         kind: "read",
-        text: "StudioBinder: Subtext; StudioBinder: Film Treatment",
+        text: "The StudioBinder guides on subtext and on writing a film treatment",
         resourceIds: ["studiobinder-what-is-subtext", "studiobinder-film-treatment"],
         minutes: 105,
         core: true,
@@ -75,7 +74,7 @@ export const weeks: Week[] = [
       {
         id: "w2-do",
         kind: "do",
-        text: "A2 Character worksheet. A4 rewrite one dialogue scene in 5 tones. Register the script (WGA East or SWA, see Module 7).",
+        text: "Fill in a character worksheet, rewrite one dialogue scene in 5 different tones, and register your script (WGA East or SWA, see Module 7).",
         resourceIds: ["wga-east-script-registration", "lawsikho-swa-title-registration"],
         minutes: 105,
         core: true,
@@ -83,7 +82,7 @@ export const weeks: Week[] = [
       {
         id: "w2-do-pitch-deck",
         kind: "do",
-        text: "A5 basic pitch deck",
+        text: "Make a simple pitch deck (a short slide presentation that sells your film)",
         resourceIds: [],
         minutes: 105,
         core: false,
@@ -91,27 +90,26 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w2-assignment",
-      brochureNo: 2,
-      text: "A2 Character worksheet · A4 rewrite one dialogue scene in 5 tones · A5 basic pitch deck (stretch) · register the script (WGA East or SWA, see Module 7)",
+      text: "Fill in a character worksheet, rewrite one dialogue scene in 5 different tones, register your script (WGA East or SWA, see Module 7), and, if you have time, make a simple pitch deck",
       checks: [
-        "5–7 page Fountain script finished",
-        "each of the 5 tone rewrites is visibly distinct when read aloud",
+        "Your 5–7 page script is finished",
+        "Each of the 5 rewrites sounds clearly different when read aloud",
       ],
     },
     capstoneStage: "script",
     community: "r/Screenwriting",
-    communityCaveat: "read the FAQ and Logline Monday rules first",
+    communityCaveat: "read the community's rules first",
   },
   {
     n: 3,
     module: 2,
-    title: "Breakdown, scheduling, storyboards, mood boards, releases",
-    topics: ["breakdown", "scheduling", "storyboards", "mood boards", "releases"],
+    title: "Planning your shoot: schedule, shot list, storyboards and permissions",
+    topics: ["script breakdown", "scheduling", "storyboards", "mood boards", "release forms"],
     tasks: [
       {
         id: "w3-watch",
         kind: "watch",
-        text: "Milanote film-moodboard guide (video)",
+        text: "The Milanote guide to film mood boards",
         resourceIds: ["milanote-film-moodboard"],
         minutes: 120,
         core: true,
@@ -119,7 +117,7 @@ export const weeks: Week[] = [
       {
         id: "w3-read",
         kind: "read",
-        text: "StudioBinder breakdown + shot-list templates; iPleaders India filming-law article",
+        text: "The StudioBinder script-breakdown and shot-list templates, and the iPleaders article on filming laws in India",
         resourceIds: [
           "studiobinder-script-breakdown-sheet",
           "studiobinder-shot-list-template",
@@ -131,7 +129,7 @@ export const weeks: Week[] = [
       {
         id: "w3-do",
         kind: "do",
-        text: "A6 schedule + full shot list. Lock a free location, get a signed actor release.",
+        text: "Make a shooting schedule and a full shot list (a list of every shot you need). Lock in a free location and get a signed permission form (release) from your actors.",
         resourceIds: ["studiobinder-shot-list-template", "studiobinder-actor-release-form"],
         minutes: 120,
         core: true,
@@ -139,7 +137,7 @@ export const weeks: Week[] = [
       {
         id: "w3-do-storyboard",
         kind: "do",
-        text: "A7 storyboard + shot division for a 1-min scene",
+        text: "Draw a storyboard for a 1-minute scene and split it into shots",
         resourceIds: ["storyboarder"],
         minutes: 120,
         core: false,
@@ -147,11 +145,10 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w3-assignment",
-      brochureNo: 6,
-      text: "A6 schedule + full shot list · A7 storyboard + shot division for a 1-min scene (stretch if short on time) · lock a free location, get a signed actor release",
+      text: "Make a shooting schedule and a full shot list, lock in a free location, and get a signed permission form (release) from your actors. If you have time, also storyboard a 1-minute scene",
       checks: [
-        "Shot list covers every scene",
-        "actor release signed by both cast members before week 7",
+        "Your shot list covers every scene",
+        "Both actors have signed their release before week 7",
       ],
     },
     capstoneStage: "shot-list",
@@ -161,8 +158,8 @@ export const weeks: Week[] = [
   {
     n: 4,
     module: 3,
-    title: "Tonality, camera for emotional impact, objective/subjective camera",
-    topics: ["tonality", "camera for emotional impact", "objective/subjective camera"],
+    title: "Using the camera to create feeling: mood and point of view",
+    topics: ["mood", "camera and emotion", "point of view"],
     tasks: [
       {
         id: "w4-watch",
@@ -175,7 +172,7 @@ export const weeks: Week[] = [
       {
         id: "w4-read",
         kind: "read",
-        text: "StudioBinder: 180-Degree Rule",
+        text: "The StudioBinder guide to the 180-degree rule",
         resourceIds: ["studiobinder-180-degree-rule"],
         minutes: 80,
         core: true,
@@ -183,7 +180,7 @@ export const weeks: Week[] = [
       {
         id: "w4-do",
         kind: "do",
-        text: "A8 analyze a dialogue-free scene from a studied short (use a Short of the Week or DUST pick)",
+        text: "Pick a scene with no dialogue from a short film (try a Short of the Week or DUST pick) and write about how it was shot",
         resourceIds: ["short-of-the-week-thriller", "short-of-the-week-sci-fi", "dust"],
         minutes: 80,
         core: true,
@@ -191,11 +188,10 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w4-assignment",
-      brochureNo: 8,
-      text: "A8 analyze a dialogue-free scene from a studied short (use a Short of the Week or DUST pick)",
+      text: "Pick a scene with no dialogue from a short film (try a Short of the Week or DUST pick) and write about how it was shot",
       checks: [
-        "Written analysis names 3 specific camera/editing choices",
-        "Written analysis names what emotion each creates",
+        "Your write-up names 3 specific camera or editing choices",
+        "Your write-up says what feeling each choice creates",
       ],
     },
     community: "r/Cinematography",
@@ -203,13 +199,13 @@ export const weeks: Week[] = [
   {
     n: 5,
     module: 3,
-    title: "Blocking, film grammar, screen direction, composition",
-    topics: ["blocking", "film grammar", "screen direction", "composition"],
+    title: "Staging a scene: where actors stand and move, and how to frame a shot",
+    topics: ["blocking", "how shots fit together", "screen direction", "framing"],
     tasks: [
       {
         id: "w5-watch",
         kind: "watch",
-        text: "Film Riot (1 episode)",
+        text: "One episode of Film Riot",
         resourceIds: ["film-riot"],
         minutes: 120,
         core: true,
@@ -217,7 +213,7 @@ export const weeks: Week[] = [
       {
         id: "w5-read",
         kind: "read",
-        text: "StudioBinder: Blocking and Staging",
+        text: "The StudioBinder guide to blocking and staging",
         resourceIds: ["studiobinder-blocking-and-staging"],
         minutes: 120,
         core: true,
@@ -225,7 +221,7 @@ export const weeks: Week[] = [
       {
         id: "w5-do",
         kind: "do",
-        text: "A9 explain blocking of a chosen scene, then block one scene from your own script; rehearse on the real location",
+        text: "Explain how the actors move in a scene you admire (this is called blocking), then plan the movement for one scene from your own script and rehearse it at the real location",
         resourceIds: [],
         minutes: 120,
         core: true,
@@ -233,11 +229,10 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w5-assignment",
-      brochureNo: 9,
-      text: "A9 explain blocking of a chosen scene, then block one scene from your own script; rehearse on the real location",
+      text: "Explain how the actors move in a scene you admire (this is called blocking), then plan the movement for one scene from your own script and rehearse it at the real location",
       checks: [
-        "A walked-through blocking diagram exists for every scene in the script",
-        "one full rehearsal completed on location",
+        "You have a simple diagram of where the actors move for every scene in your script",
+        "You have done one full rehearsal at the location",
       ],
     },
     capstoneStage: "shot-list",
@@ -246,13 +241,13 @@ export const weeks: Week[] = [
   {
     n: 6,
     module: 3,
-    title: "Crew roles, production team, director's call, accounts",
-    topics: ["crew roles", "production team", "director's call", "accounts"],
+    title: "Running the shoot: who does what, the call sheet and tracking costs",
+    topics: ["crew roles", "working as a team", "call sheet", "tracking costs"],
     tasks: [
       {
         id: "w6-watch",
         kind: "watch",
-        text: "How Can You Shoot a Film as a One-Person Crew? (video if available, else article)",
+        text: "\"How Can You Shoot a Film as a One-Person Crew?\" (video if available, otherwise the article)",
         resourceIds: ["one-person-crew"],
         minutes: 80,
         core: true,
@@ -260,7 +255,7 @@ export const weeks: Week[] = [
       {
         id: "w6-read",
         kind: "read",
-        text: "Same article (text)",
+        text: "The same article, in text",
         resourceIds: ["one-person-crew"],
         minutes: 80,
         core: true,
@@ -268,7 +263,7 @@ export const weeks: Week[] = [
       {
         id: "w6-do",
         kind: "do",
-        text: "Finalize call sheet, prop list, and who-does-what for every crew role — assign every role to yourself or your 1–2 helpers",
+        text: "Finish your call sheet (the one-page plan for each shooting day) and your prop list, and decide who does each crew job: you, or one or two helpers",
         resourceIds: ["studiobinder-call-sheet-template", "studiobinder-crew-deal-memo"],
         minutes: 80,
         core: true,
@@ -276,10 +271,10 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w6-assignment",
-      text: "Finalize call sheet, prop list, and who-does-what for every crew role — assign every role to yourself or your 1–2 helpers",
+      text: "Finish your call sheet (the one-page plan for each shooting day) and your prop list, and decide who does each crew job: you, or one or two helpers",
       checks: [
-        "Call sheet complete with every scene's props/cast/location",
-        "every crew role has a named owner",
+        "Your call sheet lists the props, cast and location for every scene",
+        "Every crew job has a named person",
       ],
     },
     capstoneStage: "shot-list",
@@ -288,13 +283,13 @@ export const weeks: Week[] = [
   {
     n: 7,
     module: 4,
-    title: "Director's expectations of a DP, camera movement/angles/framing, gear",
-    topics: ["director's expectations of a DP", "camera movement/angles/framing", "gear"],
+    title: "Shooting with your phone: camera settings, angles, movement and gear",
+    topics: ["working with the camera operator", "camera movement and angles", "framing", "gear"],
     tasks: [
       {
         id: "w7-watch",
         kind: "watch",
-        text: "StudioBinder: Camera Movements",
+        text: "The StudioBinder guide to camera movements",
         resourceIds: ["studiobinder-camera-movements"],
         minutes: 160,
         core: true,
@@ -302,7 +297,7 @@ export const weeks: Week[] = [
       {
         id: "w7-read",
         kind: "read",
-        text: "Digital Camera World Android lens roundup; Open Camera / Blackmagic Camera docs",
+        text: "The Digital Camera World roundup of Android lenses, and the guides for the Open Camera and Blackmagic Camera apps",
         resourceIds: ["digital-camera-world-addon-lenses", "open-camera", "blackmagic-camera"],
         minutes: 160,
         core: true,
@@ -310,7 +305,7 @@ export const weeks: Week[] = [
       {
         id: "w7-do",
         kind: "do",
-        text: "Framing plan + shot list for your own scene; lock camera settings (24fps, locked exposure/focus); shoot days 1 of 2",
+        text: "Plan your framing and shot list for your own scene, lock your camera settings (24 frames per second, fixed exposure and focus), and shoot day 1 of 2",
         resourceIds: ["studiobinder-shot-list-template"],
         minutes: 160,
         core: true,
@@ -318,11 +313,10 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w7-assignment",
-      brochureNo: 10,
-      text: "Framing plan + shot list for your own scene; lock camera settings (24fps, locked exposure/focus); shoot days 1 of 2",
+      text: "Plan your framing and shot list for your own scene, lock your camera settings (24 frames per second, fixed exposure and focus), and shoot day 1 of 2",
       checks: [
-        "Every planned shot has a locked frame rate/shutter/exposure noted",
-        "day 1 footage backed up in two places same night",
+        "You have written down the frame rate, shutter and exposure settings for every planned shot",
+        "Day 1 footage is backed up in two places the same night",
       ],
     },
     capstoneStage: "shoot",
@@ -331,13 +325,13 @@ export const weeks: Week[] = [
   {
     n: 8,
     module: 4,
-    title: "Lighting types, lenses, continuity",
-    topics: ["lighting types", "lenses", "continuity"],
+    title: "Lighting, lenses and keeping scenes consistent",
+    topics: ["lighting", "lenses", "continuity"],
     tasks: [
       {
         id: "w8-watch",
         kind: "watch",
-        text: "No Film School: Low-Key Lighting / DIY Gimbal",
+        text: "The No Film School pieces on moody lighting and on a homemade phone stabilizer",
         resourceIds: ["ifilmthings-low-key-lighting", "no-film-school-diy-gimbal"],
         minutes: 150,
         core: true,
@@ -345,7 +339,7 @@ export const weeks: Week[] = [
       {
         id: "w8-read",
         kind: "read",
-        text: "Three-Point Lighting (No Film School)",
+        text: "The No Film School guide to three-point lighting",
         resourceIds: ["no-film-school-three-point-lighting"],
         minutes: 150,
         core: true,
@@ -353,7 +347,7 @@ export const weeks: Week[] = [
       {
         id: "w8-do",
         kind: "do",
-        text: "Shoot day 2 of 2 (principal photography)",
+        text: "Shoot day 2 of 2 (the main filming)",
         resourceIds: [],
         minutes: 150,
         core: true,
@@ -361,7 +355,7 @@ export const weeks: Week[] = [
       {
         id: "w8-do-lighting-test",
         kind: "do",
-        text: "Shoot three lighting setups of one corner as a test",
+        text: "As a test, light one corner of a room three different ways and film each one",
         resourceIds: [],
         minutes: 150,
         core: false,
@@ -369,11 +363,10 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w8-assignment",
-      brochureNo: 11,
-      text: "Shoot three lighting setups of one corner as a test (stretch if time-pressed), then shoot day 2 of 2 (principal photography)",
+      text: "Shoot day 2 of 2 (the main filming). If you have time, first light one corner of a room three different ways and film each one as a test",
       checks: [
-        "All planned scenes shot",
-        "continuity notes (what was worn/placed where) logged for every setup",
+        "You have filmed all the scenes you planned",
+        "You have notes for every setup on what people wore and where things were placed, so scenes match",
       ],
     },
     capstoneStage: "shoot",
@@ -383,13 +376,13 @@ export const weeks: Week[] = [
   {
     n: 9,
     module: 5,
-    title: "Editing principles, cuts/transitions, color correction",
-    topics: ["editing principles", "cuts/transitions", "color correction"],
+    title: "Editing basics: cutting your footage together and correcting color",
+    topics: ["editing basics", "cuts and transitions", "color correction"],
     tasks: [
       {
         id: "w9-watch",
         kind: "watch",
-        text: "Casey Faris or Darren Mostyn (1–2 Resolve basics videos)",
+        text: "1–2 DaVinci Resolve beginner videos by Casey Faris or Darren Mostyn",
         resourceIds: ["casey-faris", "darren-mostyn"],
         minutes: 140,
         core: true,
@@ -397,7 +390,7 @@ export const weeks: Week[] = [
       {
         id: "w9-read",
         kind: "read",
-        text: "L-Cuts and J-Cuts explainer; StudioBinder: Elements of Suspense",
+        text: "The L-cuts and J-cuts explainer (cutting sound and picture at different moments) and the StudioBinder guide to building suspense",
         resourceIds: ["l-cuts-and-j-cuts", "studiobinder-elements-of-suspense"],
         minutes: 140,
         core: true,
@@ -405,7 +398,7 @@ export const weeks: Week[] = [
       {
         id: "w9-do",
         kind: "do",
-        text: "Organize/transcode footage (proxies if needed); A12 rough cut of your own footage",
+        text: "Organize your footage (make lightweight copies if your computer struggles), then put together a rough cut of your film",
         resourceIds: [],
         minutes: 140,
         core: true,
@@ -413,11 +406,10 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w9-assignment",
-      brochureNo: 12,
-      text: "Organize/transcode footage (proxies if needed); A12 rough cut of your own footage",
+      text: "Organize your footage (make lightweight copies if your computer struggles), then put together a rough cut of your film",
       checks: [
-        "A full assembly exists start-to-finish, even if rough",
-        "every scene from the shot list is represented",
+        "You have a complete version from start to finish, even if it is rough",
+        "Every scene from your shot list is in it",
       ],
     },
     capstoneStage: "rough-cut",
@@ -426,13 +418,13 @@ export const weeks: Week[] = [
   {
     n: 10,
     module: 5,
-    title: "Foley, recording gear, sound design, mixing, stock music",
-    topics: ["foley", "recording gear", "sound design", "mixing", "stock music"],
+    title: "Sound: recording, sound effects, mixing and music",
+    topics: ["Foley (everyday sound effects)", "recording gear", "sound design", "mixing", "free music"],
     tasks: [
       {
         id: "w10-watch",
         kind: "watch",
-        text: "Akash Thakkar or Indepth Sound Design (1 video)",
+        text: "One video from Akash Thakkar or Indepth Sound Design",
         resourceIds: ["akash-thakkar", "indepth-sound-design"],
         minutes: 120,
         core: true,
@@ -440,7 +432,7 @@ export const weeks: Week[] = [
       {
         id: "w10-read",
         kind: "read",
-        text: "Rode lav-mic guide; How to Do Foley at Home",
+        text: "The Rode guide to clip-on microphones, and \"How to Do Foley at Home\"",
         resourceIds: ["rode-lavalier-mic", "foley-at-home"],
         minutes: 120,
         core: true,
@@ -448,7 +440,7 @@ export const weeks: Week[] = [
       {
         id: "w10-do",
         kind: "do",
-        text: "A13 add SFX and music to the rough cut, sourced only from Pixabay/Freesound (CC0/CC-BY files)/Incompetech with license noted per clip",
+        text: "Add sound effects and music to your rough cut, using only free sources such as Pixabay, Freesound and Incompetech, and note each sound's license",
         resourceIds: ["pixabay-audio", "freesound", "incompetech"],
         minutes: 120,
         core: true,
@@ -456,11 +448,10 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w10-assignment",
-      brochureNo: 13,
-      text: "A13 add SFX and music to the rough cut, sourced only from Pixabay/Freesound (CC0/CC-BY files)/Incompetech with license noted per clip",
+      text: "Add sound effects and music to your rough cut, using only free sources such as Pixabay, Freesound and Incompetech, and note each sound's license",
       checks: [
-        "Every scene has at least ambience + one Foley pass",
-        "a license is logged for every audio file used",
+        "Every scene has background sound plus at least one Foley effect",
+        "You have noted the license for every sound or music file you used",
       ],
     },
     capstoneStage: "sound",
@@ -469,13 +460,13 @@ export const weeks: Week[] = [
   {
     n: 11,
     module: 6,
-    title: "Cutting for emotional impact, workflow, VFX, delivery",
-    topics: ["cutting for emotional impact", "workflow", "VFX", "delivery"],
+    title: "Final cut and one visual effect",
+    topics: ["final cut", "editing for emotion", "visual effects", "exporting"],
     tasks: [
       {
         id: "w11-watch",
         kind: "watch",
-        text: "Ian Hubert or Blender Guru (1 short tutorial matching your needed effect)",
+        text: "One short tutorial from Ian Hubert or Blender Guru that matches the effect you need",
         resourceIds: ["ian-hubert", "blender-guru"],
         minutes: 160,
         core: true,
@@ -483,7 +474,7 @@ export const weeks: Week[] = [
       {
         id: "w11-read",
         kind: "read",
-        text: "BorisFX roto guide or 80.lv hologram shader (pick what the script needs)",
+        text: "The BorisFX guide to cutting objects out of footage, or the 80.lv hologram tutorial, whichever your script needs",
         resourceIds: ["borisfx-rotoscope-resolve", "hologram-shader-blender"],
         minutes: 160,
         core: true,
@@ -491,7 +482,7 @@ export const weeks: Week[] = [
       {
         id: "w11-do",
         kind: "do",
-        text: "A14 final cut of your own footage. A15 one simple VFX shot using free software (Resolve Fusion free tier or Blender).",
+        text: "Finish your final cut and make one simple visual-effects shot using free software (the free version of DaVinci Resolve's Fusion, or Blender).",
         resourceIds: ["blender"],
         minutes: 160,
         core: true,
@@ -499,11 +490,10 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w11-assignment",
-      brochureNo: 14,
-      text: "A14 final cut of your own footage · A15 one simple VFX shot using free software (Resolve Fusion free tier or Blender). Cap VFX ambition to one shot.",
+      text: "Finish your final cut and make one simple visual-effects shot using free software (the free version of DaVinci Resolve's Fusion, or Blender). Keep it to one effects shot.",
       checks: [
-        "Final cut locked (no further picture edits after this week)",
-        "the one VFX shot is composited and doesn't look like a placeholder",
+        "Your final cut is locked: no more picture changes after this week",
+        "Your effects shot is finished and does not look like a placeholder",
       ],
     },
     capstoneStage: "final-cut",
@@ -512,13 +502,13 @@ export const weeks: Week[] = [
   {
     n: 12,
     module: 7,
-    title: "Promotion, teaser/trailer, distribution, festivals",
-    topics: ["promotion", "teaser/trailer", "distribution", "festivals"],
+    title: "Sharing your film: trailer, press kit and festivals",
+    topics: ["promotion", "trailer", "getting it seen", "festivals"],
     tasks: [
       {
         id: "w12-watch",
         kind: "watch",
-        text: "StudioBinder: How to Make a Movie Trailer",
+        text: "The StudioBinder guide to making a movie trailer",
         resourceIds: ["studiobinder-movie-trailer"],
         minutes: 120,
         core: true,
@@ -526,7 +516,7 @@ export const weeks: Week[] = [
       {
         id: "w12-read",
         kind: "read",
-        text: "Premiere-policy PDF; Short of the Week / DUST+ALTER submission pages",
+        text: "The guide to festival premiere rules, and the Short of the Week and DUST+ALTER submission pages",
         resourceIds: ["premiere-policies", "short-of-the-week-submit", "dust-alter-submissions"],
         minutes: 120,
         core: true,
@@ -534,7 +524,7 @@ export const weeks: Week[] = [
       {
         id: "w12-do",
         kind: "do",
-        text: "A16 EPK (bio, synopsis, press release, poster via Canva). A17: build a festival shortlist (mix FilmFreeway Indian + genre festivals) and submit to one.",
+        text: "Put together a press kit (your bio, a synopsis, a press release and a poster made in Canva). Then make a shortlist of festivals, mixing Indian festivals and genre festivals on FilmFreeway, and submit to one.",
         resourceIds: ["studiobinder-epk-template", "canva-movie-poster", "filmfreeway"],
         minutes: 120,
         core: true,
@@ -542,28 +532,28 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w12-assignment",
-      text: "A16 EPK (bio, synopsis, press release, poster via Canva) · A17: build a festival shortlist (mix FilmFreeway Indian + genre festivals) and submit to one",
+      text: "Put together a press kit (your bio, a synopsis, a press release and a poster made in Canva). Then make a shortlist of festivals, mixing Indian festivals and genre festivals on FilmFreeway, and submit to one",
       checks: [
-        "EPK has all 5 required components",
-        "one real submission is paid/sent before the week ends",
+        "Your press kit includes every part the StudioBinder guide recommends, including your bio, synopsis, press release and poster",
+        "You have sent one real festival submission, and paid the fee if there is one, before the week ends",
       ],
     },
     capstoneStage: "submissions",
     community: "Short of the Week / DUST+ALTER",
-    communityCaveat: "post work once live",
+    communityCaveat: "post your work once it is online",
   },
   {
     n: 13,
     module: 0,
-    title: "Buffer",
-    topics: ["buffer"],
+    title: "Spare week: reshoots and pickups",
+    topics: ["spare week"],
     tasks: [],
     assignment: {
       id: "w13-assignment",
-      text: "Reshoots and pickups for anything missed in weeks 7–8",
+      text: "Reshoot or pick up any shots you missed in weeks 7–8",
       checks: [
-        "Every shot on the original shot list now exists in usable footage",
-        "Reshoots and pickups cover anything missed in weeks 7–8",
+        "Every shot on your original shot list now exists as usable footage",
+        "Anything you missed in weeks 7–8 has been reshot",
       ],
     },
     capstoneStage: "shoot",
@@ -574,15 +564,15 @@ export const weeks: Week[] = [
   {
     n: 14,
     module: 0,
-    title: "Buffer",
-    topics: ["buffer"],
+    title: "Spare week: sound clean-up",
+    topics: ["spare week"],
     tasks: [],
     assignment: {
       id: "w14-assignment",
-      text: "Sound re-record/clean-up pass; re-check every audio file's license before public release",
+      text: "Re-record or clean up your sound, and double-check the license of every audio file before you release your film publicly",
       checks: [
-        "LUFS roughly in the -14 to -16 range (YouTube-ish)",
-        "Re-check target festival specs",
+        "Your overall loudness is roughly -14 to -16 LUFS (a loudness measure), which suits YouTube",
+        "You have re-checked the technical requirements of the festivals you are targeting",
       ],
     },
     capstoneStage: "sound",
@@ -593,13 +583,13 @@ export const weeks: Week[] = [
   {
     n: 15,
     module: 0,
-    title: "Buffer",
-    topics: ["buffer"],
+    title: "Spare week: color polish",
+    topics: ["spare week"],
     tasks: [],
     assignment: {
       id: "w15-assignment",
-      text: "Color-grade polish pass using the CGChannel/Q-DDL CC BY LUT pack as a base",
-      checks: ["Grade is consistent scene-to-scene", "no banding/clipping on a scope check"],
+      text: "Polish your color grade, starting from the free CGChannel/Q-DDL color presets",
+      checks: ["The color looks consistent from scene to scene", "Nothing looks blown out or blocky when you check it on the scopes"],
     },
     capstoneStage: "final-cut",
     extension: true,
@@ -609,20 +599,20 @@ export const weeks: Week[] = [
   {
     n: 16,
     module: 0,
-    title: "Buffer",
-    topics: ["buffer"],
+    title: "Spare week: feedback and more festivals",
+    topics: ["spare week"],
     tasks: [],
     assignment: {
       id: "w16-assignment",
-      text: "Feedback screening (post to one named community above) + act on feedback; additional festival submissions",
+      text: "Show your film to others and ask for feedback (you can post it to one of the communities listed above), act on what you hear, and send more festival submissions",
       checks: [
-        "At least 3 pieces of outside feedback collected and logged",
-        "at least 2 total festival/curator submissions sent",
+        "You have collected and written down at least 3 pieces of feedback from other people",
+        "You have sent at least 2 submissions in total to festivals or curators",
       ],
     },
     capstoneStage: "submissions",
     extension: true,
-    community: "whichever community fits the feedback needed",
+    community: "whichever community fits the feedback you need",
     gapIds: ["extension-week-16"],
   },
 ];

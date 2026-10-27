@@ -16,16 +16,16 @@ export function Toolkit(): JSX.Element {
       <WorkingHeader
         eyebrow="Toolkit"
         title="Free software"
-        note="Purpose, license, the official download, and the first week you need it."
+        note="What each tool does, what it costs, where to download it, and the first week you need it."
       />
       <div className="table-wrap" data-lenis-prevent>
         <table className="tool-table">
-          <caption className="visually-hidden">Free software for the curriculum</caption>
+          <caption className="visually-hidden">Free software for the course</caption>
           <thead>
             <tr>
               <th scope="col">Tool</th>
               <th scope="col">Purpose</th>
-              <th scope="col">License</th>
+              <th scope="col">Cost</th>
               <th scope="col">Download</th>
               <th scope="col">First week</th>
               <th scope="col">Notes</th>
@@ -36,7 +36,7 @@ export function Toolkit(): JSX.Element {
               <tr key={tool.id}>
                 <td data-label="Tool">{tool.name}</td>
                 <td data-label="Purpose">{tool.purpose}</td>
-                <td data-label="License">{tool.license}</td>
+                <td data-label="Cost">{tool.license}</td>
                 <td data-label="Download">
                   <a href={tool.url} target="_blank" rel="noopener noreferrer">
                     Download

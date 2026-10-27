@@ -31,7 +31,7 @@ export function SearchPalette(props: {
         returnFocusTo.focus();
       }}
       title="Search the library"
-      description="Search titles, topics, and the one-line why."
+      description="Search titles, topics and short descriptions."
     >
       <Command shouldFilter={false}>
         <CommandInput value={query} onValueChange={onQuery} placeholder="Search the library" />
