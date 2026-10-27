@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createIndex, emptyFacets, facetOptions, filterResources, searchResources, statusOf } from "@/lib/search";
+import { emptyFacets, facetOptions, filterResources, searchResources, statusOf } from "@/lib/search";
+import { createIndex } from "@/lib/search-index";
 import type { Resource } from "@/lib/types";
 
 const r = (over: Partial<Resource>): Resource => ({
@@ -68,6 +69,13 @@ describe("searchResources", () => {
 
   it("returns the filtered set for an empty query", () => {
     expect(searchResources(createIndex(all), all, "  ", { ...emptyFacets, type: ["tool"] })).toHaveLength(2);
+  });
+});
+
+describe("searchResources before the index loads", () => {
+  it("falls back to a substring match inside the facets", () => {
+    expect(searchResources(null, all, "cursa", emptyFacets).map((x) => x.id)).toEqual(["b"]);
+    expect(searchResources(null, all, "cursa", { ...emptyFacets, language: ["en"] })).toHaveLength(0);
   });
 });
 

@@ -10,33 +10,18 @@ import { GapCard } from "@/components/resource/GapCard";
 import { ResourceCard } from "@/components/resource/ResourceCard";
 import "@/components/week/week.css";
 import { content } from "@/content";
+import { BUFFER_TITLE, MODULES } from "@/content/modules";
+import { useCurrentWeek } from "@/hooks/useCurrentWeek";
+import { useProgressContext } from "@/hooks/ProgressProvider";
 import { parseWeekParam } from "@/lib/route-week";
+import { formatHours, weekMinutes } from "@/lib/week";
 import type { Gap, Resource, Task } from "@/lib/types";
-
-const MODULES: Record<number, string> = {
-  1: "Writing",
-  2: "Pre-production",
-  3: "Directing",
-  4: "Cinematography",
-  5: "Editing and Sound",
-  6: "Post-production and VFX",
-  7: "Marketing, Distribution and Career",
-};
 
 const SELF_REVIEW = [
   "Did I hit this week's done-when checks?",
   "What's the one thing I'd redo if I had another day?",
   "Post one update (even a single sentence + a frame grab) to this week's named community.",
 ];
-
-function formatCoreHours(minutes: number): string {
-  if (minutes <= 0) return "0h";
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hours === 0) return `${mins}m`;
-  if (mins === 0) return `${hours}h`;
-  return `${hours}h ${mins}m`;
-}
 
 function cardsFor(tasks: Task[], byId: Map<string, Resource>): { resource: Resource; minutes: number }[] {
   const seen = new Set<string>();
@@ -112,6 +97,8 @@ function KindSection({
 
 export function Week() {
   const params = useParams();
+  const { progress } = useProgressContext();
+  const { week: currentWeek } = useCurrentWeek(progress);
   const n = parseWeekParam(params.n);
   const week = n === null ? undefined : content.weeks.find((item) => item.n === n);
   if (!week || n === null) {
@@ -130,17 +117,17 @@ export function Week() {
   const watch = week.tasks.filter((task) => task.kind === "watch");
   const read = week.tasks.filter((task) => task.kind === "read");
   const doing = week.tasks.filter((task) => task.kind === "do");
-  const minutes = week.tasks.reduce((sum, task) => sum + task.minutes, 0);
   const stage = content.capstone.find((item) => item.id === week.capstoneStage);
   const parts = communityParts(week.community);
 
   return (
-    <article className="week-page">
+    <article className="week-page prose-centered">
       <WeekHeader
         week={week}
-        moduleTitle={MODULES[week.module] ?? "Buffer"}
+        moduleTitle={MODULES.find((item) => item.n === week.module)?.title ?? BUFFER_TITLE}
         stageLabel={stage?.label ?? null}
-        hoursLabel={formatCoreHours(minutes)}
+        hoursLabel={formatHours(weekMinutes(week))}
+        current={week.n === currentWeek}
       />
       <KindSection kind="watch" title="Watch" tasks={watch} gaps={gaps} byId={byId} />
       <KindSection kind="read" title="Read" tasks={read} gaps={gaps} byId={byId} />

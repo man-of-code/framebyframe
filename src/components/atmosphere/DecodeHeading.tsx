@@ -19,8 +19,15 @@ export function DecodeHeading(props: { text: string }): JSX.Element {
   }, []);
 
   return (
-    <h1 ref={ref}>
-      <span data-article-heading>{props.text}</span>
+    // One accessible name (aria-label). The invisible sizer holds the final string so the box never changes
+    // size while the live copy decodes; both children are aria-hidden.
+    <h1 ref={ref} className="decode-heading" aria-label={props.text}>
+      <span className="decode-heading__sizer" aria-hidden="true">
+        {props.text}
+      </span>
+      <span className="decode-heading__live" aria-hidden="true" data-article-heading>
+        {props.text}
+      </span>
     </h1>
   );
 }

@@ -1,30 +1,17 @@
 import { useId, type JSX } from "react";
-import { Letterbox } from "@/components/atmosphere/Letterbox";
 import { WeekFrame, type FrameState } from "@/components/filmstrip/WeekFrame";
-import { content } from "@/content";
-import { countDone } from "@/lib/progress";
+import { capstone } from "@/content/capstone";
 import type { Progress, Week } from "@/lib/types";
+import { formatHours, weekCompletion, weekMinutes } from "@/lib/week";
 
-function coreRatio(week: Week, progress: Progress): { done: number; total: number } {
-  const ids = week.tasks.filter((task) => task.core).map((task) => task.id);
-  return { done: countDone(progress, ids), total: ids.length };
-}
-
-function frameState(n: number, current: number, done: number, total: number): FrameState {
+function frameState(n: number, current: number, complete: boolean): FrameState {
   if (n === current) return "current";
-  if (total > 0 && done === total) return "exposed";
-  return "unexposed";
-}
-
-function hoursLabel(week: Week): string {
-  const minutes = week.tasks.reduce((sum, task) => sum + task.minutes, 0);
-  const hours = minutes / 60;
-  return Number.isInteger(hours) ? `${hours}h` : `${hours.toFixed(1)}h`;
+  return complete ? "exposed" : "unexposed";
 }
 
 function stageLabel(id: string | undefined): string | undefined {
   if (!id) return undefined;
-  return content.capstone.find((stage) => stage.id === id)?.label;
+  return capstone.find((stage) => stage.id === id)?.label;
 }
 
 export function ModuleGroup(props: {
@@ -38,30 +25,37 @@ export function ModuleGroup(props: {
 }): JSX.Element {
   const { eyebrow, title, note, spliced = false, weeks, current, progress } = props;
   const titleId = useId();
+  const first = weeks[0];
+  const last = weeks[weeks.length - 1];
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const range = first && last ? (first.n === last.n ? pad(first.n) : `${pad(first.n)}–${pad(last.n)}`) : "";
+  const minutes = weeks.reduce((sum, week) => sum + weekMinutes(week), 0);
 
   return (
     <section className="module-group" aria-labelledby={titleId} data-spliced={spliced ? "true" : undefined}>
       {spliced ? <div className="plan-splice" aria-hidden="true" /> : null}
-      <Letterbox>
-        <div className="module-head">
-          <p className="eyebrow">{eyebrow}</p>
-          <h2 id={titleId}>{title}</h2>
-          {note ? <p className="module-note">{note}</p> : null}
-        </div>
-      </Letterbox>
+      <div className="module-head playbill-frame">
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 id={titleId}>{title}</h2>
+        {range ? (
+          <p className="hud-readout">
+            WK {range} · <strong>{formatHours(minutes)}</strong>
+          </p>
+        ) : null}
+        {note ? <p className="module-note">{note}</p> : null}
+      </div>
       <ol className="module-frames filmstrip" data-orientation="vertical">
         {weeks.map((week) => {
-          const ratio = coreRatio(week, progress);
+          const ratio = weekCompletion(week, progress);
           return (
             <li key={week.n}>
               <WeekFrame
                 n={week.n}
                 module={week.module}
-                moduleLabel={week.module === 0 ? "Buffer" : undefined}
                 title={week.title}
-                state={frameState(week.n, current, ratio.done, ratio.total)}
+                state={frameState(week.n, current, ratio.complete)}
                 ratio={ratio}
-                hours={hoursLabel(week)}
+                hours={formatHours(weekMinutes(week))}
                 stage={stageLabel(week.capstoneStage)}
                 extension={week.extension}
                 heavy={week.heavy}

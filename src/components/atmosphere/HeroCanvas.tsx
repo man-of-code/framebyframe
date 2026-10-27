@@ -13,31 +13,17 @@ import {
 import { useFpsGuard } from "@/hooks/useFpsGuard";
 import {
   acquireWebglSlot,
+  readCanvasEnv,
   releaseWebglSlot,
   shouldRenderCanvas,
-  type CanvasEnv,
 } from "@/lib/webgl-guard";
+import "./atmosphere.css";
 
 const SLOT = "hero";
 
 const CrtBackground = lazy(() =>
-  import("@/vendor/threeui/crt/CrtBackground").then((mod) => ({ default: mod.CrtBackground })),
+  import("@/vendor/threeui-derived/crt/CrtBackground").then((mod) => ({ default: mod.CrtBackground })),
 );
-
-function readEnv(): CanvasEnv {
-  const nav = navigator as Navigator & {
-    deviceMemory?: number;
-    connection?: { saveData?: boolean };
-  };
-  return {
-    reducedMotion: typeof window.matchMedia === "function"
-      && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    width: window.innerWidth,
-    cores: typeof navigator.hardwareConcurrency === "number" ? navigator.hardwareConcurrency : undefined,
-    memory: typeof nav.deviceMemory === "number" ? nav.deviceMemory : undefined,
-    saveData: nav.connection?.saveData,
-  };
-}
 
 function webglAvailable(): boolean {
   try {
@@ -122,7 +108,7 @@ export function HeroCanvas(props: { enabled: boolean }): JSX.Element {
       setArmed(false);
       return undefined;
     }
-    if (!shouldRenderCanvas(readEnv()) || !webglAvailable()) return undefined;
+    if (!shouldRenderCanvas(readCanvasEnv()) || !webglAvailable()) return undefined;
     if (!acquireWebglSlot(SLOT)) return undefined;
     setArmed(true);
     return () => {
@@ -140,8 +126,10 @@ export function HeroCanvas(props: { enabled: boolean }): JSX.Element {
       <img
         className="hero-poster"
         src="/posters/hero-crt.webp"
-        alt="Still of a green phosphor terminal, the poster behind the landing title."
+        alt="Still of a film countdown leader on a CRT screen, beside the landing title."
         aria-hidden="true"
+        fetchPriority="high"
+        decoding="async"
       />
       {show ? (
         <CanvasBoundary onError={drop}>

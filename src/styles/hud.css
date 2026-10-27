@@ -1,0 +1,57 @@
+/* HUD kit (docs/design-system.md 5.3). Retro-futurist readouts; no extra elements. */
+
+/* Four corner brackets, 10px arms, 1px --border-strong, as eight gradient layers. */
+.hud-frame {
+  --hud-arm: 10px;
+  --hud-line: 1px;
+  position: relative;
+  box-sizing: border-box;
+  padding: var(--space-2) var(--space-3);
+  background:
+    linear-gradient(var(--border-strong), var(--border-strong)) top left / var(--hud-arm) var(--hud-line) no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) top left / var(--hud-line) var(--hud-arm) no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) top right / var(--hud-arm) var(--hud-line) no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) top right / var(--hud-line) var(--hud-arm) no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) bottom left / var(--hud-arm) var(--hud-line) no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) bottom left / var(--hud-line) var(--hud-arm) no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) bottom right / var(--hud-arm) var(--hud-line) no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) bottom right / var(--hud-line) var(--hud-arm) no-repeat;
+}
+
+.hud-readout {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-hud);
+  font-size: var(--text-mono);
+  line-height: var(--text-mono-lh);
+  letter-spacing: var(--text-mono-tracking);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-readout > strong,
+.hud-readout .hud-live {
+  color: var(--text-primary);
+  font-weight: inherit;
+}
+
+.hud-readout .hud-current {
+  color: var(--accent-warm);
+}
+
+/* 1px --border-subtle lines every 24px at 40% opacity. Header bands and the hero only. */
+.hud-grid {
+  position: relative;
+}
+
+.hud-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image:
+    linear-gradient(to right, var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border-subtle) 1px, transparent 1px);
+  background-size: 24px 24px;
+}

@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "tsx scripts/validate-content.ts",
-    "build": "tsc -b && vite build && tsx scripts/assert-bundle.ts",
+    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && tsx scripts/prerender.ts && tsx scripts/finalize-dist.ts && tsx scripts/assert-bundle.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
+    "e2e:preview": "playwright test -c playwright.preview.config.ts",
     "validate": "tsx scripts/validate-content.ts",
     "check-links": "tsx scripts/check-links.ts",
     "lint": "oxlint"

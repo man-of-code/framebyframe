@@ -268,7 +268,7 @@ export const weeks: Week[] = [
       {
         id: "w6-do",
         kind: "do",
-        text: "New (no brochure source): finalize call sheet, prop list, and who-does-what for every crew role — assign every role to yourself or your 1–2 helpers",
+        text: "Finalize call sheet, prop list, and who-does-what for every crew role — assign every role to yourself or your 1–2 helpers",
         resourceIds: ["studiobinder-call-sheet-template", "studiobinder-crew-deal-memo"],
         minutes: 80,
         core: true,
@@ -276,7 +276,7 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w6-assignment",
-      text: "New (no brochure source): finalize call sheet, prop list, and who-does-what for every crew role — assign every role to yourself or your 1–2 helpers",
+      text: "Finalize call sheet, prop list, and who-does-what for every crew role — assign every role to yourself or your 1–2 helpers",
       checks: [
         "Call sheet complete with every scene's props/cast/location",
         "every crew role has a named owner",
@@ -310,7 +310,7 @@ export const weeks: Week[] = [
       {
         id: "w7-do",
         kind: "do",
-        text: "A10 (replaced — brochure duplicate): framing plan + shot list for your own scene; lock camera settings (24fps, locked exposure/focus); shoot days 1 of 2",
+        text: "Framing plan + shot list for your own scene; lock camera settings (24fps, locked exposure/focus); shoot days 1 of 2",
         resourceIds: ["studiobinder-shot-list-template"],
         minutes: 160,
         core: true,
@@ -318,7 +318,8 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w7-assignment",
-      text: "A10 (replaced — brochure duplicate): framing plan + shot list for your own scene; lock camera settings (24fps, locked exposure/focus); shoot days 1 of 2",
+      brochureNo: 10,
+      text: "Framing plan + shot list for your own scene; lock camera settings (24fps, locked exposure/focus); shoot days 1 of 2",
       checks: [
         "Every planned shot has a locked frame rate/shutter/exposure noted",
         "day 1 footage backed up in two places same night",
@@ -368,7 +369,8 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w8-assignment",
-      text: "A11 (replaced — brochure duplicate): shoot three lighting setups of one corner as a test (stretch if time-pressed), then shoot day 2 of 2 (principal photography)",
+      brochureNo: 11,
+      text: "Shoot three lighting setups of one corner as a test (stretch if time-pressed), then shoot day 2 of 2 (principal photography)",
       checks: [
         "All planned scenes shot",
         "continuity notes (what was worn/placed where) logged for every setup",
@@ -532,7 +534,7 @@ export const weeks: Week[] = [
       {
         id: "w12-do",
         kind: "do",
-        text: "A16 EPK (bio, synopsis, press release, poster via Canva). A17 (replaced — brochure duplicate): build a festival shortlist (mix FilmFreeway Indian + genre festivals) and submit to one.",
+        text: "A16 EPK (bio, synopsis, press release, poster via Canva). A17: build a festival shortlist (mix FilmFreeway Indian + genre festivals) and submit to one.",
         resourceIds: ["studiobinder-epk-template", "canva-movie-poster", "filmfreeway"],
         minutes: 120,
         core: true,
@@ -540,7 +542,7 @@ export const weeks: Week[] = [
     ],
     assignment: {
       id: "w12-assignment",
-      text: "A16 EPK (bio, synopsis, press release, poster via Canva) · A17 (replaced — brochure duplicate): build a festival shortlist (mix FilmFreeway Indian + genre festivals) and submit to one",
+      text: "A16 EPK (bio, synopsis, press release, poster via Canva) · A17: build a festival shortlist (mix FilmFreeway Indian + genre festivals) and submit to one",
       checks: [
         "EPK has all 5 required components",
         "one real submission is paid/sent before the week ends",

@@ -1,0 +1,71 @@
+/* Aurora kit (docs/design-system.md 5.4). Atmosphere only; never behind cards, controls or links.
+   ::before owns the fields (z 0), ::after owns the band grain (z 1), children are z 2. */
+.aurora {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--aurora-fields);
+  pointer-events: none;
+}
+
+/* Band grain: overlay blend, dark only (--grain-opacity is 0 in light). It dithers the fields. */
+.aurora::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: var(--grain-tile);
+  background-size: 128px 128px;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.aurora > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Live variant: landing hero and ceremony only, desktop only (battery rules 7.4).
+   The field layer is 140% of the box, centred; the band's overflow clip keeps it from widening the page.
+   Pause by setting data-paused="true" (IntersectionObserver / document.hidden hook, see useAuroraPause). */
+.aurora--live::before {
+  inset: -20%;
+  will-change: transform;
+  animation: aurora-drift var(--dur-aurora) var(--ease-in-out) infinite alternate;
+}
+
+.aurora--live[data-paused="true"]::before {
+  animation-play-state: paused;
+}
+
+@keyframes aurora-drift {
+  from {
+    transform: translate3d(-3%, -2%, 0) rotate(-2deg);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) rotate(2deg);
+  }
+}
+
+/* Static on phones, under reduced motion; nothing continuous while reading. */
+@media (max-width: 767px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .aurora--live::before {
+    inset: 0;
+    animation: none;
+    will-change: auto;
+  }
+}
+
+@media (forced-colors: active) {
+  .aurora::after {
+    display: none;
+  }
+}

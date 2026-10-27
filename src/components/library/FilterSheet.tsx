@@ -1,14 +1,9 @@
-import type { JSX } from "react";
-import { FilterChips } from "@/components/library/FilterChips";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { lazy, Suspense, useRef, useState, type JSX } from "react";
 import type { Facets } from "@/lib/search";
+
+const FilterSheetPanel = lazy(() =>
+  import("@/components/library/FilterSheetPanel").then((m) => ({ default: m.FilterSheetPanel })),
+);
 
 export function FilterSheet(props: {
   applied: number;
@@ -18,24 +13,44 @@ export function FilterSheet(props: {
 }): JSX.Element {
   const { applied, facets, options, onToggle } = props;
   const label = applied > 0 ? `Filters, ${applied} applied` : "Filters";
+  const [open, setOpen] = useState(false);
+  // Mounted on first open and kept, so the sheet's close animation still runs.
+  const [mounted, setMounted] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
 
   return (
-    <Sheet>
-      <SheetTrigger className="filter-sheet-trigger" aria-label={label}>
+    <>
+      <button
+        ref={trigger}
+        type="button"
+        className="filter-sheet-trigger pop pop--outline"
+        aria-label={label}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => {
+          setMounted(true);
+          setOpen(true);
+        }}
+      >
         Filters
         {applied > 0 ? (
           <span className="library-badge" aria-hidden="true">
             {applied}
           </span>
         ) : null}
-      </SheetTrigger>
-      <SheetContent side="bottom" className="filter-sheet">
-        <SheetHeader>
-          <SheetTitle>Filters</SheetTitle>
-          <SheetDescription>Type, topic, week, level, cost, language, and status.</SheetDescription>
-        </SheetHeader>
-        <FilterChips facets={facets} options={options} onToggle={onToggle} />
-      </SheetContent>
-    </Sheet>
+      </button>
+      {mounted ? (
+        <Suspense fallback={null}>
+          <FilterSheetPanel
+            open={open}
+            onOpenChange={setOpen}
+            returnFocus={trigger}
+            facets={facets}
+            options={options}
+            onToggle={onToggle}
+          />
+        </Suspense>
+      ) : null}
+    </>
   );
 }

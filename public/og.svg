@@ -1,8 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#07090D"/>
-  <rect x="0" y="0" width="1200" height="28" fill="#05070A"/>
-  <rect x="0" y="602" width="1200" height="28" fill="#05070A"/>
-  <text x="80" y="250" fill="#6E7E93" font-family="ui-monospace, monospace" font-size="22" letter-spacing="4">16 WEEKS</text>
-  <text x="80" y="360" fill="#E8EDF5" font-family="Arial Black, Arial, sans-serif" font-size="84">Frame by Frame</text>
-  <text x="80" y="430" fill="#A7B4C6" font-family="Arial, sans-serif" font-size="32">A sixteen-week path to a short film, shot on an Android phone.</text>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Frame by Frame OG card, Kinetoscope palette (docs/design-system.md 2). Rasterised to og.png. -->
+  <defs>
+    <radialGradient id="teal" cx="0.15" cy="0.2" r="0.6"><stop offset="0" stop-color="#4FE0C2" stop-opacity="0.20"/><stop offset="0.7" stop-color="#4FE0C2" stop-opacity="0"/></radialGradient>
+    <radialGradient id="violet" cx="0.8" cy="0.1" r="0.55"><stop offset="0" stop-color="#7B5CFF" stop-opacity="0.20"/><stop offset="0.7" stop-color="#7B5CFF" stop-opacity="0"/></radialGradient>
+    <radialGradient id="magenta" cx="0.6" cy="0.95" r="0.6"><stop offset="0" stop-color="#FF4FA3" stop-opacity="0.20"/><stop offset="0.7" stop-color="#FF4FA3" stop-opacity="0"/></radialGradient>
+    <pattern id="dots" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.25" fill="#F2E8D5"/></pattern>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#2A2236" stroke-width="1" opacity="0.4"/></pattern>
+    <clipPath id="screen"><rect x="600" y="112" width="536" height="402"/></clipPath>
+  </defs>
+  <rect width="1200" height="630" fill="#0E0B16"/>
+  <rect width="1200" height="630" fill="url(#teal)"/>
+  <rect width="1200" height="630" fill="url(#violet)"/>
+  <rect width="1200" height="630" fill="url(#magenta)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect x="76" y="88" width="480" height="478" fill="url(#dots)"/>
+  <rect x="64" y="76" width="480" height="478" fill="#17121F" stroke="#7A6C93" stroke-width="1.5"/>
+  <rect x="70.5" y="82.5" width="467" height="465" fill="none" stroke="#7A6C93" stroke-width="1.5"/>
+  <rect x="72" y="84" width="12" height="12" fill="#7A6C93"/><rect x="524" y="84" width="12" height="12" fill="#7A6C93"/><rect x="72" y="534" width="12" height="12" fill="#7A6C93"/><rect x="524" y="534" width="12" height="12" fill="#7A6C93"/>
+  <g transform="translate(128 123) scale(1 1)"><path fill="#7A6C93" transform="rotate(90 12 12)" d="M12 21C4 15 2 9 6 6C9 4 11 6 12 8C13 6 15 4 18 6C22 9 20 15 12 21Z"/><path fill="#7A6C93" d="M20 11h4v2h-4z"/></g><g transform="translate(480 123) scale(-1 1)"><path fill="#7A6C93" transform="rotate(90 12 12)" d="M12 21C4 15 2 9 6 6C9 4 11 6 12 8C13 6 15 4 18 6C22 9 20 15 12 21Z"/><path fill="#7A6C93" d="M20 11h4v2h-4z"/></g>
+  <text x="304" y="142" text-anchor="middle" fill="#CDBFA8" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="18" letter-spacing="3.4">16 WEEKS · ONE FILM</text>
+  <text x="304" y="262" text-anchor="middle" fill="#F2E8D5" font-family="'Abril Fatface', Didot, 'Bodoni 72', Georgia, serif" font-size="98">Frame by</text>
+  <text x="304" y="360" text-anchor="middle" fill="#F2E8D5" font-family="'Abril Fatface', Didot, 'Bodoni 72', Georgia, serif" font-size="98">Frame</text>
+  <line x1="184" y1="398" x2="424" y2="398" stroke="#7A6C93" stroke-width="1.5"/>
+  <rect x="299" y="393" width="10" height="10" fill="#7A6C93" transform="rotate(45 304 398)"/>
+  <text x="304" y="446" text-anchor="middle" fill="#CDBFA8" font-family="Inter, system-ui, sans-serif" font-size="23">A short film in sixteen weeks,</text>
+  <text x="304" y="478" text-anchor="middle" fill="#CDBFA8" font-family="Inter, system-ui, sans-serif" font-size="23">shot on a phone, with free tools.</text>
+  <rect x="600" y="112" width="536" height="402" fill="#000"/>
+  <image x="600" y="112" width="536" height="402" preserveAspectRatio="xMidYMid slice" clip-path="url(#screen)" href="/posters/hero-crt.webp" xlink:href="/posters/hero-crt.webp"/>
+  <rect x="600" y="112" width="536" height="402" fill="none" stroke="#7A6C93" stroke-width="1.5"/>
+  <g font-family="'JetBrains Mono', ui-monospace, monospace" font-size="18" fill="#CDBFA8">
+    <path d="M600 548v-12h12M814 536h12v12M600 556v12h12M814 568h12v-12" fill="none" stroke="#7A6C93" stroke-width="1.5"/>
+    <text x="616" y="558">WK <tspan fill="#F0A04B">01</tspan> / 16 · ~8h</text>
+  </g>
+  <text x="1136" y="558" text-anchor="end" fill="#9C9080" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="18">7 MODULES · FREE TOOLS</text>
 </svg>

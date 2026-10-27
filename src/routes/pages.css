@@ -19,8 +19,11 @@
 .page h2,
 .page h3 {
   margin: 0;
-  font-family: "Archivo Expanded", "Arial Black", system-ui;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-synthesis: none;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  font-weight: 400;
   color: var(--text-primary);
 }
 
@@ -74,7 +77,6 @@
   align-items: flex-start;
 }
 
-.page-button,
 .field input,
 .field select,
 .field textarea,
@@ -85,75 +87,13 @@
   font-size: 1rem;
 }
 
-.page-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 var(--space-4);
-  color: var(--primary-foreground);
-  text-decoration: none;
-  background: var(--accent-primary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-.page-button:hover {
-  background: var(--accent-primary-hover);
-}
-
-.page-button:focus-visible,
 .module-block:focus-visible,
 .field input:focus-visible,
 .field select:focus-visible,
 .field textarea:focus-visible,
-.status-choice:focus-visible,
 .tool-table a:focus-visible {
   outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-}
-
-.week-now {
-  color: var(--accent-warm);
-}
-
-.hero {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  align-items: flex-end;
-  min-width: 0;
-  border-radius: var(--radius-sm);
-}
-
-.hero-poster {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: var(--bg-inset);
-  border-radius: inherit;
-}
-
-.hero-copy {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-3);
-  min-width: 0;
-  padding: var(--space-5) var(--space-4);
-}
-
-.hero-copy h1 {
-  font-size: var(--text-display);
-  line-height: var(--text-display-lh);
-  letter-spacing: var(--text-display-tracking);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 8px 24px rgba(0, 0, 0, 0.65);
-}
-
-.hero-copy .page-copy {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 8px 24px rgba(0, 0, 0, 0.65);
+  outline-offset: 3px;
 }
 
 .field {
@@ -172,10 +112,16 @@
   padding: 0 var(--space-3);
   color: var(--text-primary);
   font: inherit;
+  /* Input look (design-system.md 2.7): inset well, 2px control boundary; focus adds the ring, the border stays. */
   background: var(--bg-inset);
-  border: 1px solid var(--border-default);
+  border: var(--pop-border) solid var(--border-strong);
   border-radius: var(--radius-md);
   color-scheme: dark;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--text-tertiary);
 }
 
 .field textarea {
@@ -190,7 +136,6 @@
   color-scheme: light;
 }
 
-.dash-card,
 .stage {
   display: flex;
   flex-direction: column;
@@ -203,28 +148,34 @@
   border-radius: var(--radius-md);
 }
 
+/* Done is progress, so it is brass (design-system.md 2.1): wash over the raised surface plus a 2px brass edge. */
 .stage[data-status="done"] {
-  background: var(--accent-warm-wash);
+  background-image: linear-gradient(var(--accent-warm-wash), var(--accent-warm-wash));
   box-shadow: inset 2px 0 0 var(--accent-warm);
 }
 
-.heavy-chip,
-.flag-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 32px;
-  padding: 0 var(--space-2);
-  color: var(--text-secondary);
-  font-size: 1rem;
-  line-height: 1.5;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
+.filmstrip > li > .stage {
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.flag-chip {
-  color: var(--status-warn);
-  border-color: var(--status-warn);
+.stage-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.stage-weeks {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+}
+
+.stage .hud-readout strong {
+  font-weight: 500;
 }
 
 .task-list {
@@ -259,7 +210,7 @@
   display: flex;
   flex: none;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--space-2);
   box-sizing: border-box;
   width: 168px;
@@ -272,30 +223,34 @@
   border-radius: var(--radius-md);
 }
 
-.module-block:hover,
-.status-choice:hover {
+.module-block:hover {
   background: var(--bg-hover);
   border-color: var(--border-strong);
 }
 
+/* Joined segmented control (design-system.md 5.2); the pop kit draws the latched segment. */
 .status-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: inline-flex;
+  max-width: 100%;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-sm);
 }
 
 .status-choice {
+  display: inline-flex;
+  gap: var(--space-1);
+  align-items: center;
+  justify-content: center;
   padding: 0 var(--space-3);
-  color: var(--text-primary);
-  background: transparent;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
+  font-weight: 600;
 }
 
-.status-choice[aria-checked="true"] {
-  background: var(--accent-primary-wash);
-  border-color: var(--accent-primary-edge);
+.status-choice + .status-choice {
+  border-left: 1px solid var(--border-strong);
+}
+
+.status-choice:focus-visible {
+  z-index: 1;
 }
 
 .criteria {
@@ -320,6 +275,17 @@
   max-width: 100%;
 }
 
+/* Six columns do not fit beside the 240px rail below ~1024px, and badges do not wrap: the wrapper scrolls, the page does not. */
+@media (min-width: 768px) {
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  .table-wrap .tool-table {
+    min-width: 44rem;
+  }
+}
+
 .tool-table {
   width: 100%;
   max-width: none;
@@ -336,13 +302,26 @@
   border-bottom: 1px solid var(--border-subtle);
 }
 
+/* Table rules: --bg-inset header over a --border-strong rule, --border-subtle row rules, mono first-week column. */
 .tool-table th {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: var(--text-eyebrow);
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: var(--text-eyebrow-tracking);
   text-transform: uppercase;
   background: var(--bg-inset);
+  border-bottom: 2px solid var(--border-strong);
+}
+
+.tool-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.tool-table .mono-cell,
+.tool-table .mono-cell a {
+  font-family: var(--font-hud);
+  font-size: var(--text-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .tool-table a {
@@ -356,6 +335,76 @@
 .dash-rail {
   min-width: 0;
   max-width: 100%;
+}
+
+/* Dashboard: the "now showing" poster beside Next up from 1024px. */
+.dash-now {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .dash-now {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+}
+
+/* The halftone is the card's 8px offset shadow (5.2), its own element; the margin keeps it inside the page at 360px. */
+.now-showing {
+  position: relative;
+  min-width: 0;
+  margin: 0 var(--pop-offset-lg) var(--pop-offset-lg) 0;
+}
+
+.now-showing__shadow {
+  position: absolute;
+  inset: 0;
+  transform: translate(var(--pop-offset-lg), var(--pop-offset-lg));
+  pointer-events: none;
+}
+
+.now-showing__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5);
+  background: var(--bg-raised);
+  border: var(--pop-border) solid var(--pop-outline);
+}
+
+.now-showing__numeral {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5ch;
+  padding: var(--space-3) var(--space-4);
+}
+
+.now-showing__numeral .hud-current {
+  font-size: var(--text-h1);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.now-showing__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.dash-progress {
+  align-self: flex-start;
+}
+
+@media (min-width: 640px) {
+  .now-showing__card {
+    padding: var(--space-6);
+  }
 }
 
 .visually-hidden {
@@ -412,4 +461,81 @@
     letter-spacing: var(--text-eyebrow-tracking);
     text-transform: uppercase;
   }
+}
+
+/* Intermission cards: 404 and /thank-you (design-system.md 3.3, 6). A playbill frame on --bg-base that carries the
+   film grain (5.6); the seal, the centred title block, copy and actions sit in one centred prose column. */
+.intermission {
+  --playbill-surface: var(--bg-base);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: var(--space-7) var(--space-5);
+}
+
+.intermission__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  max-width: var(--container-prose);
+  margin-inline: auto;
+  text-align: center;
+}
+
+.intermission .title-block h1 {
+  margin: 0;
+}
+
+.intermission .control-row {
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.intermission .contact-address {
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .intermission {
+    padding: var(--space-8) var(--space-7);
+  }
+}
+
+/* Working sections separated by an ornament hairline (5.1 .orn-rule construction). */
+.ruled-sections > section + section {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--ornament);
+}
+
+/* Landing module strip: a 32px fade to --bg-base (the page behind) on whichever side still overflows (useEdgeFade). */
+.module-strip[data-fade-start="true"] {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 32px);
+  mask-image: linear-gradient(to right, transparent, black 32px);
+}
+
+.module-strip[data-fade-end="true"] {
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+}
+
+.module-strip[data-fade-start="true"][data-fade-end="true"] {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 32px, black calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to right, transparent, black 32px, black calc(100% - 32px), transparent);
+}
+
+/* Dashboard "Next up": the minutes run inline after the title and wrap with it (R4 critique). */
+.next-task-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.next-task-minutes {
+  margin-inline-start: var(--space-1);
+  color: var(--text-tertiary);
+  font-family: var(--font-hud);
+  font-size: var(--text-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }

@@ -1,12 +1,12 @@
 import type { JSX } from "react";
 import { Link } from "react-router-dom";
 import { ContactAddress } from "@/components/ContactAddress";
+import { WorkingHeader } from "@/components/PageHeader";
 
 export function Terms(): JSX.Element {
   return (
     <article className="page prose-page">
-      <p className="eyebrow">Terms</p>
-      <h1>Terms of use</h1>
+      <WorkingHeader band={false} eyebrow="Terms" title="Terms of use" />
       <p className="page-copy">Last updated 25 October 2026. This is a plain-language summary, not a document prepared by a lawyer.</p>
       <section className="stack">
         <h2>What this is</h2>

@@ -3,7 +3,7 @@
 **Status:** Locked Oct 22, 2026. **Companion:** `docs/design-system.md` (all visual decisions — do not re-decide them here).
 **Content source of truth:** `Frame by Frame Research Ledger, Curriculum and PRD.md` (Part 1 = resource ledger, Part 2 = 16-week curriculum, Part 3 = original PRD). This document supersedes Part 3 where they conflict.
 
-A public, static, no-backend learning site that presents a 16-week self-taught filmmaking curriculum week by week, tracks progress in the browser, and exposes a filterable directory of ~160 verified free resources. One learner, no accounts, no analytics, free hosting.
+A public, static, no-backend learning site that presents a 16-week self-taught filmmaking curriculum week by week, tracks progress in the browser, and exposes a filterable directory of ~160 verified free resources. One learner, no accounts, no analytics without consent, free hosting.
 
 ---
 
@@ -13,7 +13,7 @@ A public, static, no-backend learning site that presents a 16-week self-taught f
 |---|---|---|
 | D1 | **`/` is dual-state.** First-run visitors (no `startDate` in storage) get the cinematic landing with the WebGL hero. Returning learners get the work-mode dashboard with zero WebGL. | Resolves the conflict between F1 ("opens with no extra clicks to the current week") and wanting a hero. The ceremony happens once. |
 | D2 | **Tailwind CSS + shadcn/ui** for the interface layer, replacing the original PRD's hand-rolled CSS variables. | Accessible primitives out of the box; our semantic tokens drive shadcn's variables (`design-system.md` §2.3). |
-| D3 | **WebGL is quarantined to 3 moments** (landing hero, landing CTA, capstone-complete ceremony) plus `/about`'s heading. Every learning route is CSS-only. | Learning routes budget drops to 160KB gzipped — tighter than the original 200KB. See `design-system.md` §7. |
+| D3 | **WebGL is quarantined to 3 moments** (landing hero, landing CTA, capstone-complete ceremony) plus `/about`'s heading. Every learning route is CSS-only. | Learning routes: 160KB gzipped **target**, 180KB ceiling, plus phone battery rules (*amended 2026-10-27*). See `design-system.md` §7.3–7.4. |
 | D4 | **Cold base + one warm accent.** Warm is reserved exclusively for progress and completion. | A semantic color rule, enforced in review. |
 | D5 | **Dark default, real light mode as P1.** | Light mode must not block launch. |
 | D6 | **Grain: static, dark-mode surfaces only, never over text.** | Justified as gradient-banding mitigation, not just mood. `design-system.md` §5. |
@@ -32,7 +32,7 @@ Carried forward unchanged from the ledger's Part 3: Android-first camera guidanc
 2. Every week exposes Watch / Read / Do with a link, a time estimate, and a done-when rubric of ≥2 checks.
 3. Progress and notes survive a reload and can be exported as a file.
 4. The resource directory is searchable and filterable, and shows verified gaps honestly rather than hiding them.
-5. Zero running cost, zero accounts, zero tracking.
+5. Zero running cost, zero accounts, zero tracking without consent. *(Amended 2026-10-27: consent-gated Vercel Web Analytics is allowed; see §8.)*
 
 **Non-goals:** hosting video, mirroring scripts or courses, accounts, comments, payments, reproducing LevelUp's paid lesson content, replacing mentor feedback, any server-side anything.
 
@@ -51,7 +51,7 @@ Carried forward unchanged from the ledger's Part 3: Android-first camera guidanc
 | `/toolkit` | — | No | Free software, license, download, first week of use |
 | `/about` | — | Heading effect only | Credits, method, licensing notes, the open gaps, help-wanted |
 
-Vercel needs `rewrites: [{ source: "/(.*)", destination: "/index.html" }]` for deep links.
+Every route above (and each `/week/1`…`/week/16`) is prerendered at build time to its own `dist/<path>/index.html` (*amended 2026-10-27, R6*), so Vercel serves a real file for each deep link with no SPA rewrite; unknown paths get `404.html` with status 404. The page hydrates in place when the HTML matches the URL and the learner's state; otherwise it is client-rendered (query strings, returning learners on `/`, offline fallback).
 
 **Navigation model**
 
@@ -65,7 +65,7 @@ Vercel needs `rewrites: [{ source: "/(.*)", destination: "/index.html" }]` for d
 
 ### 4.1 `/` — first-run landing
 
-Order: letterboxed hero (display H1, one-sentence promise, `lumen-cta` → "Start week 1", secondary text link → "Browse the plan first") → the 16-week shape as a horizontal filmstrip of module blocks → "What you'll make" (the capstone brief: 3–5 min thriller or sci-fi short, one location, ≤2 actors, Android phone, free Resolve) → "What this costs" (₹0, with the honest exceptions: script registration, festival fees, optional clip-on lens) → "What's missing" (the Indian-language gap, stated plainly, linking to `/about`) → start-date picker.
+Order: hero — the CRT screen beside a playbill-framed title block on a live aurora (*v2, 2026-10-27*; display H1, one-sentence promise, `lumen-cta` → "Start week 1", secondary text link → "Browse the plan first") → the 16-week shape as a horizontal filmstrip of module blocks → "What you'll make" (the capstone brief: 3–5 min thriller or sci-fi short, one location, ≤2 actors, Android phone, free Resolve) → "What this costs" (₹0, with the honest exceptions: script registration, festival fees, optional clip-on lens) → "What's missing" (the Indian-language gap, stated plainly, linking to `/about`) → start-date picker.
 
 Setting a start date writes `startDate` and navigates to `/week/1`. Every subsequent visit to `/` renders the dashboard. A "see the intro again" link lives on `/about`.
 
@@ -84,10 +84,10 @@ All 16 weeks as a vertical filmstrip on mobile, a 2-up grid on desktop, grouped 
 
 ### 4.4 `/week/:n`
 
-1. **Header panel** (letterboxed, grained) — eyebrow, title, topics as chips, core-hours in mono, capstone stage, prev/next week.
+1. **Header panel** (playbill frame on a static aurora band, *v2*) — eyebrow, title, core-hours in mono, capstone stage, prev/next week. (Topic chips dropped in v2: the title already lists the topics.)
 2. **Watch** — resource cards (§4.5), each with minutes.
 3. **Read** — same.
-4. **Do** — the assignment card, with the slate rule (2px warm left border). Contains the assignment text, the brochure number where one exists, and the **done-when checklist** (≥2 checks, independently tickable).
+4. **Do** — the assignment card, headed "Assignment", with the clapper stripe (*v2*; replaced the v1 brass slate rule). Contains the assignment text, the brochure number where one exists, and the **done-when checklist** (≥2 checks, independently tickable).
 5. **Notes** — a `textarea` per assignment, autosaved debounced 500ms, with a subtle "saved" state.
 6. **Community** — the week's named subreddit or platform, with the ledger's caveat where one exists (e.g. "read the FAQ and Logline Monday rules first").
 7. **Gap notice** — where the ledger has no verified resource for a section, render the gap card (§4.6) instead of an empty section. Never render an empty section.
@@ -226,7 +226,8 @@ Content lives as typed TS modules in `src/content/` (`resources.ts`, `weeks.ts`,
 | Validation | Zod schemas run in a `prebuild` script over `src/content/` | Fails fast |
 | Link check | Scheduled GitHub Action, weekly | Critical given how many ledger pages were only partially fetchable |
 | Tests | Vitest for schema, progress logic, week derivation, filter logic; one Playwright smoke test | Covers what breaks quietly |
-| Hosting | GitHub → Vercel, preview per branch, prod on main, SPA rewrite | Free tier |
+| Rendering | Build-time prerender of every static route (`src/entry-server.tsx`, `scripts/prerender.ts`, React 19 `prerenderToNodeStream`), then `hydrateRoot` when safe, else `createRoot` (*R6, 2026-10-27*) | No server at runtime; per-user state is client-only (neutral server snapshot) |
+| Hosting | GitHub → Vercel, preview per branch, prod on main, static files + `404.html` (no SPA rewrite since R6) | Free tier |
 
 **Suggested structure**
 
@@ -240,7 +241,7 @@ src/
     filmstrip/    FilmstripRail  WeekFrame
     resource/     ResourceCard  GapCard  BadgeRow
     week/         WeekHeader  TaskList  AssignmentCard  DoneWhenChecklist  NotesField
-    atmosphere/   GrainSurface  Letterbox  (lazy) HeroCanvas  CeremonyBadge
+    atmosphere/   (lazy) HeroCanvas  CeremonyBadge  DecodeHeading   (v2: Letterbox and GrainSurface retired; kits are CSS in src/styles/)
   routes/         Root Dashboard Landing Plan Week Library Capstone Toolkit About
 scripts/          validate-content.ts  check-links.ts  assert-bundle.ts
 ```
@@ -249,10 +250,12 @@ scripts/          validate-content.ts  check-links.ts  assert-bundle.ts
 
 ## 8. Quality bars
 
-- Learning routes: **≤160KB JS gzipped first load**, Lighthouse mobile **≥90**, LCP <2.0s on throttled 4G.
+- First paint comes from prerendered HTML on every static route; hydration produces no mismatch or recoverable error in either theme, with clean or stored progress, at 360px and 1440px (`npm run e2e:preview`, *R6*).
+- Learning routes: **160KB JS gzipped target / 180KB ceiling** before first paint, per route (*amended 2026-10-27*: the budget protects phone battery and is weighed against design and UX). Lighthouse mobile ≥90 and LCP <2.0s on throttled 4G are **targets**; measured results are recorded in the implementation journal (R5/R5.1).
+- Phone battery: nothing runs continuously while reading (no canvas, live aurora, infinite animation, or smooth-scroll loop); see `design-system.md` §7.4.
 - Landing/About: **+≤25KB** lazy canvas chunk loaded after LCP; Lighthouse mobile ≥90 here too. Three.js is never installed.
 - No horizontal scroll at **360px**. Last two versions of evergreen browsers.
-- Zero analytics, zero third-party network requests at runtime except outbound resource links the user clicks.
+- Analytics only after explicit consent: Vercel Web Analytics loads after the visitor accepts the cookie banner, and never on Reject. Otherwise zero third-party network requests at runtime except outbound resource links the user clicks. *(Amended 2026-10-27, user decision.)*
 - A broken link fails the build unless explicitly marked known-broken with a reason.
 - Every resource card shows a verified date.
 - Accessibility per `design-system.md` §8, verified in both themes.
@@ -283,7 +286,7 @@ scripts/          validate-content.ts  check-links.ts  assert-bundle.ts
 4. **Week + plan pages** — filmstrip, task lists, assignment card, done-when checklist, notes, gap cards. *Verify: all 16 weeks render; F3, F14, F16, F18 hold.*
 5. **Library** — Fuse index, filters, cards, badges, table alternative. *Verify: filter combinations return <100ms; F7 and F19 hold.*
 6. **Capstone + toolkit + about.** *Verify: F8, F9; HitFilm absent; Resolve limits stated.*
-7. **Atmosphere** — grain, letterbox, vignette, bleach-bypass. *Verify: grain never shares a layer with text; light mode grain off.*
+7. **Atmosphere** — grain, letterbox, vignette, bleach-bypass (*v1 build order; v2 replaced letterbox/vignette/bleach-bypass with the Kinetoscope kits*). *Verify: grain never shares a layer with text; light mode grain off.*
 8. **WebGL, last** — hero, CTA, ceremony, poster fallbacks, guards. *Verify: `assert-bundle` confirms `three` is absent from the main chunk; learning routes don't load it; FPS guard and poster paths both exercised.*
 9. **Hardening** — link-check action, Playwright smoke test, service worker, Lighthouse. *Verify: all §8 bars.*
 

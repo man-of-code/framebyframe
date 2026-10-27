@@ -1,3 +1,4 @@
+import { startDateError } from "@/lib/form";
 import type { Progress } from "@/lib/types";
 
 export const STORAGE_KEY = "fbf:progress:v1";
@@ -43,8 +44,15 @@ function copyProgress(raw: Record<string, unknown>): Progress {
   for (const [id, value] of Object.entries(raw.capstone as Record<string, unknown>)) {
     if (isStage(value)) progress.capstone[id] = value;
   }
-  if (typeof raw.startDate === "string") progress.startDate = raw.startDate;
-  if (typeof raw.weekOverride === "number" && Number.isFinite(raw.weekOverride)) {
+  if (typeof raw.startDate === "string" && startDateError(raw.startDate) === null) {
+    progress.startDate = raw.startDate;
+  }
+  if (
+    typeof raw.weekOverride === "number" &&
+    Number.isInteger(raw.weekOverride) &&
+    raw.weekOverride >= 1 &&
+    raw.weekOverride <= 16
+  ) {
     progress.weekOverride = raw.weekOverride;
   }
   if (raw.theme === "dark" || raw.theme === "light" || raw.theme === "system") {

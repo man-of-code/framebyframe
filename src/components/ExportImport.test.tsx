@@ -36,7 +36,7 @@ describe("ExportImport", () => {
     expect(await blob.text()).toBe(JSON.stringify(saved));
   });
 
-  it("shows the import reason and leaves the current progress untouched", async () => {
+  it("shows a learner-facing message with the raw reason as secondary text and leaves the current progress untouched", async () => {
     const user = userEvent.setup();
     const replace = vi.fn();
     const { toast } = await import("sonner");
@@ -46,7 +46,9 @@ describe("ExportImport", () => {
     const input = screen.getByLabelText("Import progress");
     await user.upload(input, new File(["not json"], "bad.json", { type: "application/json" }));
 
-    expect(error).toHaveBeenCalledWith("invalid JSON");
+    expect(error).toHaveBeenCalledWith("That file isn't a Frame by Frame progress export.", {
+      description: "Reason: invalid JSON",
+    });
     expect(replace).not.toHaveBeenCalled();
   });
 

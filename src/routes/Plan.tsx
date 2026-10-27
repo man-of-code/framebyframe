@@ -1,20 +1,13 @@
 import { useOutletContext } from "react-router-dom";
+import { PlaybillHeader } from "@/components/PageHeader";
 import { FilmstripRail } from "@/components/filmstrip/FilmstripRail";
 import { ModuleGroup } from "@/components/plan/ModuleGroup";
 import "@/components/plan/plan.css";
-import { content } from "@/content";
+import { MODULES } from "@/content/modules";
+import { weeks } from "@/content/weeks";
 import { useCurrentWeek } from "@/hooks/useCurrentWeek";
+import { toRoman } from "@/lib/title";
 import type { ShellOutletContext } from "@/routes/Root";
-
-const MODULES = [
-  { n: 1, title: "Writing" },
-  { n: 2, title: "Pre-production" },
-  { n: 3, title: "Directing" },
-  { n: 4, title: "Cinematography" },
-  { n: 5, title: "Editing and Sound" },
-  { n: 6, title: "Post-production and VFX" },
-  { n: 7, title: "Marketing, Distribution and Career" },
-] as const;
 
 const BUFFER_REASON =
   "No mentors, no supplied footage, and thin brochure coverage in sound and VFX.";
@@ -25,29 +18,30 @@ export function Plan() {
 
   return (
     <article className="plan">
-      <header className="plan-intro">
-        <p className="eyebrow">16 weeks</p>
-        <h1>The plan</h1>
-      </header>
+      <PlaybillHeader
+        eyebrow="16 weeks"
+        title="The plan"
+        note="Twelve core weeks in seven modules, then a four-week buffer."
+      />
       <div className="plan-rail">
         <FilmstripRail orientation="horizontal" compact progress={progress} />
       </div>
       {MODULES.map((module) => (
         <ModuleGroup
           key={module.n}
-          eyebrow={`Module ${String(module.n).padStart(2, "0")}`}
+          eyebrow={`Module ${toRoman(module.n)}`}
           title={module.title}
-          weeks={content.weeks.filter((item) => item.module === module.n)}
+          weeks={weeks.filter((item) => item.module === module.n)}
           current={week}
           progress={progress}
         />
       ))}
       <ModuleGroup
-        eyebrow="Weeks 13–16"
+        eyebrow="Weeks 13–16 · Buffer"
         title="Buffer"
         note={BUFFER_REASON}
         spliced
-        weeks={content.weeks.filter((item) => item.extension)}
+        weeks={weeks.filter((item) => item.extension)}
         current={week}
         progress={progress}
       />

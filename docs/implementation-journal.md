@@ -1279,3 +1279,1170 @@ Append below this line.
 - A client that does not run JavaScript gets the title in `index.html` and no meta description.
 - The contact form cannot deliver mail.
 - No postal address.
+
+### Redesign R0: Correctness fixes
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R0
+
+#### Shipped
+
+- `src/routes/Dashboard.test.tsx` — the dual-state test runs on a frozen clock (`2026-10-24`), so it no longer fails from 2026-10-29. Committed alone first (`79427f4`).
+- `src/lib/progress.ts` — import drops a `startDate` that fails `startDateError`, and a `weekOverride` that is not an integer in 1–16.
+- `src/lib/week.ts` — `checkId`, `weekCompletion` (every core task and every done-when check), `weekMinutes` (all task minutes), `formatHours`. Filmstrip, plan, dashboard, week page and the done-when checklist use them.
+- `src/content/modules.ts` — the one module list; the three copies are gone.
+- Content imports per collection. Only `Week`, `Dashboard` and the library touch `resources`.
+- `scripts/assert-bundle.ts` — limit back to `160 * 1024`; `assertRoutes` measures entry + each learning route through `dist/.vite/manifest.json` and rejects canvas code on those routes. `vite.config.ts` sets `build.manifest`.
+- Deferred until needed: Fuse (`src/lib/search-index.ts`, substring match until it loads), the cmdk palette (`usePaletteShortcut` stays eager), the virtualizer (`VirtualResultsGrid`), sonner's `Toaster` (moved into the deferred `LaunchChrome`), the More sheet and the mobile filter sheet (eager trigger buttons, lazy panels, focus returned to the trigger on close).
+- `scripts/finalize-dist.ts` — stamps `dist/sw.js` with a build id from `index.html`; writes `robots.txt`, plus `sitemap.xml` with absolute URLs only when `SITE_ORIGIN` is set. `public/robots.txt` and `public/sitemap.xml` removed.
+- `public/sw.js` — cache name `fbf-<build id>`; `/assets` cached only when the content type is JS, CSS, font, image or wasm. `vercel.json` rewrite is `/((?!assets/).*)`.
+- `src/components/week/NotesField.tsx` — adopts an imported note unless the field has an unsaved edit.
+- `src/components/capstone/StageList.tsx` — status radiogroup is one tab stop with arrow-key movement.
+- `src/content/site.ts` is the only place the contact address appears; `form.test.ts` uses a fixture address.
+- `docs/prd.md` — lines 6, 35 and §8 amended for consent-gated Vercel Web Analytics.
+- Removed `src/App.css`, `src/assets/{hero.png,react.svg,vite.svg}`, `public/icons.svg`.
+- Chromium installed for Playwright.
+
+#### Verified
+
+- `npm run validate` → 138 resources, 16 weeks, 9 gaps, 22 tools, 8 stages.
+- `npm test` → 153 passed, 28 files. `npx tsc -b --noEmit` → exit 0.
+- `npm run build` → exit 0. Gzipped graphs, before → after: entry 164.3 → 128.7 KB; `/plan` 164.3 → 130.4; `/week/:n` 171.0 → 153.9; `/library` 190.9 → 148.3; `/toolkit` 131.5; `/capstone` 130.9. All under 160KiB with the limit unchanged.
+- `npm run e2e` → 1 passed.
+- Production preview in Chromium: More sheet and mobile Filters sheet open, close, and return focus to their trigger; Tamil in the sheet writes `language=ta` and badges "Filters, 1 applied"; "blockng" finds 2 results after Fuse loads; ⌘K opens the palette; no console errors.
+- `NotesField.test.tsx` fails without the resync effect and passes with it.
+- `npx oxlint` → 42 warnings (41 before R0), 0 errors.
+
+#### Decisions
+
+- **Decision:** A week is complete when every core task and every done-when check is done; weeks with no tasks complete on checks alone. Frame ratios count the same ids, so week 1 reads `0/5` and buffer weeks `0/2`.
+  - **Because:** the dashboard could never reach 16/16, and a week read as complete while its assignment was untouched.
+  - **Rejected:** counting stretch tasks; checks-only completion.
+  - **Risk:** learners who ticked every task before this change see those weeks as unexposed until they tick the checks.
+  - **Deviation:** yes. Plan step (v1 Task 9 decision): "A week is exposed only when it has at least one core task and every core task id is done." Did this instead: core tasks plus done-when checks. `Plan.test.tsx` updated to `0/5` and to tick the checks.
+- **Decision:** Hours everywhere are all task minutes, stretch included, formatted `Nh` or `Nh Mm`. The dashboard's "core" suffix is gone.
+  - **Because:** v1 Task 5 recorded the ledger estimate as the sum of all task minutes; the plan and week pages already used it.
+  - **Rejected:** core-only minutes everywhere, which would contradict the ledger estimate.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** `searchResources` accepts `index: null` and falls back to a case-insensitive substring match over title, why and topics while Fuse loads. `createIndex` moved to `src/lib/search-index.ts`.
+  - **Because:** any static import of a module that calls `new Fuse` keeps Fuse in the library's first load.
+  - **Rejected:** a blank or unfiltered result list until the index arrives.
+  - **Risk:** for a few milliseconds after load a typed query is substring-matched, not fuzzy.
+  - **Deviation:** yes. Plan step (v1 Task 12 interface): `createIndex` exported from `src/lib/search.ts`. Did this instead: exported from `src/lib/search-index.ts`; `search.test.ts` imports it from there.
+- **Decision:** Lazily loaded panels (palette, More sheet, filter sheet) mount on first open and stay mounted; their triggers are plain buttons with `aria-haspopup="dialog"` and `aria-expanded`.
+  - **Because:** unmounting on close would drop the close animation; without `SheetTrigger`, focus return has to be explicit.
+  - **Rejected:** loading the panels on hover or idle.
+  - **Risk:** the first open waits for a small chunk.
+  - **Deviation:** no
+- **Decision:** `finalize-dist.ts` throws when `dist/sw.js` has no placeholder, so it runs once per build.
+  - **Because:** a silently unstamped worker would reuse one cache name across deploys.
+  - **Rejected:** a no-op on a second run.
+  - **Risk:** running the script twice on the same `dist` fails; `npm run build` runs it once.
+  - **Deviation:** no
+- **Decision:** `vercel.json` is verified by a unit test of the rewrite pattern, not a preview fetch.
+  - **Because:** `vite preview` ignores `vercel.json`.
+  - **Rejected:** a preview 404 check, which proves nothing about Vercel.
+  - **Risk:** the test uses JavaScript `RegExp`; Vercel uses path-to-regexp. The lookahead group is supported by both, but this was not checked against a deploy.
+  - **Deviation:** no
+
+#### Left open
+
+- `SITE.email` still holds the Gmail address until the user supplies the dedicated one.
+- No `SITE_ORIGIN`, so production ships `robots.txt` without a sitemap.
+- The Vercel rewrite and the service-worker content-type check have not been exercised on a real deploy.
+
+### Redesign R0.1: Review follow-ups
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R0, §4 review
+
+#### Shipped
+
+- `src/components/capstone/StageList.tsx` — status arrows stop at the ends instead of wrapping. Test: ArrowLeft on "To do" neither reaches "Done" nor fires the ceremony.
+- `src/components/nav/BottomTabs.test.tsx` — opens the lazy More sheet, Escape closes it, focus is back on More.
+- `src/routes/Library.test.tsx` — the mobile filter-sheet test asserts focus returns to Filters.
+
+#### Verified
+
+- `npm test` → 155 passed, three consecutive full runs. *(Corrected: the first commit of this entry said 156 and was made while one palette test was failing under full-suite load; see the warming decision below.)*
+- Removing `returnFocus.current?.focus()` from `MoreSheet` fails the new BottomTabs test; restored.
+- Production preview, desktop, JS responses gzipped within 3s of navigation: `/library` 173.6KB, `/week/7` 170.1KB, `/plan` 147.0KB. Static graphs from `assert-bundle`: 148.3KB, 153.9KB, 130.4KB.
+
+#### Decisions
+
+- **Decision:** The 160KB gate means "JS in the static graph before first paint" (entry + the route's static chunk graph). Code loaded from a mount effect is outside it: `LaunchChrome` (Lenis, sonner, cookie banner, analytics after consent) on every route, and Fuse on `/library`.
+  - **Because:** deferring that code shortens the critical path, which is what LCP measures. The 3s totals above show what still downloads.
+  - **Rejected:** counting effect-loaded chunks in the gate, which would fail `/library` and `/week/7` again and push toward removing Lenis or the cookie banner, both user-requested.
+  - **Risk:** a reader of `design-system.md` §7.3 "first load" could take the gate as stricter than it is. R1 restates the budget with this definition.
+  - **Deviation:** no
+- **Decision:** `Library.test.tsx` and `BottomTabs.test.tsx` import the lazy panels in `beforeAll`.
+  - **Because:** under full-suite load the first dynamic import of cmdk exceeded `findBy*`'s 1s timeout, so "opens the command palette from /" failed intermittently.
+  - **Rejected:** raising the `findBy` timeout, which keeps the race and only makes it rarer.
+  - **Risk:** the tests no longer exercise a cold chunk load; the browser check in R0 did.
+  - **Deviation:** no
+- **Decision:** The radiogroup does not wrap at either end.
+  - **Because:** on the final stage, a wrap from "To do" to "Done" spends the once-only ceremony.
+  - **Rejected:** firing the ceremony only on click or Space, which would leave an arrow-selected "Done" with no ceremony at all.
+  - **Risk:** this departs from the WAI-ARIA radio pattern's wrapping.
+  - **Deviation:** no
+
+#### Left open
+
+- none
+
+### Redesign R1: Design system v2
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R1
+
+#### Shipped
+
+- `docs/design-system.md` — v2 "Kinetoscope": five-layer table, one hue per meaning, dark and light token tables, pop fills, literal aurora CSS, shadcn mapping with per-primitive overrides (§2.7), contrast test matrix (§2.8), Abril Fatface type scale, CSS ornament kit with pseudo-element ownership, pop kit (layering, raised vs latched, disabled, focus), HUD, aurora, film and grain kits, surfaces map, ThreeUI governance with two additions (guilloché seal, button sheen), budget target/ceiling (§7.3), battery rules (§7.4), rationale (§10).
+- `.cursor/rules/framebyframe-design.mdc` — v2 rules.
+- `docs/redesign-plan.md` — ornaments as CSS, budget target and ceiling, battery rules, sidebar-first R2, Fable pass, handoff rule.
+
+#### Verified
+
+- Contrast for every candidate pair computed with the WCAG formula (scratchpad `contrast.py`, `verify.py`, `aurora.py`): lowest body-text pair 4.85:1; aurora strength 0.20 keeps `--text-secondary` ≥ 4.86:1 over all three fields stacked (dark).
+- Self-hosted Inter and JetBrains Mono have no `smcp`: identical widths with `font-synthesis: none` in Chromium.
+- Cold review (Opus subagent): 3 blockers, 11 should-fix, 2 nits. Its contrast claims were re-computed and all held (border-strong ratios swapped, dark overlay 2.78, three-field stack 3.53, light brass on wash 4.35). All findings are addressed in the spec.
+- Left-rail diagnosis (Sonnet subagent, production preview in Chromium): Lenis captures wheel input over the rail; the rail is ~1650px tall with the primary nav below sixteen 48px frames; week frames show only "WK nn" to sighted users.
+- Design pass (Fable subagent): ThreeUI `68802d5` catalog evaluated; every family that imports `three`, loads a CDN, renders a full HTML document, uses `backdrop-filter`, or animates continuously was rejected.
+
+#### Decisions
+
+- **Decision:** v1 token names are kept where the meaning carried over (`--accent-primary` = action teal, `--accent-warm` = brass).
+  - **Because:** about 300 CSS references use them; renaming adds churn without changing any rendered value.
+  - **Rejected:** a rename to `--action` / `--brass`.
+  - **Risk:** the name `--accent-warm` no longer describes its hue precisely.
+  - **Deviation:** no
+- **Decision:** Ornaments, halftone, HUD frames and aurora are CSS; no ornament is a React component.
+  - **Because:** `/week/:n` had ~6KB of JS headroom; CSS is outside the JS budget.
+  - **Rejected:** the plan's `src/components/ornament/` SVG components.
+  - **Risk:** none.
+  - **Deviation:** yes. Plan step: "`src/components/ornament/` — `Fleuron`, `DoubleRule`, `DiamondRule`, `PlaybillFrame`." Did this instead: CSS utilities (plan updated).
+- **Decision:** Aurora strength 0.20 in both themes, and only `--text-primary` / `--text-secondary` may sit on a band.
+  - **Because:** at the 0.30 candidate, three overlapping fields put `--text-secondary` at 3.53:1; CSS cannot prevent overlap.
+  - **Rejected:** forbidding overlap by placement.
+  - **Risk:** the aurora reads softer than the candidate.
+  - **Deviation:** no
+- **Decision:** The budget is a 160KB target that warns and a 180KB ceiling that fails, per route; exceeding the target needs a journaled design/UX reason. Phones run nothing continuously (§7.4).
+  - **Because:** user direction 2026-10-27: the budget protects phone battery and is not an absolute line.
+  - **Rejected:** keeping 160KB as a hard fail.
+  - **Risk:** "target" can erode; every overage must be journaled.
+  - **Deviation:** yes. Plan step (§2): "≤160KB … enforced per route". Did this instead: target + ceiling (plan updated).
+- **Decision:** SparkBadge is desktop-only; phones, reduced motion and Save-Data get a static guilloché-seal ceremony. Continue sits on `--bg-raised`, not in the aurora.
+  - **Because:** SparkBadge animates on a timer (§7.4 rule 1); §2.5 bans controls in a band. Reduced-motion users previously got no ceremony.
+  - **Rejected:** a time-limited SparkBadge on phones.
+  - **Risk:** phone users never see the particle badge.
+  - **Deviation:** no
+- **Decision:** Two grain variants: band grain (overlay 0.03, dithering only) and film grain (normal blend 0.06, dark only) on text-free surfaces: hero screen, ceremony stage, 404 and thank-you roots.
+  - **Because:** overlay grain at 0.03 on `#0E0B16` moves pixels by under one 8-bit step, so it is invisible; normal-blend grain over aurora text would push `--text-secondary` below 4.5:1.
+  - **Rejected:** raising band-grain opacity.
+  - **Risk:** "filmy" grain is visible on only a few surfaces.
+  - **Deviation:** no
+
+#### Left open
+
+- Abril Fatface at 360px on the longest titles is unverified; R2 records it.
+- The sitemap still needs a production origin, and the contact address still needs the dedicated mailbox from the user.
+
+### Redesign R2a: Left rail, Lenis gating, budget gate
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R2a
+
+#### Shipped
+
+- `src/components/nav/LeftRail.tsx` — rail rebuilt to `design-system.md` §6.1: brand, week readout, primary nav, theme toggle, rule, 4×4 filmstrip grid, "NOW SHOWING" eyebrow + title link to `/week/N`. `data-lenis-prevent` on the `<aside>`. Legal links removed.
+- `src/components/nav/shell.css` — rail is `position: sticky; top: 0; height: 100dvh; overflow-y: auto; overscroll-behavior: contain`, 240px; shell is a two-column grid at ≥768px (replaces `margin-left` on the fixed rail); footer styles.
+- `src/components/nav/ShellFooter.tsx`, `src/routes/Root.tsx` — "Legal" nav (Contact, Privacy, Terms) under `<main>` in both layouts. The mobile More sheet keeps its own legal links.
+- `src/components/filmstrip/{FilmstripRail,WeekFrame}.tsx`, `filmstrip.css` — new `orientation="grid"` on `FilmstripRail` and `"cell"` on `WeekFrame`: numeral only, ≥48×48, 8px gaps, `aria-label` "Week N: title, X of Y done", `aria-current="step"`, exposed check kept (14px, corner). `vertical` and `horizontal` are unchanged for `/plan` and the dashboard.
+- `data-lenis-prevent` on `ui/command.tsx` (list), `ui/table.tsx` (container), `ui/dialog.tsx`, `ui/sheet.tsx`, `ui/select.tsx` (content), `ui/scroll-area.tsx` (viewport), and the horizontal filmstrip.
+- `src/lib/smooth-scroll.ts` (+ test), `src/components/SmoothScroll.tsx` — `shouldSmoothScroll(env)` gates Lenis on reduced motion, `(max-width: 767px)`, `(pointer: coarse)` and `navigator.connection.saveData`; all four are listened to and Lenis is destroyed when any starts to match, re-mounted when none does.
+- `scripts/assert-bundle.ts` (+ test) — `ENTRY_GZIP_LIMIT` split into `ENTRY_GZIP_TARGET` (160KiB, warning, exit 0) and `ENTRY_GZIP_CEILING` (180KiB, failure). Results carry `warnings`. What is measured and `LEARNING_ROUTES` are unchanged.
+- `src/components/nav/LeftRail.test.tsx` — rail order, frame labels, current week, now-showing link, `data-lenis-prevent`, no legal links in the rail, footer legal links in the Root shell on desktop and phone layouts.
+
+#### Verified
+
+- `npm test` → 31 files, 168 tests pass.
+- `npx tsc -b --noEmit` → exit 0.
+- `npm run build` → exit 0, no budget warnings. Entry graph 132010 B (128.9 KB). Plan 133756 B (130.6 KB), Week 157741 B (154.0 KB), Library 152020 B (148.5 KB), Toolkit 134872 B (131.7 KB), Capstone 134212 B (131.1 KB).
+- `npm run e2e` → 1 passed.
+- `npx oxlint` → 42 warnings before and after; none added.
+- Browser (Chromium, `vite preview` :4340, 2s after load): wheel over the rail at 1280×800 moved the rail (`scrollTop` 44) and not the page (`scrollY` 0); wheel over main moved the page (`scrollY` 841). Palette list on `/library` (scrollHeight 4452, client 288): wheel moved the list to 400 and the page by 0.
+- Fit: at 1440×800 and 1280×800, brand 12–60, nav 105–433, theme toggle 445–493, grid 518–743 are inside 800; the NOW SHOWING block (755–832) is cut by 32px and the rail scrolls 44px. At 1280×900 the whole rail fits (`scrollHeight` 900). Every frame measured 48×48.
+- No horizontal overflow at 768 and 1440 on `/`, `/plan`, `/library`, `/toolkit`, `/week/7` (`scrollWidth` equals `clientWidth`).
+- 390×844 with `hasTouch` and `isMobile`: `html.lenis` absent; desktop has it. Footer legal nav is present on mobile.
+- Screenshot at 1440×800 (scratchpad `r2a/rail-1440x800.png`): brand, "WK 01 / 16" readout, six nav rows with Dashboard highlighted, a three-way theme toggle, a thin rule, a 4×4 grid of bordered numeral cells with 01 outlined in brass and a line before 13, then NOW SHOWING with the title clipped at the bottom edge.
+
+#### Decisions
+
+- **Decision:** The rail hides its scrollbar (`scrollbar-width: none`).
+  - **Because:** §6.1 makes 48px frames and a 240px rail fixed; a classic scrollbar (8–15px) would shrink the 216px content box and the grid frames below 48px at 800px-tall viewports.
+  - **Rejected:** `scrollbar-gutter: stable` (still narrows the box), and a wider rail (§6.1.7 says 240px).
+  - **Risk:** the rail scrolls by wheel, touchpad and focus only; at 800px tall there is no visible hint that "NOW SHOWING" continues below.
+  - **Deviation:** no
+- **Decision:** Rail side padding is 12px and the right border became an outside `box-shadow`.
+  - **Because:** 4 frames × 48px + 3 × 8px = 216px = 240 − 2 × 12; a 1px border would make frames 47.75px.
+  - **Rejected:** 16px padding (frames 46px, below the 48px target).
+  - **Risk:** the divider is a shadow, so R2b must restyle it as such.
+  - **Deviation:** no
+- **Decision:** At 1440×800 and 1280×800 the NOW SHOWING block is partly below the fold (rail scrolls 44px); §6.1.4 only requires everything through the theme toggle there, and the whole rail at 1280×900.
+  - **Because:** the spec's own heights (six 48px nav rows, toggle, 4×4 frames) leave 32px short at 800px.
+  - **Rejected:** shrinking nav rows below 48px.
+  - **Risk:** none against the spec.
+  - **Deviation:** no
+- **Decision:** Rail gap is `--space-3` (12px) and frames show only the mono numeral ("07"), not "WK 07".
+  - **Because:** "WK 07" does not fit in 48px; the spec says "mono numeral".
+  - **Rejected:** a smaller font.
+  - **Risk:** R2b may want a different glyph treatment.
+  - **Deviation:** no
+- **Decision:** The "week HUD readout" stays the existing `WeekNumeral` on current tokens, placed after the brand; there is no `.hud-frame` yet.
+  - **Because:** the HUD utilities are R2b scope.
+  - **Rejected:** adding an ad hoc frame class.
+  - **Risk:** R2b must wrap it in `.hud-frame` and add `orn-rule` in place of the `.rail-rule` hairline.
+  - **Deviation:** no
+- **Decision:** The rail's "current week" for the grid highlight comes from `useCurrentWeek` inside `FilmstripRail`, while NOW SHOWING uses the `week` prop; both resolve to the same value in `Root`.
+  - **Because:** left the existing `FilmstripRail` contract intact.
+  - **Rejected:** threading a `current` prop through.
+  - **Risk:** if the two sources diverge the highlight and the title would disagree.
+  - **Deviation:** no
+- **Decision:** `.shell` becomes a CSS grid (240px + 1fr) at ≥768px so the sticky rail takes its own column.
+  - **Because:** sticky needs the rail in flow; the previous `margin-left` only worked for `position: fixed`.
+  - **Rejected:** `float: left` on the sticky rail.
+  - **Risk:** any future non-fixed direct child of `.shell` will be auto-placed into a new row.
+  - **Deviation:** no
+- **Decision:** `data-lenis-prevent` is also on select menus, the scroll-area viewport and the horizontal filmstrip (the plan listed palette, tables, dialog, sheet).
+  - **Because:** they are desktop nested scrollers.
+  - **Rejected:** leaving them for later.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** The Toolkit `.table-wrap` is not marked: it has no overflow rule, so it is not a scroller. The shared `Table` container (used by Library's results table) is.
+  - **Because:** `data-lenis-prevent` on a non-scrolling element does nothing.
+  - **Rejected:** adding it anyway.
+  - **Risk:** if a later phase adds `overflow-x: auto` there, it needs the attribute.
+  - **Deviation:** no
+- **Decision:** The `FilmstripRail` `vertical` orientation and its CSS stay although nothing uses it now.
+  - **Because:** surgical change; the plan says keep the API working.
+  - **Rejected:** deleting it.
+  - **Risk:** dead code.
+  - **Deviation:** no
+- **Decision:** `assertDist` and `assertRoutes` keep `ceiling` as the second argument and take `target` last.
+  - **Because:** existing callers and tests pass the limit second.
+  - **Rejected:** an options object.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** Save-Data is read once at mount and on the connection `change` event where `navigator.connection` exists; Safari and Firefox lack it, so they are gated only by the three media queries.
+  - **Because:** there is no standard Save-Data query.
+  - **Rejected:** polling.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- Wheel and touchpad checks used Playwright's synthetic wheel; real trackpad inertia on macOS was not tried.
+- Dialog and sheet bodies carry `data-lenis-prevent`, but no overflowing dialog exists to test on desktop; they were not exercised in the browser.
+- The rail still uses v1 tokens, fonts, brand font and hairline rule; R2b restyles it (HUD frame, `orn-rule`, Abril brand).
+- Hidden rail scrollbar at ≤800px tall (see decision) may want a fade or hint in R2b.
+
+### Redesign R2b: Foundation
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R2b
+
+#### Shipped
+
+- `src/styles/tokens.css` — rewritten from design-system §2–§4 for `:root` (dark) and `.light`: v1 names kept, plus pop fills, `--pop-*` geometry and colours, `--brass-fill`, `--status-exp`, `--ornament`, aurora vars (`--aurora-strength`, `--aurora-fields`), `--grain-opacity` 0.03 / `--grain-film-opacity` / `--grain-film-tile`, `--sheen-color`, `--shadow-overlay`, `--halftone-*`, radii 4/6/8/full, `--dur-aurora`, font stacks, §3.2 scale, shadcn aliases per §2.7 (`--primary` = pop teal, `--input` = `--border-strong`, `--radius` = `--radius-md`). Reduced-motion block collapses fast/base/slow/ceremony. `--vignette` is kept until R4 deletes the letterbox.
+- `src/index.css` — imports the kits, Abril `@font-face` (latin-ext + latin, unicode-ranges), Archivo removed, `@theme inline` points at the new shadcn names and the Abril stack, focus outline offset 3px, `.font-display` (400, `font-synthesis: none`, `break-word`, `balance`).
+- `public/fonts/abril-fatface-{latin,latin-ext}.woff2` + `OFL-AbrilFatface.txt`; Archivo files and OFL removed; `index.html` preloads only the Abril latin file and `theme-color` is `#0E0B16`.
+- `src/styles/{ornaments,pop,sheen,hud,aurora,film}.css` + `grain.css` — ornament kit (`.orn-fleuron`, `.orn-rule`, `.orn-rule-double`, `.orn-rule-diamond`, `.playbill-frame`, `.orn-seal`), pop kit (layered `::before` fill z −1 / `::after` shadow z −2, hover / press / latched / disabled / focus, `.halftone`, `.pop-outline`, `.pop-shadow`), sheen, HUD (`.hud-frame`, `.hud-readout`, `.hud-grid`), aurora (static, `.aurora--live` with phone / reduced-motion fallback to static), `.clapper-stripe`, film grain variant. `.grain` keeps working for current consumers.
+- `scripts/gen-guilloche-seal.ts` → `src/assets/ornaments/guilloche-seal.svg` (12.4KB raw, 3.7KB gzip, 32 `<use>`), plus `scripts/gen-guilloche-seal.test.ts` (exists, < 16KB, exactly 32 `<use`).
+- `src/hooks/useAuroraPause.ts` — 25 lines; sets `data-paused` from an `IntersectionObserver` and `visibilitychange`. Nothing imports it yet (R4 mounts the live aurora).
+- `src/styles/tokens.contrast.test.ts` — parses `tokens.css` for both themes and asserts every §2.8 row, computing the aurora stack, wash over inset and raised, sheen peak, band-grain worst pixel and film-grain worst pixel itself.
+- `src/components/ui/*` — button (primary raised teal with `ButtonSheen` span, secondary / outline, ghost, destructive, link; every size keeps 48px), badge (pop fills ok / warn / danger / paid / exp, neutral default), checkbox, switch, toggle and toggle-group (latched teal + check), tabs (segmented), tooltip, skeleton, progress (brass), input / textarea / select trigger, dialog and sheet (scrim without blur, 2px outline, `--shadow-overlay`, Abril 400 titles), sonner (2px outline, overlay shadow, 4px status-text left bar), popover / select content / card (blurred shadows removed). `data-lenis-prevent` untouched.
+- Shell: `LeftRail` (Abril brand, week readout in `.hud-frame`, nav active wash + 2px teal bar, latched theme toggle, `orn-rule`, grid frames with teal hover / focus / active, bottom-fade scroll hint), `WeekNumeral`, `shell.css` (bottom tabs top bar, mobile bar, skip link with pop border and shadow, read-only banner, footer rule, `.eyebrow` now Inter 600 `--text-secondary` per §3.2), More sheet through the primitives.
+- Route CSS touched only where a token change would have broken it: `pages.css` / `launch.css` (`.page-button` interim pop look; its old `--primary-foreground` text on dark teal would have been 2.4:1 in light), `library.css` (`.filter-chip` keeps size, loses its own fill and border; `FilterChips` adds `pop--chip`), `week.css` (task-checkbox colour overrides removed so the primitive shows), and the four `Archivo Expanded` rules now use `--font-display` at weight 400.
+
+#### Verified
+
+- `npm test` → 33 files, 190 tests pass (was 31 / 168).
+- `npx tsc -b --noEmit` → exit 0.
+- `npm run build` → exit 0, no budget warnings. Entry graph 131735 B (128.6 KB). Plan 133481 B (130.4 KB), Week 157283 B (153.6 KB), Library 151752 B (148.2 KB), Toolkit 134598 B (131.4 KB), Capstone 133938 B (130.8 KB). R2a had Week 157741 B; the new JS (`ButtonSheen`, check icons) is offset by the removed utility classes.
+- `npm run e2e` → 1 passed (no selector changes).
+- `npx oxlint` → 42 warnings, as before; none added (`ButtonSheen` joins two existing only-export-components warnings in `button.tsx` and `badge.tsx`).
+- Contrast mutation check: `--text-tertiary` dark `#9C9080` → `#6C6258` failed "text tokens meet 4.5 on every surface" (3.27) and the film-grain row (2.88); `--aurora-strength` 0.20 → 0.30 failed the aurora-stack and band-grain rows in both themes (secondary 3.51 dark, 4.29 light); light `--accent-warm` `#7E4E00` → `#B87A20` failed the status-text and wash rows (3.09, 2.51). Each file was restored; the test then passed 21/21.
+- Contrast values the test computes with the shipped tokens (dark / light): aurora stack secondary 4.86 / 5.26, primary 7.22 / 9.53; with band grain secondary 4.68, primary 6.96.
+- Abril at 360px (container 328px, `overflow-wrap: break-word`, preview Chromium, font loaded): week 1 title, week 7 title, week 4 (longest unbroken token `objective/subjective`) and "Marketing, Distribution and Career" at `--text-h1` (30px) take 4, 4, 4 and 3 lines; at `--text-h2` (24px) 3, 4, 3 and 2 lines. No line extends past the box (widest right edge 338 of 344 at h1) and `scrollWidth` equals `clientWidth` on every one. `movement/angles/framing,` breaks mid-token on the week 7 h1 (visible in the week header), which is `break-word` doing its job.
+- Browser (Chromium, `vite preview` :4350): no horizontal overflow on `/`, `/plan`, `/library`, `/toolkit`, `/week/7`, `/about`, `/capstone`, `/contact` at 360, 768 and 1440 in both themes. Focus ring `solid 2px rgb(79,224,194)` offset 3px on a primary pop button (shadow layer opacity 0), a library chip (`:focus-visible` true) and a rail frame (border goes teal). Hover on the primary button: control `translate(-1,-1)`, shadow `translate(4,4)`; sheen `translateX` −113.75px at rest, +113.75px on hover. Latched toggle: control `translate(2,2)`, shadow `translate(1,1)`, fill teal. Light mode: `--grain-opacity` 0, `.aurora::after` and `.grain::before` opacity 0. Dark: aurora `::after` 0.03, film grain 0.06 normal blend. Lenis: absent at 390×844 with touch, present at 1440×900.
+- Cascade: `pop.css` first shipped unlayered, so its `position: relative` beat Tailwind's `absolute` on the dialog and sheet close buttons. It is now wrapped in `@layer components`; an injected `pop pop--ghost absolute` element computes `position: absolute`.
+- Latched chip (library Type group, YouTube clicked, settled 500ms): `aria-pressed=true`, control `translate(2,2)`, shadow `translate(1,1)` at opacity 1, fill teal, check icon displayed; focused with `:focus-visible` the shadow opacity is 0. (An earlier reading of `[data-state=on]` had hit the rail's Dark segment.)
+- Route primary action on the dashboard (`.page-button`, focused by keyboard): `box-shadow: none`, outline `solid 2px`.
+- Rail scroll hint: at 1280×800 the rail scrolls (`scrollHeight` 853 vs 800) in both themes; the fade is a 32px gradient from transparent to `--bg-inset` (screenshots `rail-1280x800-dark.png` / `-light.png`). At 900px tall nothing scrolls and the local cover layer hides it.
+- Screenshots: 39 PNGs in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r2b/shots/` (5 routes × 3 widths × 2 themes, named `<route>-<width>-<theme>.png` with `landing` = clean storage, `dashboard` = seeded `/`, plus `rail-closeup-1440-dark.png`); two More-sheet shots beside them in `r2b/`.
+
+#### Decisions
+
+- **Decision:** The aurora layers are listed magenta, violet, teal (the spec lists teal, violet, magenta).
+  - **Because:** CSS paints the first layer on top. In the spec order the three-field stack measures secondary 4.57 and, with band grain, 4.42 (fails 4.5); the spec's 4.86 / 4.69 were computed with teal at the bottom. Reversed, the shipped CSS gives exactly the spec's 4.86 / 4.68.
+  - **Rejected:** dropping `--aurora-strength` to 0.19 (4.58 with grain), which changes the look everywhere; hard-coding the test's stacking order to match the spec (the test would then not describe what the browser paints).
+  - **Risk:** §2.5 calls its CSS literal. The parent should either amend §2.5 / §2.8 or choose strength 0.19 instead. Positions and colours are unchanged; only overlaps differ by a few RGB levels.
+  - **Deviation:** yes. Plan step: "Literal CSS (R2 transcribes it)" (§2.5). Did this instead: same gradients, reversed list order.
+- **Decision:** Every button size is at least 48px tall (`icon*` are 48×48); `xs` and `sm` only narrow the padding. The dialog and sheet close buttons are therefore 48px and sit at `top-2 right-2`.
+  - **Because:** §8 and plan §2 make 48px non-negotiable; shadcn's 24 / 32 / 36px defaults would fail it.
+  - **Rejected:** keeping compact sizes for dense UI.
+  - **Risk:** R3 / R4 may want a denser toolbar button; that is a spec change.
+  - **Deviation:** no
+- **Decision:** In the left rail the theme toggle hides the latched check icon (`.left-rail .theme-option .pop-check`). The More sheet keeps it.
+  - **Because:** three segments share 216px; "System" plus a 14px check is about 70px against about 66px available, so it would overflow.
+  - **Rejected:** icon-only segments (changes the control), a 13px label (still overflows).
+  - **Risk:** in the rail the selected segment is distinguished by the teal fill, ink border and pressed offset, not by the check §5.2 asks for. `aria-checked` is unchanged.
+  - **Deviation:** yes. Plan step: "Latched … with a check icon and `aria-pressed`/`aria-checked`" (§5.2). Did this instead: no check in the rail theme toggle only.
+- **Decision:** Toggle, toggle-group and tabs triggers render a Lucide `Check` as their first child, shown by CSS only when latched (`.pop-check`).
+  - **Because:** the `::before` / `::after` of a pop control are owned by fill and shadow, so the check cannot be a pseudo-element.
+  - **Rejected:** a React-state check; Radix does not expose the state to children.
+  - **Risk:** a chip grows by about 20px when selected, so a wrapped chip row can reflow on click.
+  - **Deviation:** no
+- **Decision:** The tabs `line` variant has no distinct look any more (the prop still exists); all tabs are segmented pop toggles.
+  - **Because:** its underline used `::after`, which a pop trigger owns; nothing in the app uses tabs.
+  - **Rejected:** a second underline element.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** Badge keeps `default`, `secondary`, `outline`, `ghost`, `link` (neutral, token-based) and adds `ok`, `warn`, `danger`, `paid`, `exp`; `destructive` is an alias of `danger`. No variant uses `--primary`.
+  - **Because:** §2.7 forbids `--primary` on badges and §2.1 names the five meanings; no route renders `Badge` yet.
+  - **Rejected:** removing the shadcn variants.
+  - **Risk:** R3 names the real variants when it applies badges.
+  - **Deviation:** no
+- **Decision:** Tooltip drops its arrow; popover, select content and card lose their blurred shadows (popover and select get the 2px outline and `--shadow-overlay`, card gets a 1px `--border-default`).
+  - **Because:** §2.6 rule 4 (no blurred shadows, cards unshadowed) applies to every primitive, though §2.7 lists only some.
+  - **Rejected:** leaving them for R3.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** `--scrim` is the token name for the §2.7 scrim values, and the rail's scroll hint is a `local` / `scroll` background pair (no element, no JS).
+  - **Because:** the spec gives the dialog and sheet scrim values but no token; a CSS-only hint avoids new JS.
+  - **Rejected:** a scroll listener.
+  - **Risk:** the fade colour (`--bg-hover`) and 24px height are mine.
+  - **Deviation:** no
+- **Decision:** The hedera leaf in `.orn-fleuron` is a heart-shaped leaf with a short stem that I drew; the playbill-frame corner squares sit just inside the inner rule (5px inset).
+  - **Because:** §5.1 specifies the construction but not the leaf path; the inset ring is a `box-shadow` and paints above background layers, so corner squares at 0 would be mostly hidden.
+  - **Rejected:** squares at the outer corner.
+  - **Risk:** the leaf and corner squares are unreviewed visually (no route uses them until R3 / R4); frames need at least 20px padding.
+  - **Deviation:** no
+- **Decision:** `.page-button` (the link-styled primary action on routes) gets an interim pop look (teal fill, ink border, hard shadow, translate on hover) instead of waiting for R4.
+  - **Because:** `--primary-foreground` became ink; the old rule would have put ink on dark teal in light mode (about 2.4:1).
+  - **Rejected:** leaving it broken until R4 moves it to `Button asChild`.
+  - **Risk:** R4 deletes this rule when it migrates the links.
+  - **Deviation:** no
+- **Decision:** Hover on flat pop controls (secondary, ghost, chip) changes only the fill, with no translate; only raised controls (primary, destructive) lift.
+  - **Because:** §5.2 gives secondary "Hover: `--bg-hover` fill" and chips "hover `--bg-hover`"; a lift would move a shadowless control.
+  - **Rejected:** translating every pop control.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** Hover styles are inside `@media (hover: hover)`.
+  - **Because:** sticky `:hover` on touch would leave a raised control lifted after a tap.
+  - **Rejected:** unconditional hover.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** `useAuroraPause` ships now as a hook nobody imports.
+  - **Because:** §5.4 requires the pause; it is 25 lines and costs nothing until R4 imports it.
+  - **Rejected:** writing it in R4.
+  - **Risk:** it is untested until R4 mounts it.
+  - **Deviation:** no
+- **Decision:** `index.html` `theme-color` is `#0E0B16` (dark base) for both themes.
+  - **Because:** the old `#07090D` no longer exists; there is no per-theme meta in the spec.
+  - **Rejected:** a media-query pair.
+  - **Risk:** light-mode browser chrome stays dark.
+  - **Deviation:** no
+- **Decision:** `.eyebrow` (global) is now Inter 600 uppercase in `--text-secondary`, replacing the v1 mono / tertiary look.
+  - **Because:** §3.2 and §3.3 define eyebrows that way; the class is shared with route code.
+  - **Rejected:** a second class.
+  - **Risk:** route eyebrows change appearance a little ahead of R3.
+  - **Deviation:** no
+- **Decision:** `pop.css` is wrapped in `@layer components`.
+  - **Because:** unlayered rules beat every Tailwind utility; the dialog and sheet close buttons (`absolute top-2 right-2`) would have fallen into the flow.
+  - **Rejected:** `absolute!` on those two buttons (leaves every other utility silently losing).
+  - **Risk:** unlayered route CSS (`.theme-option`, `.filter-chip`, `.page-button`) now beats `.pop` by design, and a Tailwind utility on a `.pop` element that sets position, background, border, radius, colour or transform wins over the kit. The kit's own states use custom properties, so only direct overrides are affected.
+  - **Deviation:** no
+- **Decision:** The primary action links (`.page-button`) drop their shadow while focused and lift only under `(hover: hover)`; the skip link has no offset shadow.
+  - **Because:** §5.2: the ring is never drawn across the shadow; the skip link is only visible while focused, so its shadow would always sit under the ring.
+  - **Rejected:** keeping the skip-link shadow.
+  - **Risk:** the skip link is a plain bordered box.
+  - **Deviation:** no
+- **Decision:** The rail scroll fade ends in `--bg-inset` over 32px (first try `--bg-hover`, 24px, was about six levels from `--bg-raised` and invisible in dark).
+  - **Because:** the hint has to be visible at 800px tall.
+  - **Rejected:** a scroll listener and a real element.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** The rail theme toggle uses 12px spacing (`spacing={3}`); the checkbox hit-area pseudo-element is `-inset-3.5` (48px); `input-group` (command input) takes the input look and an outline for focus; `data-selected:` in `command.tsx` became `data-[selected=true]:` (cmdk sets `data-selected="false"` on every row, so all rows were highlighted).
+  - **Because:** §8 (12px, 48px) and §2.7 (input boundary, focus adds the ring).
+  - **Rejected:** leaving the palette for R3.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- Spec §2.5 / §2.8 need the aurora-order correction above (or strength 0.19).
+- Primitives not rendered by any route yet (badge, switch, tabs, tooltip, progress, dialog, input, textarea, select, sonner) were checked by class review and `tsc` only, not in a browser. The More sheet, theme toggle, chips, checkboxes and a hand-injected primary button were seen.
+- The sheen, focus ring and hover transforms were verified by computed style, not by eye.
+- The Lumen CTA, the hero `Letterbox` and route cards are still v1 visuals (R3 / R4).
+- `.orn-fleuron`, `.playbill-frame`, `.orn-rule-*`, `.orn-seal`, `.hud-grid`, `.aurora`, `.clapper-stripe`, `.halftone` and `.grain--film` have no consumer yet. They were rendered once on an injected specimen in both themes (scratchpad `r2b/specimen-dark.png`, `specimen-light.png`) and drew correctly. `.aurora--live` and `.hud-readout` figures in route context were not rendered.
+- The primary-button hover, focus and sheen checks ran on a hand-built element carrying the primitive's classes, because no route renders a shadcn primary `Button`. The route primary action (`.page-button`) was checked separately on the dashboard.
+- Spacing: flat chips stay 8px apart (library route CSS); §8 asks 12px between pop controls. Their shadow is at most 1px so nothing touches, but the library chip gap is a R3 decision. The rail theme toggle is 12px.
+- The palette (`command`) was fixed in place only as far as input boundary, row highlight (`data-selected` matched every row), focus outline and radius; a full pass is R3's `/library` work.
+
+### Redesign R2b.1: Visual critique fixes
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R2b; `docs/design-system.md` §5.2 (Segmented control, Chip labels) and §6 (interim rules)
+
+#### Shipped
+
+- `src/styles/tokens.css` — `.light { --vignette: none }`; the dark block is now `:root, .force-dark` (full dark set re-declared on the subtree, plus `color` and `color-scheme`). `tokens.contrast.test.ts` selector lookup updated for the combined selector.
+- `src/routes/Landing.tsx` — the hero `<header>` carries `force-dark`.
+- `src/routes/Root.tsx`, `shell.css` — mobile bar shows the Abril wordmark at `--text-h3` plus the week readout (centred, no longer pinned to the top); the page eyebrow and `eyebrowFor` are gone.
+- `toggle-group.tsx`, `tabs.tsx`, `pop.css`, `ThemeToggle.tsx` — default `ToggleGroup` and `Tabs` are one joined group (2px `--border-strong` frame, 1px dividers, flat segments). Only the latched segment is teal with an ink border, press shadow and a 16px check, and it no longer translates, so it sits level with its siblings. The rail theme toggle reads "Dark / Light / Auto" (value `system` kept) and shows the check. `variant="outline"` stays free-standing chips.
+- `library.css` — chip labels Inter 500, 12px gap.
+
+#### Verified
+
+- `npm test` → 190 pass; `npx tsc -b` → exit 0; `npm run build` → exit 0, entry 128.6 KB, Plan 130.3, Week 153.6, Library 148.2, Toolkit 131.4, Capstone 130.8 KB.
+- Light landing hero computed colours (1440 and 360): eyebrow `rgb(205,191,168)`, title `rgb(242,232,213)`, subtitle `rgb(205,191,168)`, "Browse the plan first" `rgb(79,224,194)`, all dark-token paper tones on the near-black screen; screenshots checked by eye.
+- Screenshots in scratchpad `r2b/shots-after/`.
+
+#### Decisions
+
+- **Decision:** `.force-dark` is added to the existing dark selector rather than copying the token list.
+  - **Because:** one source of values, so the contrast test covers it.
+  - **Rejected:** a duplicated block.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the `<wbr>` render helper from §3.2 was not built; it was outside the six fixes.
+  - **Because:** not in scope of this follow-up.
+  - **Rejected:** n/a.
+  - **Risk:** week titles still break mid-token (`fra/ming`) until it lands.
+  - **Deviation:** no
+- **Decision:** the Cards/Table view toggle on `/library` is route-made and not yet the joined segmented control.
+  - **Because:** route content (R3).
+  - **Rejected:** touching route markup now.
+  - **Risk:** inconsistent look until R3.
+  - **Deviation:** no
+- **Decision:** this entry supersedes the R2b check-icon deviation (the rail toggle now shows the check) and corrects the rail scroll-fade record: the shipped fade is `--bg-inset` over 32px; the first-try `--bg-hover` / 24px in the R2b "Shipped" list was replaced before the final commit.
+  - **Because:** two R2b lines disagreed.
+  - **Rejected:** editing the old entry.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- The sticky mobile CTA still shows beside the page's own primary CTA (R4).
+
+### Redesign R3: Learning routes
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R3; `docs/design-system.md` §3.3, §5.1–5.5, §6
+
+#### Shipped
+
+- `src/components/PageHeader.tsx` + `src/styles/page-header.css` — `PlaybillHeader` (static `.aurora` band, eyebrow with fleurons, Abril title, diamond rule, centred; `framed` puts it in a `.playbill-frame` on `--bg-raised` and lets children sit inside the frame) and `WorkingHeader` (left-aligned, no fleurons, same band). Only the title block and its note sit directly on a band.
+- `src/lib/title.ts` (`toRoman`, `splitAtSlashes`) and `src/components/BreakableTitle.tsx` — a `<wbr>` after every `/`, text unchanged. Used by the week h1 and the card-variant `WeekFrame` title.
+- `/plan` (first commit, `295ec78`) — `PlaybillHeader` band; module heads are content-height `.playbill-frame` blocks with Roman eyebrows `MODULE I` … `MODULE VII`, the Abril h2 and a HUD readout (`WK 01–02 · 12h`); the buffer group is `WEEKS 13–16 · BUFFER`. The 450px letterbox head is gone.
+- `/week/:n` — `WeekHeader` is a framed playbill title block on the band (eyebrow `MODULE IV · CINEMATOGRAPHY`, h1 through `BreakableTitle`), with a `.hud-frame` readout (`WK 07 / 16 · 8h · Capstone …`), topic chips, a warn `Badge` for Heavy and the previous / next links inside the frame. The assignment card carries `.clapper-stripe` (6px band, clipped to the card radius); the Notes textarea now shows the `Textarea` primitive (2px `--border-strong`).
+- Resource and gap cards — `src/components/resource/badges.ts` maps a resource to pop badges (free lime, freemium / gray area / email-gated yellow, paid / benchmark magenta, experimental violet, level neutral outline), each with a Lucide icon and a word; `BadgeRow` renders them through `Badge`; the gap card's "Help wanted" is a warn `Badge`. Cards stay surface + border + Inter, verified date and minutes mono.
+- `/week/:n` also shows the week number in brass when it is the learner's current week (`current` prop on `WeekHeader`, from `useCurrentWeek`).
+- `/library` — `WorkingHeader`; result count in `.hud-frame` (`--text-secondary` readout, live figure in `--text-primary`); Cards / Table is a joined `ToggleGroup` (single); Week and Language are folded into a `Collapsible` ("Week and language", `N selected` when set), closed by default and open whenever one of their values is selected; search, active chips, Clear all and the mobile Filters trigger use the pop kit (2px `--border-strong`); table header, rules, cost badge and mono verified date.
+- `/toolkit` — `WorkingHeader`; table header `--bg-inset` over a 2px `--border-strong` rule, hover row, mono first-week column, `Badge` (violet) for Experimental.
+- `/capstone` — `PlaybillHeader`; stages are the vertical filmstrip with `NN / 08` `.hud-frame` readouts (brass when done); the done stage is the brass wash over `--bg-raised` plus a 2px brass edge; status is a joined segmented control (`pop pop--outline pop--latch pop--seg`) on the existing radiogroup, roving tabindex and no-wrap handlers.
+- `src/components/filmstrip/filmstrip.css`, `WeekFrame.tsx` — the track stays `--bg-inset` (§2.2); the two 8px sprocket bands are `--border-default` with `--bg-inset` holes (ink tones, no brass); frame states are unchanged (exposed brass wash + check, current brass border, teal hover / focus / active); card titles are 600 and break at slashes. The plan list keeps its sprockets at ≥ 768px (it had `background-image: none`). Applies to `/plan`, `/capstone` and the dashboard strip.
+- Removed v1 classes whose only consumers moved: `.slate-rule`, `.meta-badge*`, `.help-chip`, `.flag-chip`, `.view-toggle`, `.view-button`, `.plan-intro`, `.week-header-body`, `.week-meta`. `.heavy-chip` stays in `pages.css` for the dashboard (R4). `Letterbox` stays for the landing hero.
+- Tests — new: Roman module eyebrows and framed heads (`Plan.test.tsx`), `splitAtSlashes` / `toRoman` (`title.test.ts`), `<wbr>` rendering incl. a real week title (`BreakableTitle.test.tsx`), pop badge mapping (`badges.test.ts`), disclosure collapsed by default and open for a selected language or week (`Library.test.tsx`). Changed because the markup legitimately moved: `atmosphere.test.tsx` asserts `.playbill-frame` / `.aurora` on the week header and plan module head and `.clapper-stripe` on the assignment card (not `.letterbox` / `slate-rule`; the landing hero Letterbox test is unchanged); `Library.test.tsx` opens "Week and language" before clicking Tamil / Hindi, the Cards / Table control is now a `radio` (Radix single group), and the "0 results" checks read the status element's `textContent` because the count is `<strong>N</strong> results`.
+
+#### Verified
+
+- `npm test` → 36 files, 204 tests pass (was 33 / 190 at R2b.1, 34 / 194 after the `/plan` commit). `npx tsc -b --noEmit` → exit 0. `npm run build` → exit 0, no budget warnings.
+- Per-route sizes (JS gzip, target 160 KiB, ceiling 180 KiB): entry 132098 B (129.0 KB); Plan 134139 B (131.0 KB, was 130.3); Week 158777 B (155.1, was 153.6); Library 155865 B (152.2, was 148.2); Toolkit 135867 B (132.7, was 131.4); Capstone 134858 B (131.7, was 130.8). No route over target; Week has 4.9 KB left, Library 7.8 KB. Nothing new imports a canvas chunk.
+- `npm run e2e` → 1 passed (selectors unchanged: the `Type` group and `YouTube` chip are not folded). `npx oxlint` → 42 warnings, same as baseline (counted with the same command before and after).
+- Browser (Chromium, `vite preview` :4360): no horizontal overflow on `/plan`, `/week/7`, `/library`, `/toolkit`, `/capstone` at 360, 768 and 1440 in dark and light (30 of 30). The first pass found `/toolkit` at 768 overflowing by 18px (a nowrap badge in a 70px fixed-layout column); fixed with a scrolling wrapper (below).
+- Keyboard: `/library` — search → Tab enters the Cards / Table group as one stop; ArrowRight moves to Table, Space selects (`?view=table`); Tab → first chip shows a solid 2px outline, Space toggles it (`aria-pressed` true, `?type=youtube`); the disclosure takes focus with a 2px outline at offset 3px and its shadow layer at opacity 0, Enter opens and closes it (`aria-expanded` true / false). `/capstone` — ArrowLeft on To do stays on To do, ArrowRight twice reaches Done, a third stays on Done (no wrap), the focused radio has a 2px outline at 3px with shadow opacity 0, Tab leaves the group.
+- Screenshots: 31 PNGs in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r3/shots/` — `<route>-<width>-<theme>.png` for `plan`, `week-7`, `library`, `toolkit`, `capstone` × 360 / 768 / 1440 × dark / light (30) plus `week-7-assignment-1440-dark.png` and seeded `dashboard` / `week-1` at 360 and 1440 in both themes (8). Overflow re-run on all 30 route shots after the last change: none. Looked at by eye: plan 1440 dark, 768 dark and 360 light, week 7 1440 dark and 360 light, week 1 1440 light (brass-checked box, light clapper not in view), assignment card (dark), library 1440 / 768 dark (and with Tamil selected, disclosure open), toolkit 1440 light, capstone 1440 dark and 360 light, dashboard 1440 dark (its filmstrip picked up the sprocket change and reads fine). Defects found and fixed: capstone stage cards shrank to their content width inside the filmstrip; a first version made the whole filmstrip track `--border-default` (a purple slab, against §2.2), reverted on review.
+
+#### Decisions
+
+- **Decision:** the week header is a `.playbill-frame` on an opaque `--bg-raised` surface inside the `.aurora` band, and HUD readout, chips, Heavy badge and week links sit inside the frame, not on the band.
+  - **Because:** §2.5 allows only `--text-primary` / `--text-secondary` directly on a band; §6 asks for the title block "in `.playbill-frame`" on a band, and the ceremony row uses the same frame-over-aurora pattern.
+  - **Rejected:** putting the readouts below the band (separates them from the title) or on the band (fails the §2.5 rule).
+  - **Risk:** the aurora shows only as a 32–48px margin around the frame on the week page; whether that reads as a band is a taste call.
+  - **Deviation:** no
+- **Decision:** `/plan` and `/capstone` put the title block straight on the band (no frame), and the plan's HUD figures live in the module heads (`WK 01–02 · 12h`), not in the band.
+  - **Because:** §6 asks for a frame only on `/week/:n`; a count readout is not allowed on a band.
+  - **Rejected:** a hud-frame count under the band.
+  - **Risk:** the module-head readout format is mine.
+  - **Deviation:** no
+- **Decision:** the buffer eyebrow reads `Weeks 13–16 · Buffer` while the heading stays "Buffer".
+  - **Because:** the task names it; the heading keeps the region's accessible name and the existing tests.
+  - **Rejected:** none.
+  - **Risk:** the word appears twice in the head.
+  - **Deviation:** no
+- **Decision:** module heads are left-aligned `.playbill-frame` blocks with no fleurons or diamond; only the page title block is centred and ornamented.
+  - **Because:** §3.3 limits the centred playbill title block to hero-like headers; seven fleuron eyebrows down a list would be noise.
+  - **Rejected:** centred module heads.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the library disclosure is "Week and language"; it follows the selection until the learner opens or closes it themselves (`open = chosen ?? selected > 0`), and shows `N selected` when collapsed with a value set.
+  - **Because:** the spec says collapsed by default and open when a value is selected, and a URL such as `?language=ta` must show its pressed chip; letting the learner collapse it avoids a trapped panel.
+  - **Rejected:** forcing it open while anything is selected (a trigger that does nothing); a native `<details>` (no animation hook, different keyboard story).
+  - **Risk:** after the learner closes it by hand, a later selection from the active-filter chips does not reopen it (the active chips still show every selection).
+  - **Deviation:** no
+- **Decision:** the Cards / Table control uses the Radix single `ToggleGroup`, so its items are `role="radio"` (were `button` with `aria-pressed`); the existing test was updated.
+  - **Because:** §5.2 names `ToggleGroup` for it.
+  - **Rejected:** keeping the buttons and styling them by hand.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the capstone status control keeps its hand-rolled radiogroup and takes the joined look through classes (`pop pop--outline pop--latch pop--seg` plus a `Check` child) rather than switching to `ToggleGroup`.
+  - **Because:** Radix groups move focus on arrows without selecting and can wrap; the existing behaviour (arrows select, stop at the ends so Done cannot fire by accident) and its tests must stay.
+  - **Rejected:** `ToggleGroup type="single" loop={false}` plus an `onKeyDown` shim.
+  - **Risk:** two implementations of the same look (`ToggleGroup` and these buttons) must be kept in step.
+  - **Deviation:** no
+- **Decision:** the filmstrip track keeps `--bg-inset` and only the two sprocket bands are `--border-default` (holes `--bg-inset`).
+  - **Because:** §2.2 gives `--bg-inset` to the "filmstrip track" and limits `--border-default` to decoration; §5.5's "`--bg-inset` holes on `--border-default`" describes the perforation.
+  - **Rejected:** a `--border-default` base under the whole strip (a loud slab, and it needed an opaque frame surface to keep text off it).
+  - **Risk:** the sprocket band is 8px wide at 4px hole pitch; whether it reads as film at 1x is a taste call.
+  - **Deviation:** no
+- **Decision:** both tables (`/library`, `/toolkit`) get a `--bg-inset` header over a 2px `--border-strong` rule, `--border-subtle` row rules and a `--bg-hover` row hover; header labels are Inter 600 uppercase `--text-secondary`.
+  - **Because:** §2.7 has no table row; §2.2 names only the `--bg-inset` table header, and the eyebrow style is §3.2's.
+  - **Rejected:** a 1px rule (looked weak against the inset header).
+  - **Risk:** the 2px rule is mine.
+  - **Deviation:** no
+- **Decision:** the week header's Heavy flag is a yellow (`warn`) pop badge with `TriangleAlert`.
+  - **Because:** it was a neutral outlined chip; §2.1 lists no "heavy" meaning, and "warning" is the nearest hue.
+  - **Rejected:** a neutral `outline` badge (no signal).
+  - **Risk:** yellow suggests a problem, not workload.
+  - **Deviation:** no
+- **Decision:** Toolkit's Experimental flag uses `FlaskConical` (was `TriangleAlert`) so the violet badge matches the resource cards.
+  - **Because:** §2.1 gives experimental its own hue; one icon per meaning.
+  - **Rejected:** keeping the warning triangle on a violet badge.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** on the Toolkit table, the wrapper scrolls horizontally at ≥ 768px (`min-width: 44rem` on the table, `data-lenis-prevent`).
+  - **Because:** pop badges do not wrap, and six columns beside the 240px rail are too narrow at 768; the page itself must not scroll.
+  - **Rejected:** letting the badge wrap mid-word.
+  - **Risk:** at 768–~1000px the table needs a short horizontal scroll to reach Notes.
+  - **Deviation:** no
+- **Decision:** header copy I wrote: plan note "Twelve core weeks in seven modules, then a four-week buffer."; library eyebrow "Verified resources" and note "Search by title or topic, or filter by type, level, cost and status."
+  - **Because:** the bands need an eyebrow and the library's old eyebrow repeated its title.
+  - **Rejected:** leaving the repeated eyebrow.
+  - **Risk:** copy is unreviewed.
+  - **Deviation:** no
+- **Decision:** the week page keeps `max-width: var(--container-prose)`, so its band is prose width, not the full content width.
+  - **Because:** the page already used that width and the plan did not name a change.
+  - **Rejected:** widening only the header.
+  - **Risk:** the band is narrower than on the other learning routes.
+  - **Deviation:** no
+
+#### Left open
+
+- Not browser-checked: the Library filter sheet (below 768px) with the new disclosure inside it was covered by the unit test and class review only; of the 768 shots only `plan-768-dark` and `library-768-dark` were opened; the light clapper stripe was not in view in the week 1 light shot.
+- The plan's card-variant frames still print `MODULE 1` (Arabic, mono) under a `MODULE I` head. §3.3 allows Arabic outside eyebrows, so it stays, but the pairing looks repetitive; a reviewer may want the label dropped on `/plan`.
+- The 12px gap between pop controls holds for chips, the active-chip row and the disclosure; the Cards / Table group and the capstone segments are joined by design.
+- `Letterbox`, `.letterbox*` CSS and the landing hero are untouched (R4). `.heavy-chip` (dashboard) remains in `pages.css`.
+- Contrast was asserted by tokens only; no new token pairs were added, but the badge and HUD pairs were not re-measured in the browser.
+
+### Redesign R3.1: Visual critique fixes
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/design-system.md` §6 "Rules added after the R3 visual critique"; §2.1, §3.2, §5.2
+
+#### Shipped
+
+- Prose routes centre (`src/styles/page-header.css`): `/week/:n` and `/capstone` carry `.prose-centered` (page `--container-app`, every child except the band `--container-prose` and `margin-inline: auto`); the band spans the full width and the frame or title block is centred in it. `.week-page` lost its own prose max-width.
+- Bands: padding moved to `.band-inner`, which also carries `.hud-grid` (shown in light only; `.aurora::before` owns the fields, so the grid needed its own element). `--aurora-strength: 0.14` in `.light`; contrast test unchanged and green.
+- `src/lib/title.ts` — no break after a `/` with a digit on both sides (`3/5/7-act` stays whole); tests added in `title.test.ts`, `BreakableTitle.test.tsx` adjusted (week 1's title no longer breaks).
+- Week header: topic chips removed (markup and CSS); frame padding `--space-4` below 640px, band padding `--space-4`. At 360×780 the Watch heading and first task show above the fold (`shots-after/week-7-360-dark.png`).
+- `/library`: Type, Level, Cost visible; Topic, Status, Week, Language in "More filters" (open when any is selected); below 1024px every facet is in the Filters sheet, shown flat (`FilterChips flat`). Tests updated (1024 media query, new labels, sheet has no disclosure, Topic and Status fold and auto-open).
+- `StickyCta`: shown only on `/` and `/plan` (`stickyCtaRoute` in `src/components/stickyRoute.ts`), hidden while `#main .page-button` or `.lumen-cta__button` intersects the viewport (IntersectionObserver). `StickyCta.test.tsx` covers the route rule. Browser: sticky present on `/plan`, absent on `/week/3`, `/library`, `/capstone`.
+- Assignment card: Abril h3 "Assignment", eyebrow "Brochure A10", Notes field label visually hidden. `src/content/weeks.ts`: removed "New (no brochure source):" (week 6 task and assignment) and "(replaced — brochure duplicate)" (weeks 7, 8, 12); weeks 7 and 8 gained `brochureNo: 10` and `11` so the A-numbers still show. `npm run validate` passes.
+- Fleurons `1.5em` with `0.5em` gap. Plan week cards no longer print "MODULE n" (`moduleLabel` and `.week-frame-module` removed). Heavy badge, "Auto" label, module-head readout and table rules were already as the spec now says; unchanged.
+
+#### Verified
+
+- `npm test` → 37 files, 208 tests pass. `npx tsc -b` → exit 0. `npm run build` → exit 0, no warnings. `npm run validate` → pass. `npm run e2e` → 1 passed. `npx oxlint` → 42 warnings (the first try, 43, was `only-export-components` on an export from `StickyCta.tsx`, moved to `stickyRoute.ts`).
+- Sizes (JS gzip): entry 128.9 KB; Plan 130.9; Week 155.0 (5.0 KB under the 160 KiB target); Library 152.2; Toolkit 132.6; Capstone 131.6.
+- No horizontal overflow on the 30 route shots (5 routes × 360 / 768 / 1440 × both themes) and none with the 360 Filters sheet open and Tamil selected.
+- Shots in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r3/shots-after/` (30, same names, plus `library-sheet-360-dark.png`, `library-sheet-tamil-360-dark.png`). Looked at: week-7 1440 light and 360 dark, library 1440 dark and 768 dark, capstone 1440 light, the open Filters sheet.
+
+#### Decisions
+
+- **Decision:** the clapper stripe's period is 12px measured horizontally: the 45° gradient repeats every 8.485px along its axis (6px ÷ √2 per colour).
+  - **Because:** the old `0 6px, 6px 12px` was a 12px period along the axis, about 17px across; the spec reads as a 12px visible period.
+  - **Rejected:** keeping the axis period.
+  - **Risk:** if the spec meant the axis, the stripe is now finer than intended.
+  - **Deviation:** no
+- **Decision:** weeks 7 and 8 get `brochureNo` 10 and 11 instead of keeping "A10" / "A11" in the text.
+  - **Because:** the card shows "Brochure A10" from that field; keeping the code in the text would repeat it.
+  - **Rejected:** leaving the text prefix.
+  - **Risk:** `brochureNo` now also exists where the source brochure item was "replaced"; the export or validation scripts do not read it.
+  - **Deviation:** no
+- **Decision:** week 12 keeps "A16 EPK … · A17: build …" in its text with no `brochureNo`, only dropping "(replaced — brochure duplicate)".
+  - **Because:** the card has one brochure field and two items.
+  - **Rejected:** picking one number.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the sticky CTA finds the page's primary CTA by selector (`#main .page-button, #main .lumen-cta__button`), looked up on mount and once more after 400ms.
+  - **Because:** the landing and dashboard CTAs are those two classes and R4 owns their markup.
+  - **Rejected:** a `data-` attribute on R4's surfaces.
+  - **Risk:** R4 must keep the selector in step when it migrates to `Button asChild`.
+  - **Deviation:** no
+- **Decision:** the HUD grid on light bands lives on an inner `.band-inner.hud-grid` wrapper rather than on the band.
+  - **Because:** `.aurora::before` and `.hud-grid::before` would collide on one element.
+  - **Rejected:** a second pseudo-element on the band.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- Spec §5.6 "film grain on always-dark pictures in both themes" is R4's (hero screen, ceremony stage).
+- The assignment card's new stripe and h3 were not viewed after the change.
+
+### Redesign R4: Showcase and launch surfaces
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R4; `docs/design-system.md` §3.3, §5.1–5.6, §6 (incl. the R3-critique and interim rules), §7.1–7.4, §11
+
+#### Shipped
+
+- Primary actions (`bee4beb`): every `.page-button` is now the shadcn `Button` (primary pop + sheen) or `Button asChild` + `ButtonSheen` on links: dashboard, contact, thank-you, 404, landing form, sticky CTA, ceremony. `.page-button`, `.page-button-quiet` and the disabled rule are deleted from `pages.css` / `launch.css`. The sticky-CTA selector moved to `src/components/stickyRoute.ts` as `PAGE_CTA = "#main [data-page-cta], #main .lumen-cta__button"`; `StickyCta.test.tsx` asserts it finds the Lumen CTA and "Set start date" on the landing and exactly "Open this week" on the dashboard.
+- Form controls: `.field input/select/textarea` take the §2.7 input look (2px `--border-strong`, `--bg-inset`, tertiary placeholder; focus offset 3px) on landing, dashboard and `/contact`. Cookie banner: 2px `--pop-outline` + `--shadow-overlay`, actions 12px apart. Sticky bar: 2px `--pop-outline` top rule, full-width primary.
+- Landing hero (`bd35701`): `.hero.aurora(.aurora--live)` root with one `.hero-stage.hud-grid` child; the playbill title block (fleuron eyebrow, `DecodeHeading`, diamond rule, copy, Lumen CTA, "Browse the plan first") in a `.playbill-frame` on `--bg-raised` with an 8px halftone shadow element; the CRT in `.hero-screen.grain.grain--film` (4:3, `--stage-black`, film grain 0.06 in both themes). Beside the screen from 1024px (3fr / 5fr), stacked title-first below. `useAuroraPause` mounted; live only when `shouldRenderCanvas(readCanvasEnv())`. `.force-dark` removed from the hero and from `tokens.css`.
+- Lumen CTA restyled through `.hero-lumen` only (vendor untouched): `--pop-teal` fill, `--pop-ink` label, border and ring, `--radius-sm`, hard `--pop-offset` shadow (4px hover, 1px press, none on focus), focus ring `--accent-primary` offset 3px; `overflow: visible` on the wrapper so the shadow is not clipped.
+- Deleted: `Letterbox.tsx`, `GrainSurface.tsx`, all `.letterbox*` CSS, `--vignette` and the interim `.light { --vignette: none }` (`.slate-rule` was already gone in R3). `atmosphere.test.tsx` now asserts the hero title is in `.playbill-frame`, not in `.hero-screen`, the root is `.aurora` and not `.grain`, the screen is `.grain--film` and text-free, and a `.halftone` exists.
+- `src/lib/webgl-guard.ts`: `CanvasEnv.coarse` (the §7.2 list includes `(pointer: coarse)`) and `readCanvasEnv()` shared by `HeroCanvas`, the landing aurora and the ceremony; test added.
+- `src/styles/tokens.css`: `--grain-picture-opacity: 0.06` (not redeclared in `.light`) and `--stage-black: #000000`; `grain.css` applies the former to `.hero-screen` / `.ceremony-stage` film grain.
+- `public/posters/hero-crt.webp`: recaptured from the mounted cinematic canvas at the new screen size (625×469 CSS at 1440×900, DPR 1.5, cropped to 936×702, WebP q80, 22.9 KB, was 38.8 KB). Poster alt updated to what it shows (test updated).
+- Dashboard (`7e775b1`): `WorkingHeader` band ("Dashboard" / "Today's programme"; the complete state puts "Past week 16" / "Curriculum complete" and its note in the band). The current week is a "now showing" poster: 2px `--pop-outline` card on `--bg-raised`, 8px halftone shadow, eyebrow `Now showing · Module IV · …` (Roman), `WK 08 / 16` in a `.hud-frame` with the brass numeral at `--text-h1`, `BreakableTitle` h2, hours readout, warn `Badge` for Heavy, one primary. Poster beside Next up from 1024px. Progress line in a `.hud-frame` readout. `.heavy-chip`, `.week-now`, `.dash-card` removed.
+- Ceremony (`d563f4a`): `CeremonyBadge` is lazy-loaded from `/capstone` and portalled to `<body>`. One structure for both variants: fixed `.ceremony` on `--bg-base`, an absolute `.aurora` layer (`--live` only when `shouldRenderCanvas`), a centred `.playbill-frame` on `--bg-raised` holding a text-free `#000` `.ceremony-stage.grain.grain--film` (SparkBadge live, guilloché seal static), the `CAPSTONE · COMPLETE` fleuron eyebrow, Abril "Capstone complete" at `--text-h1`, and Continue (primary). Focus goes to Continue, Tab is trapped, Escape closes, focus returns to the trigger. The overlay carries `data-lenis-prevent` (§6.1 rule 6), because it scrolls when the frame is taller than the viewport. The once-only `seeCeremony` path is unchanged. CSS in `src/components/atmosphere/ceremony.css`. `CeremonyBadge.test.tsx` (4 tests: closed, static under reduced motion, static on a touch phone, live on a capable desktop).
+- Intermission cards (`ee5cdf1`): `src/components/Intermission.tsx`; `/nope` ("Missing reel" / "Page not found") and `/thank-you` ("Thank you" / "Your note is ready to send"): `.intermission.playbill-frame.grain.grain--film` on `--bg-base`, `.orn-seal`, centred title block, centred copy and one primary. 404 is now a lazy route (`e7bef61`).
+- `/about`: `PlaybillHeader` band with a new `heading` slot holding `DecodeHeading`; centred prose column; sections separated by an `--ornament` hairline (`.ruled-sections`). `/privacy`, `/terms`, `/contact`: `WorkingHeader band={false}`.
+- Route fallback (`855d022`): band-shaped block (square), two lines and a 48px `--radius-sm` button block. `src/vendor/threeui/SOURCE.md`: "Lifted techniques" section for §7.1 rows 5–6.
+- Brand (`87bc21b`): `og.svg` → `og.png` (1200×630: playbill frame with halftone, Abril wordmark, 4:3 screen with the poster, HUD readout, teal "Start week 1"); `favicon.svg` (film frame between sprocket rows, ink fat-face F on teal, as paths); `favicon.ico` (16 + 32 PNG entries), 16/32 PNGs, apple-touch 180 (square), icon-192/512; `site.webmanifest` theme and background `#0E0B16`. Rendered in Playwright Chromium from the self-hosted fonts; no dependency added.
+- Also: `NextTasks` minutes and landing module week ranges use `.hud-readout` (`.mono` is defined only in the week route CSS); the landing gap copy renders through `BreakableTitle` (its slash-joined language list overflowed 360px by 8px); `useAuroraPause` returns early when `IntersectionObserver` is missing (jsdom).
+
+#### Verified
+
+- `npm test` → 38 files, 213 tests pass (was 37 / 208). `npx tsc -b --noEmit` → exit 0. `npm run build` → exit 0, no warnings. `npm run e2e` → 1 passed. `npx oxlint` → 42 warnings (baseline 42). `npm run validate` → pass.
+- Sizes (JS gzip; target 160 KiB, ceiling 180 KiB): entry 131892 B (128.8 KB, was 128.9); Plan 130.8 (130.9); Week 154.9 (155.0); Library 152.1 (152.2); Toolkit 132.5 (132.6); Capstone 131.0 (131.6). `atmosphere-*.js` (CRT) 23.02 kB raw / 9.34 kB gzip, loaded only by first-run `/` on a capable desktop. Lazy: CeremonyBadge 1.11 kB gzip, NotFound 0.40 kB.
+- An intermediate build failed the gate (`Capstone.tsx: atmosphere-….js is in the static graph`): the webgl-guard / aurora-hook chunk shared by the hero and the ceremony was named after `atmosphere.css`. Fixed by giving the ceremony its own CSS file and lazy-loading it.
+- Browser (Chromium, `vite preview` :4370, `fbf:consent=rejected`): no horizontal overflow on `/` (clean), `/` (seeded → dashboard), `/about`, `/contact`, `/thank-you`, `/privacy`, `/terms`, `/nope` at 360, 768, 1440 × dark, light (48 of 48), nor in any ceremony variant.
+- Desktop landing (light theme, first run): canvas mounted (1), `atmosphere-jTDYA_x-.js` requested. Title box vs screen box: 1440 title 345–670 × 163–300, screen 727–1352 × 88–557, gap 57px, no overlap, screen 625 / 1104 = 0.566 of the hero; 1280 ratio 0.556, gap 57; 1024 ratio 0.531, gap 57. h1 68.3px at 1440, 55.7px at 1280, 35.5px at 1024.
+- Phone landing (390×844, touch): hero class `hero aurora` (no `--live`), `::before` `animation-name: none`, 0 canvases, no `lenis` class on `<html>`, poster `naturalWidth` 936, screen grain 0.06 in dark and light. Desktop: `aurora-drift`, `data-paused="false"`, `lenis` present.
+- Learning routes `/plan`, `/week/7`, `/library`, `/toolkit`, `/capstone` request no `atmosphere-*.js` and mount no canvas; seeded `/` (returning learner) and `/?intro=1` mount no canvas.
+- Lumen CTA: focus-visible outline 2px `--accent-primary` offset 3px with `box-shadow: none`, 48px tall, fill `rgb(79,224,194)`, label ink; hover `translate(-1px,-1px)` + 4px shadow. 404 primary: sheen `translateX` −162.4px at rest → +162.4px on hover; 131.9×48.
+- Phone dashboard (390×844): at the top the only primary in view is "Open this week" and the sticky CTA is absent; scrolled to 1400px the sticky "Continue week 8" is the only one. Phone landing: only "Start week 1", no sticky.
+- Ceremony (last stage set to Done from a seeded store): 1440×900 → `ceremony--live`, SparkBadge iframe, stage 510×383, stage grain 0.06, aurora `aurora-drift`, focus on Continue, `ceremonySeen: true`. 360×780 touch → `ceremony--static`, seal 230px in a 278px stage; 390×844 touch → seal 250px; 1440×900 with `reducedMotion: "reduce"` → static, seal 320px in a 382px stage, aurora `none`. Stage grain 0.06 in light too. At 1280×720 the live overlay overflows (`scrollHeight` 763 vs 720) and a wheel over it scrolls it to 43 with Lenis active.
+- Complete-state dashboard (start 2026-05-01, 390×844 touch), with and without `weekOverride: 5`: h1 "Curriculum complete" in the band, the top viewport shows only "Open the capstone", and scrolling to 3000px never shows two primaries at once (the override case adds the sticky "Continue week 5" only after the capstone button leaves). No overflow. Shot: `dashboard-complete-override-390-dark.png`.
+- 404: `.intermission.grain--film` grain 0.06 normal blend in dark, 0 in light. Touch targets in `#main` at 360 on `/`, `/about`, `/contact`, `/thank-you`, `/nope`, `/privacy`: none under 48px except the 20px checkbox boxes (48px hit area by pseudo-element, R2b) and the visually hidden file input.
+- Contrast: `tokens.contrast.test.ts` passes; no new foreground/background pair was introduced (ink on teal, brass on raised, text on raised and base are existing rows).
+- Screenshots: 39 PNGs in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r4/shots/` — `landing` and `dashboard` at 360 / 768 / 1440, `about`, `404`, `thank-you`, `contact` at 360 / 1440, `ceremony-live-1440`, `ceremony-static-360` and `-1440`, each in dark and light, plus `cookie-banner-360-dark`, `cookie-banner-1440-light`, `dashboard-complete-390-dark`, `dashboard-complete-override-390-dark` and `og.png`. Looked at by eye: landing 1440 dark/light, 768 dark, 360 dark/light; dashboard 1440 dark/light, 360 dark; ceremony live 1440 dark/light, static 360 dark, static 1440 light; 404 1440 dark, 360 light; about 1440 light; contact 360 dark; cookie banner 360 dark; og.png; favicon 32 and 192. Defects found and fixed while looking: the live ceremony was clipped to the 42rem prose column (portal), OG fleurons overlapped the eyebrow, the favicon's brass bar read as a cursor (removed).
+
+#### Decisions
+
+- **Decision:** the Lumen CTA's pop shadow is a `box-shadow` on the vendored button, not the pop kit's `::before` / `::after` layers; its own hover brightening (`filter`) stays and there is no sheen.
+  - **Because:** vendored markup cannot carry `.pop` or a sheen span, and §5.2 keeps the sheen off the Lumen CTA ("it has its own effect").
+  - **Rejected:** wrapping the Lumen in a `.pop` element (the shadow would belong to the wrapper and the focus ring to the button).
+  - **Risk:** hover and press change `box-shadow` without a transition, so only the lift animates.
+  - **Deviation:** no
+- **Decision:** the hero h1 is `min(var(--text-display), 21cqi)` of its frame: about 68px at 1440, 56px at 1280, 36px at 1024, 44px at 360.
+  - **Because:** beside a ≥55% screen the frame is 250–400px wide; at the full 6.5rem "Frame by" would overflow it.
+  - **Rejected:** stacking the hero until 1440 (fails the "beside on desktop" brief from 1024–1439).
+  - **Risk:** at 1024–1279 the display title is h1-sized.
+  - **Deviation:** yes. Plan step: "`--text-display` … Landing H1 only" (§3.2). Did this instead: the display size, capped by the frame width.
+- **Decision:** the hero `.hud-grid` shows in both themes, and the hero screen and the ceremony stage carry a 1px `--ornament` ring (`box-shadow`).
+  - **Because:** §6 lists `.hud-grid` on the hero without a theme condition, while R3.1 hid it on dark learning bands; the ring separates a black picture from the dark base.
+  - **Rejected:** dark-hidden grid; no ring.
+  - **Risk:** both are faint; a taste call.
+  - **Deviation:** no
+- **Decision:** two tokens: `--grain-picture-opacity: 0.06` (defined once in `:root`, inherited by `.light`) and `--stage-black: #000000`.
+  - **Because:** the R3-critique rule keeps film grain on the always-dark pictures in light mode, where `--grain-film-opacity` is 0; §5.6 rule 3 requires `#000` and components take no raw hex.
+  - **Rejected:** re-declaring `--grain-film-opacity` on the two elements; keeping `.force-dark` on the screen.
+  - **Risk:** §2.2 / §2.3 do not list them; the parent may want them in the spec tables.
+  - **Deviation:** no
+- **Decision:** the poster is frame "7" of the countdown at 936×702 (DPR 1.5), WebP q80, 22.9 KB.
+  - **Because:** the screen is 625px wide at 1440 and up to ~330 CSS px (~990 device px) on phones; DPR 1.5 covers both without a srcset.
+  - **Rejected:** DPR 1 (soft on phones) and DPR 2 (larger LCP image for no visible gain on a CRT still).
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** dashboard copy and shape: band "Dashboard" / "Today's programme"; the poster card has a 2px `--pop-outline` border; poster beside Next up from 1024px; when the complete state shows "Open the capstone" (primary), the week card's "Open this week" is an outline button.
+  - **Because:** the band needs an h1 and the poster the week title as h2; a 1px `--border-default` edge disappeared against the halftone; one primary per page.
+  - **Rejected:** "Now showing" as the band title (repeats the card eyebrow).
+  - **Risk:** copy is unreviewed; §2.6 rule 4 keeps cards plain, and this card is the §5.2 exception.
+  - **Deviation:** no
+- **Decision:** the static ceremony puts the seal on the same `#000` film-grain `.ceremony-stage` as the live badge.
+  - **Because:** the R4 brief asks for the seal "on the stage with film grain" so the static variant reads as the same ceremony, not a fallback.
+  - **Rejected:** the seal straight on the frame's `--bg-raised` (spec).
+  - **Risk:** §5.6's grain map gives the static ceremony band grain only; the stage is text-free and `#000`, so §5.6 rule 3 holds.
+  - **Deviation:** yes. Plan step: "Capstone ceremony, static … the `.aurora` overlay (`::after`) | band | 0.03" (§5.6) and the §6 static row (seal directly in the frame). Did this instead: seal inside a film-grain stage in the frame.
+- **Decision:** ceremony frame padding is `--space-5` below 640px and `--space-8` from 640px; the static frame widens to 32rem and the seal to 320px from 640px; the live frame is 40rem with a 4:3 stage; the title is an h2 styled at `--text-h1`.
+  - **Because:** at 360 a `--space-8` frame leaves 200px for a 230px seal; the brief calls the §5.1 size a floor; the dialog sits under the page h1.
+  - **Rejected:** `--space-8` everywhere (overflows at 360).
+  - **Risk:** none.
+  - **Deviation:** yes. Plan step: "padding `--space-8`, `max-width: 28rem`" (§6 static ceremony). Did this instead: `--space-5` below 640px, 32rem from 640px.
+- **Decision:** the ceremony is lazy-loaded and portalled to `<body>`.
+  - **Because:** SparkBadge is a §7.2 live surface ("lazy only"), the shared env chunk otherwise lands in Capstone's static graph and fails the gate, and the prose column's `max-width` clipped the fixed overlay to 42rem.
+  - **Rejected:** excluding `.ceremony` from `.prose-centered > *`.
+  - **Risk:** the ceremony appears one chunk fetch after the click.
+  - **Deviation:** no
+- **Decision:** the intermission root is also a `.playbill-frame` (card, max 48rem) on `--bg-base`; the seal keeps the §5.1 sizes; `/thank-you` reads "Thank you" / "Your note is ready to send".
+  - **Because:** film grain that stops at the article's box needs an edge to read as a card; the old h1 "Thank you" would repeat the spec's eyebrow.
+  - **Rejected:** grain on a full-bleed root (needs negative margins against the shell padding).
+  - **Risk:** copy is unreviewed.
+  - **Deviation:** no
+- **Decision:** `/about` uses the centred playbill title block on its band (§3.3), not a working header (§6 row).
+  - **Because:** §3.3 lists "about" among the hero-like headers and the brief pairs it with the decode heading; the two spec lines disagree.
+  - **Rejected:** `WorkingHeader` with the decode heading.
+  - **Risk:** the parent should amend whichever line loses.
+  - **Deviation:** no
+- **Decision:** cookie banner Accept and Reject are both secondary (outline) buttons.
+  - **Because:** a teal Accept beside the landing's Lumen CTA would put two primaries in one phone viewport, and equal weight is the honest consent pattern.
+  - **Rejected:** Accept primary.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the 404 route is lazy (it was the one static route).
+  - **Because:** its new `Button` pulled cva and the Slot into the entry, +0.6 KB on every learning route.
+  - **Rejected:** hand-written pop classes on the link.
+  - **Risk:** a 404 shows the route skeleton for one chunk fetch.
+  - **Deviation:** no
+- **Decision:** the favicon is a path-drawn film frame with a fat-face "F" (no font), and `og.svg` references `/posters/hero-crt.webp` instead of embedding it; `og.png` is 310 KB.
+  - **Because:** a favicon SVG cannot rely on Abril loading; embedding the poster would add 30 KB to an SVG nobody fetches.
+  - **Rejected:** an Abril wordmark favicon (illegible at 16px).
+  - **Risk:** `og.svg` opened outside the site has no poster.
+  - **Deviation:** no
+
+#### Left open
+
+- The live ceremony's SparkBadge is upstream's artwork and reads "Codex" on the badge. The file is vendored unmodified, and its only knob is `sourceUrl`. Shipping a credential that names another product needs a user decision: keep it, swap in a different approved source, or go static everywhere.
+- §5.6 / §6 still describe the static ceremony without a stage, the R2b interim rules (`.light { --vignette }`, `.force-dark`) are now obsolete, and §2.2 lacks `--grain-picture-opacity` / `--stage-black`; the §3.3 / §6 About conflict is open. These are spec edits for the parent.
+- Not checked in a browser: toasts (unchanged since R2b), the route fallback skeleton (it shows only for a chunk fetch), and the cookie banner at 768.
+- `seeCeremony()` records `ceremonySeen: true` before the lazy ceremony chunk loads, and no error boundary wraps its `Suspense`. If that fetch fails (for example a stale tab after a deploy), the router error screen replaces `/capstone` and the ceremony never shows again. The lazy routes have the same exposure.
+- `.bleach-bypass` in `atmosphere.css` has no consumer (pre-existing; not deleted).
+- The light-theme hero aurora (strength 0.14) is barely visible behind the frame and screen; taste call for the critique.
+- Lighthouse was not run (R5).
+
+### Redesign R4.1: Visual critique fixes and robustness
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/design-system.md` §6 "Rules added after the R4 visual critique", §2.2 (`--grain-picture-opacity` 0.10), §5.1 (static ceremony seal on the frame); R4 Left open
+
+#### Shipped
+
+- CRT (`cfd62ec` rename only, `621969a` changes): `git mv src/vendor/threeui/crt src/vendor/threeui-derived/crt`. Only `crtScreens.ts` differs from upstream ("MONO · ACADEMY" → "FRAME BY FRAME", "T H E   L O N G   Q U I E T" → "Y O U R   F I R S T   F I L M"). Every moved file has an MIT header naming `src/shaders/crt/<file>` at `68802d5…`. `HeroCanvas` import and the vite `atmosphere` group regex point at the new path. `SOURCE.md` records the derived copy. `public/posters/hero-crt.webp` was recaptured (932×699, q80, 21.3 KB).
+- Tokens (`152036d`): `--halftone-gap: 4px`, `--halftone-dot: 1.25px`, `--pop-offset-lg: 12px`, `--grain-picture-opacity: 0.10`. `.light` adds `--aurora-strength-hero: 0.30` and `--aurora-fields-hero`; `.hero.aurora::before` uses `var(--aurora-fields-hero, var(--aurora-fields))`. The static ceremony seal is now directly on the frame (no stage, no film grain). The live stage alone keeps the `#000` film grain, at 4:3. `.bleach-bypass` deleted.
+- Lumen CTA: `ring={false}` (a prop; no CSS, vendor untouched).
+- Landing module strip (`5a5649c`, `1a0bcd0`): cards top-aligned; eyebrows `MODULE I`…`VII` (`toRoman`); `src/hooks/useEdgeFade.ts` sets `data-fade-start` / `data-fade-end`, and a 32px `mask-image` fade (to the `--bg-base` behind) applies only on the overflowing side or sides.
+- Dashboard Next up: minutes inline after the title (`.next-task-minutes`: JetBrains Mono, `--text-tertiary`, nowrap, wraps with the title).
+- Ceremony robustness (`aea34ce`): `src/lib/ceremony.ts` `openCeremonyWhenLoaded` imports the chunk first, then calls `seeCeremony()` and opens it. On failure nothing is recorded and a sonner error toast says "The capstone ceremony could not load. Reload the page to see it." (sonner is imported dynamically). Tests in `src/lib/ceremony.test.ts` (3).
+- Route errors: `src/components/RouteError.tsx` (intermission card "Reel jammed" / "This page did not load", a Reload button using the pop classes directly to keep `Button` out of the entry). A pathless route with `errorElement` wraps every child route, so the shell stays. `RouteError.test.tsx` covers a lazy import that rejects. The lazy 404 declaration moved to `src/routes/NotFoundRoute.ts`.
+- OG (`745a4b4`): new poster, the fake "Start week 1" pill replaced by a mono `7 MODULES · FREE TOOLS` readout, halftone at 4px / 1.25px / 12px; title in self-hosted Abril (fonts reported `loaded` in the rasterising page).
+
+#### Verified
+
+- `npm test` → 40 files, 217 tests pass. `npx tsc -b --noEmit` → 0. `npm run build` → 0, no warnings. `npm run e2e` → 1 passed. `npx oxlint` → 42. `npm run validate` → pass.
+- Sizes (gzip KB, R4 → R4.1): entry 128.8 → 129.2, Plan 130.8 → 131.2, Week 154.9 → 155.3, Library 152.1 → 152.5, Toolkit 132.5 → 132.9, Capstone 131.0 → 131.6. `atmosphere-*.js` 9.33 KB, only on first-run desktop `/`. The gate's canvas checks pass.
+- Learning routes `/plan`, `/week/7`, `/library`, `/toolkit`, `/capstone` request no `atmosphere-*.js` and mount no canvas. No overflow on 48 page/width/theme combinations (360/768/1440, both themes).
+- Poster and canvas: frame 0 shows "FRAME BY FRAME"; a title-card frame shows "Y O U R   F I R S T   F I L M". Neither upstream string appears anywhere. `og.svg` has no "MONO", "ACADEMY", "QUIET" or "Start week".
+- Landing (dark / light): `.hero-screen::before` opacity 0.1 in both; halftone `background-size` 4px, shadow `translate(12px, 12px)`; hero fields alpha 0.2 dark / 0.3 light; no `.lumen-cta__ring`; strip `data-fade-start=false, end=true` at rest, both true after scrolling 200px.
+- Ceremony: live at 1440 shows "Fin", stage grain 0.1. Static at 360 and 1440 (both themes): the seal's parent is the frame, 0 `.grain--film` elements, no stage. With the CeremonyBadge chunk aborted (service workers blocked, see below): toast shown, no ceremony, `ceremonySeen` still false.
+- Route error: `/toolkit` with its chunk aborted shows the card inside the shell; Reload with the chunk restored shows "Free software". Skeleton: `/library` with its chunk held 3s shows the 144px square band and the 4px-radius button block.
+- Toast (`/about`, invalid progress file): 2px outline, 4px left bar `rgb(255,107,107)` dark / `rgb(179,38,30)` light, `6px 6px 0` overlay shadow. Cookie banner at 768 in both themes: correct, no overflow.
+- Shots: 43 PNGs in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r4/shots-after/` (the R4 set plus `cookie-banner-768-*`, `toast-1440-*`, `route-skeleton-1440-dark`, `route-error-1440-dark`, `ceremony-failed-toast-1440-dark`, `next-up-390-dark`, `og.png`). Looked at by eye: landing 1440 both themes and 360 light; ceremony live 1440 dark, static 360 light; route error; toast light; cookie banner 768 dark; Next up 390; og.png at 100%.
+
+#### Decisions
+
+- **Decision:** the light hero gets its own `--aurora-fields-hero` token in `.light`.
+  - **Because:** a custom property resolves `var()` where it is declared, so `--aurora-strength` overridden on `.hero` would not reach `--aurora-fields` (computed on `:root`).
+  - **Rejected:** scaling the layer's opacity (cannot exceed 1); a `:root, .aurora` field block (the contrast test reads the `:root` block).
+  - **Risk:** the three gradient positions now exist twice in `tokens.css`.
+  - **Deviation:** no
+- **Decision:** the edge fade is a `mask-image` on the scroller, driven by a 20-line hook.
+  - **Because:** the cards are opaque, so a background gradient would paint under them; CSS alone cannot tell which side overflows.
+  - **Rejected:** scroll-driven animations (Firefox); always fading both ends.
+  - **Risk:** a focused card's outline inside the 32px edge is faded until it scrolls in.
+  - **Deviation:** no
+- **Decision:** `RouteError` draws its Reload button with the pop classes and the sheen span, not `Button`.
+  - **Because:** the error element must be in the entry graph (a lazy one could fail too), and `Button` there costs about 0.6 KB on every learning route.
+  - **Rejected:** `Button` (+0.6 KB); a lazy error element.
+  - **Risk:** two spellings of the primary button to keep in step. The learning routes still grew 0.4 KB (the error route and `Intermission` in the entry); Week is 4.7 KB under target.
+  - **Deviation:** no
+- **Decision:** the ceremony failure toast imports `sonner` dynamically.
+  - **Because:** a static import would put sonner into Capstone's static graph; the deferred chrome has already loaded it.
+  - **Rejected:** a static import.
+  - **Risk:** if sonner's chunk also fails, there is no toast; the ceremony is still not marked seen.
+  - **Deviation:** no
+- **Decision:** this entry corrects R4's oxlint record: R4's lazy 404 (`e7bef61`) raised the count to 43 after my R4 count of 42 was taken. Moving that declaration to `NotFoundRoute.ts` restores 42.
+  - **Because:** R4's Verified line was measured one commit early.
+  - **Rejected:** editing the R4 entry.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- The production service worker serves hashed `/assets` cache-first, so a tab that has a chunk cached never sees a "stale chunk" failure; Playwright routing also needed `serviceWorkers: "block"` to simulate one. Client-side navigations run in a transition, so the route skeleton shows only on a direct load.
+- §7.1 row 1 still lists the CRT under "Vendored" at `src/vendor/threeui/crt/`; it is now a derived copy at `src/vendor/threeui-derived/crt/` (spec edit for the parent).
+- The import-failure toast shows the validator's raw reason ("expected version 1, got 9"); copy unchanged.
+- Lighthouse (R5).
+
+### Redesign R5: Hardening
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R5 — Hardening; `docs/design-system.md` §7.3, §7.4, §8; Left open of R0 to R4.1
+
+#### Shipped
+
+- `src/components/ExportImport.tsx` (+ test): a failed import now toasts "That file isn't a Frame by Frame progress export." with `description: "Reason: <validator text>"` as the smaller secondary line. `importProgress` and its tests are unchanged.
+- `src/components/nav/shell.css`: `.route-fallback` reserves `min-height: 100svh` (`align-content: start`) so the footer no longer jumps when a lazy route resolves. Lighthouse had named `footer.shell-footer` as the whole CLS (0.098) on `/plan`, `/week/7`, `/library`.
+- `src/routes/launch.css`: the cookie banner's Privacy link is underlined. Lighthouse `link-in-text-block` failed it (teal against paper text, 1.09:1, no underline), which held `/` and `/week/7` at a11y 96.
+- `src/routes/Library.tsx`, `SearchPalette.tsx`, `src/components/ui/command.tsx` (+ `Library.test.tsx`): the palette has no trigger element, so after Escape focus fell to `<body>`. The opener is captured when the shortcut fires and `onCloseAutoFocus` returns focus to it. `CommandDialog` forwards `onCloseAutoFocus`.
+
+#### Verified
+
+- Gate before fixes: `npm run validate && npm test && npx tsc -b && npm run build` exit 0, 217 tests. Gate after fixes: `npm run validate && npm test && npx tsc -b && npm run build && npm run e2e` exit 0, 40 files / 218 tests, e2e 1 passed. `npx oxlint`: 42 warnings (baseline 42, none added).
+- Bundle gate (gzip, limits untouched: target 160KiB / ceiling 180KiB): entry graph 132,308 B (129.2 KB); `/plan` 131.2 KB; `/week` 155.3 KB; `/library` 152.5 KB; `/toolkit` 132.9 KB; `/capstone` 131.6 KB. All under target. `/week` has 4.7 KB of headroom. Atmosphere chunk (`atmosphere-*.js`, loaded by the landing hero and ceremony only): 23.02 kB raw, 9.33 kB gzip. Entry chunk `index-*.js`: 359.72 kB raw, 114.96 kB gzip.
+- Lighthouse 12.8.2, mobile, default simulated throttling, production `vite preview` on :4390, Playwright Chromium, fresh profile per run. Final run (after the CLS and cookie-link fixes):
+
+| Route | Perf | A11y | BP | SEO | LCP | TBT | CLS | FCP |
+|---|---|---|---|---|---|---|---|---|
+| `/` | 82 | 100 | 100 | 100 | 3.7 s | 30 ms | 0.101 | 2.7 s |
+| `/plan` | 90 | 100 | 100 | 100 | 3.1 s | 10 ms | 0 | 2.7 s |
+| `/week/7` | 87 | 100 | 100 | 100 | 3.3 s | 10 ms | 0 | 2.8 s |
+| `/library` | 88 | 98 | 100 | 100 | 3.3 s | 10 ms | 0 | 2.8 s |
+
+  Before the fixes: perf 80 / 87 / 85 / 85, a11y 96 / 100 / 96 / 98, CLS 0.101 / 0.098 / 0.098 / 0.098, LCP 3.8 / 3.1 / 3.3 / 3.3 s. Targets: a11y >= 95 met on all four. Perf >= 90 met on `/plan` only (90). LCP < 2.0 s missed on all four. Top diagnostics for the misses, on every route: render-blocking `index-*.css` (19 KB, 450 to 750 ms wasted), unused JavaScript (350 to 450 ms), and the network dependency chain (HTML, CSS, JS entry, lazy route chunk). `/` adds `prioritize-lcp-image` (495 ms; the LCP element is `img.hero-poster`, not preloaded) and `uses-responsive-images` (60 ms). `/library` adds `dom-size` (3,193 elements) and `heading-order` (`h3` cards follow the `h1` with no `h2`). LCP element is a `<p>` on `/plan` and `/library`, the `<h1>` on `/week/7`. Raw JSON is in the scratchpad `r5/lh-*.json`.
+- Battery audit (Playwright, 390x844, `isMobile`, `hasTouch`; 3 s idle, then a 5 s sample; rAF wrapped before app code via `addInitScript`):
+
+| Profile / route | rAF callbacks in 5 s | Running animations | Canvas in DOM | `html.lenis` |
+|---|---|---|---|---|
+| phone `/` | 0 | none | 0 | no |
+| phone `/plan` | 0 | none | 0 | no |
+| phone `/week/7` | 0 | none | 0 | no |
+| phone `/library` | 0 | none | 0 | no |
+| phone `/capstone` | 0 | none | 0 | no |
+| phone `/` reduced motion | 0 | none | 0 | no |
+| desktop 1440 `/` first run | 600 (~120/s) | `aurora-drift` on `.hero.aurora.aurora--live` (infinite) | 1 | yes |
+
+  §7.4 holds on every phone route. The desktop numbers are the expected live hero.
+- Accessibility, both themes: no horizontal scroll at 360 px on `/`, dashboard (start date seeded), `/plan`, `/week/1`, `/week/7`, `/week/16`, `/library`, `/toolkit`, `/capstone`, `/about`, `/contact`, `/privacy`, `/terms`, `/thank-you`, `/nope` (scrollWidth == clientWidth). Tab traversal (70 stops each, 1280x800) on `/`, `/library`, `/week/7`: the skip link "Skip to content" is the first stop; every link, radio, checkbox, search input, select, textarea and button showed a 2px outline (the date input's inner fields re-reported `:focus-visible` false on later stops; the first stop and a screenshot confirm the ring). Smallest tab stop 20 px = the checkbox visual, with a `-inset-3.5` hit area (48 px). Palette opens with Meta+K and Ctrl+K, focus lands in the search input, Escape closes it and (after the fix) returns focus to the previous element. More sheet and Filters sheet (390 px): Escape closes, focus returns to "More" / "Filters". `grep` for emoji in `src` and `public/*.html`: 0 hits. `scale(`: one hit, `scaleX(-1)` in `ornaments.css` (a mirror, not hover); no `hover:scale`, `active:scale` or `scale-` classes. Raw hex in `src/components` and `src/routes` `.tsx`: 1 hit, a comment in `CeremonyBadge.tsx`. Contrast test: green inside `npm test`. Brass (`--accent-warm`, `--brass-fill`) is used only for the current-week figure and done readouts (`.hud-current`), the filmstrip's exposed/current states and ticks, done task cards, the progress bar and the checked checkbox. Light-mode grain: `--grain-opacity` and `--grain-film-opacity` compute to 0 on `/`, `/plan`, `/week/7`, `/library`; the only grain pseudo in light is the hero screen picture (0.10, an always-dark picture by the R4.1 decision).
+- Plan conformance, R0 to R5: done: R0 0.1 to 0.14 (spot-checked: single Gmail in `site.ts`, scaffold files gone, per-route gate prints, PRD amended, radiogroup roving tabindex, e2e green), R0.1, R1, R2a, R2b, R2b.1, R3, R3.1, R4, R4.1, R5 (this entry). Done with deviation: 0.3 week completion rule (Task 9, journal line 1323); R1 ornaments as CSS not JSX (line 1427) and budget target/ceiling (line 1437); R2b aurora order and rail toggle check (lines 1596, 1606); R4 display size, ceremony stage and padding (lines 1966, 1991, 1996). Non-negotiables: no canvas on learning routes (verified in the DOM and by chunk), no hover scale, no emoji, Lucide only, budget held, battery rules held, contrast is a test. Not done: none.
+
+#### Decisions
+
+- **Decision:** the palette's focus return is implemented by remembering the opener at shortcut time rather than adding a visible trigger.
+  - **Because:** the palette is opened only by Meta+K and `/`, so Radix has no trigger to restore focus to and it fell to `<body>`.
+  - **Rejected:** a visible "Search" button as the trigger (a design change).
+  - **Risk:** if the opener unmounts while the palette is open, focus is left to the browser default.
+  - **Deviation:** no
+- **Decision:** the cookie-banner link is underlined and the route fallback reserves the viewport height, both as local fixes.
+  - **Because:** Lighthouse named exactly these two nodes (`link-in-text-block`, footer CLS).
+  - **Rejected:** changing any threshold or budget (not allowed in this phase).
+  - **Risk:** the fallback `min-height: 100svh` makes the skeleton taller than the old one; it shows only on a direct load.
+  - **Deviation:** no
+
+#### Left open
+
+- Unmet: Lighthouse performance >= 90 on `/` (82), `/week/7` (87) and `/library` (88); met on `/plan` (90, at the line).
+- Unmet: LCP < 2.0 s on `/plan` (3.1 s), `/week/7` (3.3 s), `/library` (3.3 s); `/` is 3.7 s. Simulated mobile throttling: render-blocking CSS and the entry-then-route chunk chain dominate. Candidate work, not done: inline critical CSS, preload the route chunk and the hero poster. Not attempted in R5 because it changes the build pipeline.
+- Unmet: CLS 0.101 on `/` (the 0.1 "good" line). The shifts are many 0.003 shifts from `span[data-article-heading]` (the decode heading changes width as it resolves). Fixing needs the heading's width reserved; a landing design change.
+- Lighthouse `label-content-name-mismatch` on `/plan` week frames (`aria-labelledby` composes ids, visible text is not a prefix of the name; weight 0, a11y still 100) and `heading-order` on `/library` (`h3` resource cards under `h1`, no `h2`; a11y 98). Not changed.
+- `/library` renders 3,193 DOM elements at 390 px (Lighthouse `dom-size`).
+- The Dashboard chunk contains a WebGL capability probe that creates a detached canvas. It never attaches to the DOM (DOM canvas count 0 on phone routes), but the dashboard route was not in the battery sample (the audited `/` was the clean-storage landing).
+- The previous Left open items still stand unless named above: the contact address is still the personal Gmail in `src/content/site.ts` (user-owned, needs the dedicated address); `SITE_ORIGIN` is unset so no sitemap ships (user-owned, needs the production origin); the Vercel rewrite and the service worker content-type check have not run on a real deploy; Abril Fatface at 360 px on the longest titles was only covered by the overflow check; primitives not rendered by any route (tooltip, switch, tabs, select, dialog) were never seen in a browser; the sticky mobile CTA still shows beside the page's own primary CTA; the plan card variant prints `MODULE 1` under `MODULE I`; the Lumen/ceremony `SparkBadge` reads "Codex" (user decision pending: keep, swap source, or go static); `.bleach-bypass` and `.heavy-chip` have no consumer (not deleted); `design-system.md` spec edits for the parent (§7.1 row 1 CRT path, §5.6 / §6 static ceremony, §2.2 `--grain-picture-opacity` / `--stage-black`, §3.3 / §6 About conflict, R2b aurora order); real macOS trackpad inertia over nested scrollers was not tried; the light-theme hero aurora strength (0.14 / 0.30) is a taste call.
+- The new palette focus-return test was not mutation-checked against the unfixed code; the browser run showed focus landing on `<body>` before the fix and on the opener after it.
+
+### Redesign R5.1: Polish and corrections
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R5 — Hardening; R5 Left open
+
+#### Shipped
+
+- `index.html`: the existing inline script injects `<link rel="preload" as="image" fetchpriority="high">` for `/posters/hero-crt.webp` only when the path is `/` and stored progress has no `startDate` (first-run landing). Returning learners and learning routes get none. `<meta charset>` moved to the top of `<head>` (the longer script had pushed it past 1024 bytes and Lighthouse `charset` failed, best-practices 96). `HeroCanvas.tsx`: the poster `<img>` has `fetchPriority="high"` and `decoding="async"`; it was never lazy.
+- `DecodeHeading.tsx` + `launch.css`: the `h1` carries `aria-label` (one accessible name); an invisible `aria-hidden` sizer holds the final string and sets the box; the animated copy is `aria-hidden`, absolutely positioned over it with `contain: strict`. Reduced motion is unchanged (the vendored decode returns early and the live copy shows the final text).
+- `Library.tsx`: a visually hidden `<h2>Results</h2>` before the count (fixes `heading-order`).
+- `WeekFrame.tsx`: the ratio id is now in `aria-labelledby` for rail frames too, and the card variant has literal spaces between its parts (ignored by the flex layout) so the visible text reads exactly like the accessible name. The names are identical in wording to before for cards; no test changed.
+- Dashboard WebGL probe: no change needed. The probe lives in `HeroCanvas`, which only `Landing` renders. The `Dashboard` chunk contains the code, but a returning learner never mounts `Landing` (see the battery rows below: 0 canvases created).
+
+#### Verified
+
+- `npm run validate && npm test && npx tsc -b && npm run build && npm run e2e` exit 0; 218 tests; e2e 1 passed; oxlint 42 warnings. Per-route gzip: entry 129.2 KB, plan 131.3, week 155.3, library 152.6, toolkit 133.0, capstone 131.6.
+- Lighthouse 12.8.2, same method. Before (R5) to after (R5.1):
+
+| Route | Perf | A11y | BP | LCP | CLS |
+|---|---|---|---|---|---|
+| `/` | 82 to 81-83 | 100 to 100 | 100 to 100 | 3.7 s to 3.9 s | 0.101 to 0.058-0.09 (3 runs) |
+| `/plan` | 90 to 90 | 100 to 100 | 100 to 100 | 3.1 s to 3.1 s | 0 to 0 |
+| `/week/7` | 87 to 87 | 100 to 100 | 100 to 100 | 3.3 s to 3.3 s | 0 to 0 |
+| `/library` | 88 to 88 | 98 to 100 | 100 to 100 | 3.3 s to 3.3 s | 0 to 0 |
+
+  `heading-order` and `label-content-name-mismatch` no longer fail; `lcp-discovery-insight` and `prioritize-lcp-image` now pass on `/`. LCP did not improve: it is still bound by render-blocking CSS, unused JS and the chunk chain, so the LCP target (< 2.0 s) and the perf >= 90 target on `/`, `/week/7`, `/library` stay unmet. `/` CLS is under 0.1 but not zero: the decode still changes glyph widths of centred text inside a fixed box, and Lighthouse reports small shifts on the live copy (a perf run varies 0.009 to 0.098).
+- Phone battery (390x844, 3 s idle + 5 s sample): first-run `/`: 0 rAF, 0 running animations, 0 canvases in DOM, 0 canvases created, no Lenis, preload present. Returning-learner dashboard `/`: 0 rAF, 0 animations, 0 canvases in DOM, 0 created, no Lenis, no preload. (R5 sampled only the first-run landing.)
+
+#### Decisions
+
+- **Decision:** the CLS fix keeps the decode but sizes the box by an invisible final string; it does not remove the animation.
+  - **Because:** the coordinator asked to reserve the final layout and keep reduced-motion and one accessible name.
+  - **Rejected:** a monospaced decode font (a visible design change).
+  - **Risk:** `/` CLS can still read up to about 0.1 on some runs.
+  - **Deviation:** no
+
+#### Left open
+
+- Items from the R5 entry that are already closed (verified in code): "Codex" SparkBadge (`536ddea`; `public/ceremony-badge.html` reads "Fin"); design-system spec edits for §7.1 CRT path, §5.6 / §6 static ceremony, §2.2 tokens and the About header (`e11e00c`, `ac928c1`, `b4e12b7`); sticky CTA beside the page CTA (R3.1: `stickyRoute.ts` and the `StickyCta` IntersectionObserver); duplicate "MODULE 1" label on `/plan` (dropped in R3.1; only `Module <Roman>` eyebrows remain). Also closed here: `heading-order` on `/library`, `label-content-name-mismatch` on `/plan`, the Dashboard WebGL probe concern.
+- Still open: perf < 90 on `/`, `/week/7`, `/library`; LCP > 2.0 s on all four routes; `/` CLS not zero; `/library` DOM size (3,193 elements); contact address and `SITE_ORIGIN` (user-owned); Vercel rewrite and service worker untested on a real deploy; unrendered primitives never seen in a browser; trackpad inertia untried; light hero aurora strength is a taste call.
+
+### Redesign R6.0: Contact address and production origin
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → §5 open items (user supplied both)
+
+#### Shipped
+
+- `src/content/site.ts` — `email: "manofcode98@gmail.com"` (replaces the personal Gmail), `origin: "https://framebyframe.manofcode.fyi"`.
+- `src/components/PageMeta.tsx` — canonical, `og:url` and `og:image` use `SITE.origin`, not `window.location.origin`.
+- `scripts/finalize-dist.ts` — sitemap and robots use `SITE_ORIGIN` when set, else `SITE.origin`.
+
+#### Verified
+
+- `npm test` → 218 passed. `npx tsc -b` → 0. `npm run build` → `sitemap: https://framebyframe.manofcode.fyi/sitemap.xml`; `dist/robots.txt` has the absolute `Sitemap:` line; `<loc>` values are absolute.
+
+#### Decisions
+
+- **Decision:** Canonical and Open Graph URLs always name the production origin.
+  - **Because:** a Vercel preview URL must not present itself as canonical, and link previews need an absolute image URL; prerendered HTML (next phase) also has no `window`.
+  - **Rejected:** keeping `window.location.origin`.
+  - **Risk:** a staging deploy's canonical points at production, which is the intended behaviour.
+  - **Deviation:** no
+
+#### Left open
+
+- Prerendering (user request 2026-10-27) is the next phase.
+
+### Redesign R6: Build-time prerendering
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R6 — Build-time prerendering; §2 non-negotiables; `docs/design-system.md` §7.2–7.4, §8
+
+#### Shipped
+
+- `package.json` `build`: `tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && tsx scripts/prerender.ts && tsx scripts/finalize-dist.ts && tsx scripts/assert-bundle.ts`. `dist-ssr/` is gitignored and not deployed (`vite.config.ts`: no `public/` copy, no manifest for the SSR build). New `e2e:preview` script.
+- `src/router.tsx` exports `routes` (no router); `src/App.tsx` creates the browser router from them. `src/entry-server.tsx` renders a path with `createStaticHandler` + `createStaticRouter` + `<StaticRouterProvider hydrate={false}>` (no loaders, so no hydration data) inside `StrictMode`, through React 19 `prerenderToNodeStream` with `progressiveChunkSize: Infinity`, which waits for every `React.lazy` route and keeps every completed boundary inline.
+- `scripts/prerender.ts`: renders `PRERENDER_ROUTES` (`/`, `/plan`, `/week/1`…`/week/16`, `/library`, `/toolkit`, `/capstone`, `/about`, `/contact`, `/privacy`, `/terms`, `/thank-you`) plus `/404` → `dist/404.html`. Each file is the built `dist/index.html` with: React's hoisted title/meta/canonical (production origin) replacing the template `<title>`, each marked `data-prerendered-head`; the route chunk graph's CSS as `<link rel="stylesheet">` and its JS as `<link rel="modulepreload">` (read from `dist/.vite/manifest.json`, minus what the template already loads; `/` gets CSS only, see Decisions); `#root data-prerendered="<path>"` around the markup. React's own `<link rel="preload" as="image">` for the hero is dropped. Runs before `finalize-dist`, so the SW cache name hashes the prerendered `index.html`. `assert-bundle` and its constants are unchanged and still read `dist/index.html`.
+- `src/main.tsx` + `src/lib/hydrate-guard.ts` (+ test): `hydrateRoot` with `onRecoverableError` → `console.error("[hydration]", error, componentStack)` only when `data-prerendered` equals `location.pathname` (trailing slash normalised), `location.search` is empty, and it is not `/` with a truthy stored `startDate` (defensive parse). Otherwise it removes the attribute, clears `#root`, removes the `data-prerendered-head` tags and `createRoot`s.
+- `index.html`: the theme block keeps its own `try` and runs first; the second block now parses progress once, adds `html.has-progress` when `startDate` is set, and adds the hero preload only on first-run `/`. Inline `<style>`: `html.has-progress #root[data-prerendered="/"] { display: none }`.
+- `src/hooks/useHydrated.ts`: `useSyncExternalStore` with a `false` server snapshot. `useProgress` starts from `{ progress: emptyProgress, status: "empty" }` when not hydrated and loads storage in a mount effect inside `startTransition`; its returned API is memoized. `useTheme` shows `"system"` and applies nothing until hydrated. `useMediaQuery` returns `false` until hydrated. `Landing`: static aurora and an empty date input until hydrated (then today). Plain client renders (`createRoot`, jsdom tests) read storage on the first render as before.
+- `src/routes/Root.tsx` + `shell.css`: the rail and the mobile bar + bottom tabs both render; `display: none` hides the inactive set at 768px. `Library.tsx` + `library.css`: chips and the Filters trigger both render in `display: contents` wrappers, hidden at 1024px. `ResultsGrid`: the plain grid's columns are CSS media queries; `useMediaQuery` column counts remain only for the virtualizer (> 200 items, not reached by the 138 resources).
+- `vercel.json`: `{ "cleanUrls": false, "trailingSlash": false }`, no rewrites. `scripts/vercel-config.test.ts` asserts that and the output layout. `vite.config.ts` `vercelLikePreview`: `vite preview` serves a real file, else `<path>/index.html`, else `404.html` with 404; a trailing slash 308s.
+- Tests: `src/entry-server.test.tsx` (`@vitest-environment node`) renders all 27 paths without `window`; `src/testing/viewport-css.ts` injects a stylesheet's matching `@media` bodies so jsdom tests see the CSS-only layout (`LeftRail.test.tsx` footer test, `Library.test.tsx`); `e2e/expected-headings.ts`; `playwright.preview.config.ts` + `e2e-preview/hydration.spec.ts`.
+- `docs/redesign-plan.md` (R6 status), `docs/prd.md` (§3 deep links, §7 rendering and hosting rows, §8 quality bar), `README.md` (build section), `.cursor/rules/framebyframe-architecture.mdc` (prerender and hydration rules). `public/sw.js` unchanged.
+
+#### Verified
+
+- `npm run validate` → exit 0 (138 resources, 16 weeks). `npm test` → 42 files, 257 tests passed (218 before; +7 guard, +31 Node prerender/buildPage, +1 vercel config). `npx tsc -b` → exit 0. `npm run build` → exit 0. `npm run e2e` → 1 passed (dev server). `npx oxlint` → 42 warnings (baseline 42).
+- Node prerender test: no inline-reveal markup (above); every route's `<h1>` accessible name equals `e2e/expected-headings.ts`; no "read-only", `readonly-banner`, `cookie-banner` or `<canvas` in any body; `/` has `class="hero aurora"` (no `aurora--live`) and `<input type="date" value="">`.
+- Budget gate (limits untouched, target 160KiB / ceiling 180KiB): entry 130.0 KB (R5.1 129.2), `/plan` 132.0 (131.3), `/week` 156.1 (155.3), `/library` 153.3 (152.6), `/toolkit` 133.7 (133.0), `/capstone` 132.4 (131.6). No route over target. HTML (raw / gzip): `/` 24,306 / 5,250 B; `/plan` 39,829 / 6,321; `/week/7` 42,399 / 6,942; `/library` 384,903 / 21,614; `404.html` 20,762 / 4,334. No page contains `route-fallback`, `<template` or `$RC(` (asserted by the Node test; mutation: with the default chunk size all 27 path tests fail).
+- `curl` against `npx vite preview --port 4400 --strictPort` with `vercelLikePreview`: all 26 routes return 200 with their own `data-prerendered` and `<h1>` (`/plan` → "The plan", `/week/7` → "Director's expectations of a DP, camera movement/angles/framing, gear", each week its own title); `/definitely-missing` → 404 with `data-prerendered="/404"`; `/plan/` → 308 `Location: /plan`; `/assets/nope.js` → 404; `/library?language=ta` → library HTML (client-rendered by the guard). Before the plugin, stock `vite preview` answered every path, `/assets/nope.js` included, with the landing `index.html` and 200 (`data-prerendered="/"` on `/plan`). Preview does not read `vercel.json`; Vercel itself was not exercised.
+- `npm run e2e:preview -- --workers=6` → 216 passed: 26 routes × dark/light × clean/seeded × 360×780 (`isMobile`, `hasTouch`) and 1440×900, plus the 404 status path, `/library?language=ta`, and two no-JS tests (all `*.js` aborted: `/` and `/week/7` paint their `<h1>` from the HTML; a seeded `/` gets `html.has-progress` and shows no landing). Each matrix test asserts no console text matching `[hydration]|Hydration|did not match|recoverable`, no console error or page error, the `<h1>`, `data-prerendered` kept (hydrated) everywhere except seeded `/` (client-rendered dashboard, "Today's programme"), the stored theme's root class, no read-only text, seeded ticks (`/week/1` "Lessons from the Screenplay", `/week/7` check 0 ticked, check 1 not), and no `aria-labelledby` / `aria-describedby` / `label[for]` pointing at a missing id (production React keeps mismatched server attributes silently, so this is how a `useId` divergence would show). Mutation checks: removing the `has-progress` CSS rule from `dist/index.html` failed both seeded no-JS tests; reading storage in the hydration render made all 8 seeded `/plan` and `/week/7` tests fail with `[hydration] Minified React error #418`. Removing `startTransition` failed nothing, locally or with 600 ms added latency (see Decisions).
+- Offline (SW enabled, preview :4400): after visiting `/`, `/plan`, `/week/7` online, offline `/plan` and `/week/7` hydrate from their cached HTML; uncached `/week/9` gets the cached `/` shell, is client-rendered as week 9 with one `<title>`; zero hydration messages.
+- Lighthouse 12.8.2, mobile, `--headless=new`, Playwright Chrome for Testing, before = `a8e4706` built in a scratch worktree and served by stock preview :4390, after = this build on :4400. Simulated throttling (the R5 method), median of 3:
+
+| Route | Perf before → after | FCP | LCP | TBT | CLS | LCP element (after) |
+|---|---|---|---|---|---|---|
+| `/` | 82 → 85 | 2.8 → 3.0 s | 3.9 → 3.5 s | 11 → 24 ms | 0.083 → 0.069 | `img.hero-poster` |
+| `/plan` | 90 → 90 | 2.7 → 2.6 s | 3.1 → 3.1 s | 7 → 22 ms | 0 → 0.001 | `aside.cookie-banner > p` |
+| `/week/7` | 87 → 89 | 2.8 → 2.9 s | 3.3 → 3.1 s | 11 → 12 ms | 0 → 0 | `h1` |
+| `/library` | 88 → 80 | 2.8 → 3.5 s | 3.3 → 4.0 s | 11 → 25 ms | 0 → 0 | `aside.cookie-banner > p` |
+
+  A11y, best practices and SEO 100 on all, before and after. Applied throttling (`--throttling-method=devtools`), 2 runs each, before → after: FCP 2.3 → 1.9–2.0 s on all four; LCP `/` 2.3 / 6.7 → 3.1 / 3.1 s, `/week/7` 6.2 / 6.2 → 1.9 / 1.9 s, `/library` 5.4 / 3.5 → 2.0 / 2.0 s, `/plan` 2.8 / 2.8 → 5.4 / 3.5 s (the cookie banner, rendered only after the deferred chrome chunk, is the LCP element whenever it lands last); perf `/week/7` 72 → 98, `/library` 75 / 87 → 98, `/` 95 / 70 → 92, `/plan` 93 → 78 / 90. With `fbf:consent=rejected` seeded (no banner; Lighthouse on a Playwright-seeded profile with `--disable-storage-reset`, 1 run), simulated LCP before → after: `/plan` 3.1 → 2.7, `/week/7` 3.3 → 3.1, `/library` 3.8 → 3.6 s; applied: `/plan` 2.9 → 3.7 (FCP 3.7; seeded-profile applied runs showed this 3.7 s FCP twice, unexplained), `/week/7` 2.3 → 1.9, `/library` 6.2 → 2.0 s. A first measurement of this phase, before `progressiveChunkSize` was set, had shipped the skeleton with the route hidden behind an inline reveal script; those numbers are superseded. Raw JSON: scratchpad `r6/lh-*.json`, `lhd-*.json`, `lhs-*.json` (superseded run in `r6/v1/`).
+- CLS on `/week/7` with the seeded progress: Lighthouse (seeded profile) 0 before and 0 after, simulated and applied (after: perf 89 simulated, LCP 3.1 s). Playwright (4× CPU, ~1.6 Mbps, 150 ms) 360×780 ×3: 0.0001 each; 1440×900: 0.0001; one ticked checkbox after load.
+- Phone battery (390×844, `isMobile`, `hasTouch`, 3 s idle + 5 s sample, rAF and `createElement("canvas")` wrapped by `addInitScript`): `/`, `/plan`, `/week/7` and seeded `/` (dashboard): 0 rAF callbacks, 0 running animations, 0 canvases in DOM, 0 created, no `html.lenis`. Desktop 1440 first-run `/` (SwiftShader GL): `.aurora--live` and Lenis after hydration; the CRT mounts (3 canvases created: probe, WebGL, text) and the 2 s FPS guard unmounts it at software-GL frame rates, identically on the `a8e4706` build (canvas in DOM at 1.5 s, gone at 3 s); `/plan`, `/week/7`: 0 canvases. Re-run on the final build; the earlier run of this phase saw the canvas still mounted at 2.5 s.
+
+#### Decisions
+
+- **Decision:** `prerenderToNodeStream` runs with `progressiveChunkSize: Infinity`.
+  - **Because:** with the default (12.8 KB) React outlined every route into a hidden `<div>` behind the `RouteFallback` skeleton and swapped it in from an inline `$RC` script on a later frame (found by the no-JS test and the advisor's review), so first paint was the skeleton.
+  - **Rejected:** the default.
+  - **Risk:** the whole page is in the shell, so a long page (`/library`) has more HTML to parse before first paint.
+  - **Deviation:** no
+- **Decision:** the "hydrating" signal is `useSyncExternalStore`'s server snapshot (`useHydrated`), not a module flag set by `main.tsx`.
+  - **Because:** route content hydrates after `hydrateRoot` returns (each lazy chunk resolves later), and React gives each component the server snapshot exactly while it hydrates, then re-renders it once with the client value. `createRoot` renders and jsdom tests get `true` on the first render, so the 218 existing tests are unchanged in intent.
+  - **Rejected:** a global flag (no correct moment to clear it while lazy boundaries are still hydrating).
+  - **Risk:** any new per-user read during render must use it; the architecture rule now says so.
+  - **Deviation:** no
+- **Decision:** the post-hydration storage load runs in `startTransition`, and `useProgress` returns a memoized object.
+  - **Because:** an urgent context update that reaches a route Suspense boundary still waiting for its lazy chunk makes React discard the server HTML and client-render it (a recoverable error); the `useHydrated` re-render of the provider must not count as a context change.
+  - **Rejected:** a plain `setState` in the effect. In my runs it produced no error (the modulepreloads, and the slow entry under added latency, let the chunk win the race), so this guard is not proven necessary by a failing test.
+  - **Risk:** none known.
+  - **Deviation:** no
+- **Decision:** `/` (`dist/index.html`) carries its route CSS but no route `modulepreload`.
+  - **Because:** `assert-bundle` treats every `modulepreload` in `dist/index.html` as part of the shell that each learning route is measured with; adding the Dashboard graph there would add it to every route's number, which changes what the gate measures.
+  - **Rejected:** modulepreload links on `/` (inflates the gate); injecting them from the inline script (hides them from the gate).
+  - **Risk:** `/` hydration (first run) and the returning-learner dashboard wait on the entry → Dashboard chunk chain, as before R6. LCP on `/` is the poster `<img>` in the HTML, so it does not wait on that chain.
+  - **Deviation:** yes. Plan step: "Add `<link rel=\"modulepreload\">` for the route's own lazy chunk(s)". Did this instead: every route except `/`.
+- **Decision:** route chunk CSS is linked as render-blocking stylesheets in each prerendered page.
+  - **Because:** Vite injects a lazy chunk's CSS only when the dynamic import runs, after first paint, so prerendered markup would paint unstyled and shift.
+  - **Rejected:** inlining critical CSS (a new build step, and a dependency for extraction).
+  - **Risk:** one or two more render-blocking requests per route (Lighthouse names them: `Week-*.css` and `GapCard-*.css` each ~300 ms simulated on `/week/7`).
+  - **Deviation:** no
+- **Decision:** `vercel.json` has no rewrites, `cleanUrls: false`, `trailingSlash: false`; unknown paths rely on Vercel serving `404.html` with status 404.
+  - **Because:** real files must win and unknown paths must be real 404s; any catch-all rewrite would answer 200. No files need `.html` stripping, and one slash-free canonical form matches the sitemap and `PageMeta`.
+  - **Rejected:** per-route rewrites to `/<path>/index.html` (a second route list to keep in sync).
+  - **Risk:** that Vercel resolves `/plan` to `plan/index.html` with `trailingSlash: false` and serves `404.html` for unmatched paths is documented behaviour I could not exercise; check the first preview deploy (`/plan`, `/week/7`, `/plan/` → 308, `/nope` → 404).
+  - **Deviation:** no
+- **Decision:** `vite preview` gets a small `vercelLikePreview` middleware in `vite.config.ts`.
+  - **Because:** stock preview served the landing (200) for every path, so `curl`, Playwright and Lighthouse on `/plan` would have measured the landing being client-rendered.
+  - **Rejected:** `appType: "mpa"` (also turns off the dev server's SPA fallback that `npm run e2e` uses).
+  - **Risk:** it emulates, not reproduces, Vercel.
+  - **Deviation:** no
+- **Decision:** the client-render path also removes the prerendered head tags (`data-prerendered-head`), and `has-progress` hides all of `#root` on the `/` page, not just the landing.
+  - **Because:** React reuses a matching hoistable but not one whose `content`/`href` differs, so another page's description and canonical would remain; hiding only the landing would leave a prerendered rail with blank progress next to it.
+  - **Rejected:** listing PageMeta's selectors in `main.tsx`.
+  - **Risk:** with JavaScript off, a returning learner sees a blank `/` (the same as before R6).
+  - **Deviation:** no
+- **Decision:** the cookie banner stays client-only (behind the deferred `LaunchChrome`), as the brief preferred.
+  - **Because:** consent cannot be known at build time.
+  - **Rejected:** prerendering the banner and hiding it with a pre-paint `has-consent` class (it would move `CookieBanner` and `Button` into the entry).
+  - **Risk:** for first-time visitors the banner paragraph is the LCP element on `/plan` and `/library`, so their LCP still waits on JS (see Left open).
+  - **Deviation:** no
+- **Decision:** jsdom tests check the CSS-only layouts by injecting the stylesheet's matching `@media` bodies (`src/testing/viewport-css.ts`), read with `node:fs`.
+  - **Because:** jsdom evaluates no media queries and loads no CSS imports (`?raw` returned an empty string under Vitest), so both variants would be accessible and the narrow-library test could not tell them apart.
+  - **Rejected:** dropping those assertions.
+  - **Risk:** the helper understands only `min-width`/`max-width` conditions in px.
+  - **Deviation:** no
+- **Decision:** the landing's date input is empty in the HTML and filled with today's date once hydrated.
+  - **Because:** the build date would otherwise be baked into `value` and differ from the visitor's day.
+  - **Rejected:** none.
+  - **Risk:** before JS, a first-run visitor sees an empty date field.
+  - **Deviation:** no
+
+#### Left open
+
+- Prerendering did not reach the LCP target (< 2.0 s) under the method of record. Simulated Lighthouse: `/` 3.9 → 3.5 s (perf 82 → 85), `/plan` 3.1 → 3.1, `/week/7` 3.3 → 3.1 (87 → 89), and `/library` regressed, 3.3 → 4.0 s (perf 88 → 80, FCP 2.8 → 3.5 s): the 385 KB / 138-card HTML is now parsed before first paint. Render-blocking CSS (`index-*.css` ~750 ms, plus route CSS) still dominates, and on localhost Lantern also counts the JS that finished before the observed paint. Applied throttling shows the expected gain (FCP ~1.9 s everywhere; `/week/7` and `/library` LCP 1.9–2.0 s). Candidates, not done, each a user decision: prerender the cookie banner with a pre-paint `has-consent` class (it is the LCP element for first-time visitors on `/plan` and `/library`); inline critical CSS; prerender only the first cards of `/library` (fewer crawlable links).
+- `/` first-run CLS is unchanged (0.06–0.11 simulated), the decode-heading shifts from R5.1.
+- Vercel serving (directory index, `404.html` with 404, `/plan/` 308) and the service worker on a real deploy are untested.
+- The hydration matrix runs against `vite preview` on one machine; slow-device timing is covered only by the single 600 ms-latency check.
+- Previous open items still stand (R5.1 Left open): `/library` DOM size, unrendered primitives, trackpad inertia, light hero aurora strength.
+
+### Redesign R6.1: library first page and prerendered consent banner
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R6 — Build-time prerendering (R6 Left open: the `/library` regression and the client-only banner); `docs/design-system.md` §7.3–7.4
+
+#### Shipped
+
+- `src/components/library/ResultsGrid.tsx`: diagnosis: the 138 resources are under `VIRTUALIZE_AFTER` (200), so the plain grid rendered every card into the prerendered `/library`. Now the prerender and the hydration render show `FIRST_PAGE = 9` cards. `complete` starts from `useHydrated()`, and a mount effect sets it in `startTransition`. The cap applies before the virtualizer branch. A plain client render (client navigation, `createRoot`, jsdom tests) shows everything on its first render.
+- `src/components/CookieBanner.tsx`: `useConsent` reads a module-level store through `useSyncExternalStore`. The server snapshot is `"unknown"`. The client snapshot is the in-memory choice, else storage. `choose()` writes storage and notifies every reader. `src/routes/Root.tsx` renders the banner from a leaf `ConsentBanner`, after `DeferredChrome`. `LaunchChrome` keeps only `ConsentAnalytics`, which reads the same store, so an Accept on the prerendered banner loads analytics without a reload.
+- `index.html`: the pre-paint script adds `html.has-consent` in its own `try` when `fbf:consent` is `accepted` or `rejected` (the same values as `readConsent`). The inline style has `html.has-consent .cookie-banner { display: none; }` next to the `has-progress` rule.
+- Tests:
+  - `CookieBanner.test.tsx`: the server markup carries the banner with a stored choice; hydration drops it with no recoverable error; an Accept reaches a second reader and storage.
+  - `ResultsGrid.test.tsx`: the server markup has 9 cards, and hydration expands them to 138 with no recoverable error.
+  - `entry-server.test.tsx`: the banner is in every body, but not the sticky CTA or the toaster; `/library` has exactly 9 cards and a count of 138.
+  - `LeftRail.test.tsx`: the rail check now picks `.left-rail` out of the complementary landmarks, because the banner is one too.
+  - `e2e-preview/hydration.spec.ts`:
+    - In the matrix, the banner is visible with clean storage and absent with seeded storage, and the `/library` card count equals the result count.
+    - Stored `"accepted"` and `"rejected"` without progress on `/`, `/plan`, `/week/7` and `/library` at both viewports. Each run checks that the page hydrates, `has-consent` is set, the banner leaves the DOM, there is no hydration noise, and a probe (MutationObserver plus a frame sampler, installed before any page script) never saw the banner visible. Analytics never load on `"rejected"`; on `"accepted"` they load.
+    - On clean storage, no analytics chunk and no `/_vercel/insights` request load before Accept, and both load after it.
+    - The no-JS pair: banner visible with no stored choice, hidden with one.
+- `.cursor/rules/framebyframe-architecture.mdc`: the client-only chrome list no longer names the banner; it records the `has-consent` mechanism and the library first page.
+
+#### Verified
+
+- `npm test && npx tsc -b && npm run build` exit 0: 43 files, 261 tests (257 before). `npm run validate` exit 0. `npm run e2e` 1 passed. `npm run e2e:preview -- --workers=6`: 236 passed (216 before). `npx oxlint` 42 warnings (baseline 42).
+- Mutation: stripping the `has-consent` rule from the built HTML failed all 18 targeted preview tests (16 stored-consent probes and both no-JS tests). A first attempt whose `sed` missed the minified rule changed nothing and is not counted.
+- Budget gate (limits untouched, target 160 KiB): entry 130.0 → 130.8 KB, `/plan` 132.0 → 132.8, `/week` 156.1 → 156.9, `/library` 153.3 → 154.2, `/toolkit` 133.7 → 134.5, `/capstone` 132.4 → 133.2. The banner brings `Button`, `cva` and `Slot` into the entry.
+- HTML, raw / gzip -9, R6 → now: `/library` 384,903 / 21,232 → 70,012 / 7,106 B; `/` 24,306 / 5,219 → 25,874 / 5,518; `/plan` 39,829 / 6,294 → 41,397 / 6,656; `/week/7` 42,399 / 6,915 → 43,967 / 7,260. The preview's gzip transfer of `/library` dropped from 21,603 to 6,798 B (after the first commit). `/library` raw markup is 63.4 KB, still above the 17–42 KB of other routes. The rest is the wide filter chips (23.6 KB, present at every width and hidden by CSS below 1024px), the shell (about 12 KB) and the nine cards (21.1 KB).
+- Lighthouse 12, mobile, simulated, median of 3, interleaved against the R6 build (HEAD `41014d3` rebuilt in a scratch worktree, stock preview :4390; this build :4400). R5.1 is the stored R6 "before" set, from another session; `/` uses 6 runs per side here because its run-to-run spread is wide.
+
+| Route | R5.1 Perf / LCP | R6 stored | R6 re-run | Now | FCP now | LCP element now |
+|---|---|---|---|---|---|---|
+| `/` | 82 / 3.9 s | 85 / 3.5 s | 85 / 3.5 s | 81 / 3.9 s | 3.1 s | `img.hero-poster` |
+| `/plan` | 90 / 3.1 s | 90 / 3.1 s | 90 / 3.1 s | 89 / 3.1 s | 2.7 s | `aside.cookie-banner > p` |
+| `/week/7` | 87 / 3.3 s | 89 / 3.1 s | 89 / 3.1 s | 89 / 3.1 s | 2.9 s | `h1` |
+| `/library` | 88 / 3.3 s | 80 / 4.0 s | 80 / 4.0 s | 87 / 3.3 s | 3.0 s | `aside.cookie-banner > p` |
+
+  A11y, best practices and SEO are 100 everywhere, and CLS is 0 to 0.001 except on `/` (0.09, the decode heading from R5.1).
+  - `/library` after the first commit alone: 87 / 3.3 s in all 3 runs (R6 80 / 4.0 s in all 3).
+  - Observed (unthrottled) trace: LCP now equals FCP on `/plan` (103 ms) and `/library` (114 ms), because the banner paints in the first frame. On R6 it came later (125 against 91 ms; 168 against 103 ms).
+  - Applied throttling (`--throttling-method=devtools`), R6 → now. `/plan`: LCP 5.5 / 5.4 → 1.9 / 1.9 s, Perf 79 → 98. `/library`: LCP 2.0 / 6.2 → 1.9 / 1.9 s, Perf 97 / 76 → 98 / 98. `/` (3 runs each): LCP 3.1 → 2.2 s (runs 2.8 / 2.2 / 2.1), Perf 92 → 95.
+  - In the simulation, LCP is about 2.7–2.9 s of Lantern "render delay" behind render-blocking CSS: `index-*.css` is charged about 750 ms, and each route stylesheet about 300 ms (`Plan`, `Library` + `GapCard`, `Dashboard`).
+  - The simulated drop on `/` comes from Lantern, not from painting. Lantern charges every request that starts before the observed LCP. On R6 the poster usually painted in the first frame (about 102–107 ms), before the wave of lazy chunks at about 95 ms (LaunchChrome, Dashboard and its content), and simulated at 3.1–3.5 s. Its one run that painted after the wave simulated at 3.9 s. Now the poster paints one frame after FCP (+8 ms), so that wave counts, and LCP simulates at 3.9 s. Applied throttling, which measures real paints, improves on `/`.
+- CLS with seeded storage, Playwright (4× CPU, about 1.6 Mbps, 150 ms latency), R6 → now. `/week/7` 360×780 ×3 and 1440×900: 0.0001 each, the same as R6. `/library` 360×780 ×3: 0.0015 each; 1440×900: 0.0003. Also 412×823, 768×1024, 1024×768, 1920×1080 and 2560×1440: 0 to 0.0001. R6 shows identical values at every viewport, so the shift comes from fonts and badges and the expansion adds none. Every run ends with 138 cards.
+- Phone battery (390×844, `isMobile`, 3 s idle + 5 s sample; the clean runs now show the prerendered banner) for `/`, `/plan`, `/week/7` and seeded `/`: 0 rAF callbacks, 0 running animations, 0 canvases in the DOM, 0 created, no `html.lenis`.
+
+#### Decisions
+
+- **Decision:** the prerendered first page is 9 cards, fixed and identical on the server and in the hydration render.
+  - **Because:** measured without JS, the first screen holds 1 card at 360×780, 2 at 412×823, 3 at 1440×900, 6 at 1920×1080 and 9 at 2560×1440. Three rows at three columns end below the fold up to 1440 px tall, so the cards and the footer that arrive after hydration land off-screen (CLS unchanged at every viewport measured).
+  - **Rejected:** 6 cards (the footer would be on-screen at 2560×1440 and shift); a viewport-dependent count (it cannot match on hydration).
+  - **Risk:** without JavaScript the library shows 9 of 138 cards under a "138 results" count. Crawlers lose 129 outbound resource links, which the brief accepted.
+  - **Deviation:** no
+- **Decision:** the cookie banner is prerendered, reversing the R6 decision that kept it client-only (that entry stays as written).
+  - **Because:** for first-time visitors it was the LCP element on `/plan` and `/library` and waited for the deferred chrome chunk. Applied-throttling LCP on those routes is now 1.9 s.
+  - **Rejected:** keeping it client-only.
+  - **Risk:** `Button`, `cva` and `Slot` move into the entry (+0.8 KB on every route). A visitor with storage disabled sees the banner on every load, as before. The banner's buttons do nothing without JavaScript.
+  - **Deviation:** no
+- **Decision:** consent is a module-level external store read with `useSyncExternalStore`, consumed by a leaf `ConsentBanner` and by `ConsentAnalytics`.
+  - **Because:** when hydration ends, the switch from the server value to the client value is a sync re-render. In `RootLayout` it would hand a new `Outlet` context to a route boundary that may still be hydrating (the R6 `startTransition` concern). A leaf re-renders only itself, and the store lets an Accept reach the analytics loader.
+  - **Rejected:** state in `RootLayout` passed down as props.
+  - **Risk:** module state persists across tests in one file (`CookieBanner.test.tsx` keeps the Accept test last).
+  - **Deviation:** no
+
+#### Left open
+
+- LCP is still above 2.0 s under the simulated method of record on all four routes (`/` 3.9, `/plan` 3.1, `/week/7` 3.1, `/library` 3.3 s); Perf is under 90 on all four. Render-blocking CSS dominates: `index-*.css` (~750 ms simulated) plus one or two route stylesheets (~300 ms each). Inlining critical CSS is the remaining lever. It was not attempted (out of scope; it needs a build step).
+- `/library` Perf is 87 against R5.1's 88 (LCP matches at 3.3 s), and FCP is 3.0 against 2.8 s: R5.1 painted an empty root with no route stylesheets to wait for.
+- `/` simulated reads worse than R6 (81 / 3.9 against 85 / 3.5 s), a Lantern artifact explained above. Applied throttling improves.
+- `/library` raw markup is 63 KB, mostly the wide filter chips, which render at every width.
+- Items from the R6 and R5.1 Left open lists still stand (Vercel serving and the service worker untested on a real deploy, `/` CLS, DOM size, unrendered primitives, trackpad inertia, light hero aurora strength).
+
+### Redesign R6.2: Independent verification of R6 and R6.1
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R6 — Build-time prerendering (main-session review of the R6 and R6.1 hand-backs)
+
+#### Verified
+
+- Re-run on `8f0cca4` from the main session: `npm run validate` exit 0; `npm test` 261 passed; `npx tsc -b` exit 0; `npm run build` exit 0 (entry 130.8 KB, `/week` 156.9 KB, target 160 KiB); `npx oxlint` 42 warnings; `npm run e2e` 1 passed; `npm run e2e:preview` 236 passed. `dist/library/index.html` 70,012 B raw / 7,156 B gzip.
+- Route coverage: every `path` in `src/router.tsx` is prerendered, and every internal `href` in `dist/**/*.html` resolves to a file in `dist/`. Query-string links (`/library?…`, `/?intro=1`) are served by their path's `index.html` and client-rendered by the hydrate guard.
+- Returning visitors who already chose: a Playwright probe against `vite preview` seeded `fbf:consent`. With `"accepted"`, `/plan` and `/week/7` requested `/_vercel/insights/script.js` after hydration (404 locally; the path exists only on Vercel). With `"rejected"`, there was no analytics request. The banner was not visible in either case. This covers the stored-accept path, which the R6.1 suite exercised only for banner visibility.
+
+#### Decisions
+
+- **Decision:** the simulated `/` result (81 / 3.9 s) is recorded as the R5.1 baseline, not fixed in R6.
+  - **Because:** across the 12 R6.1 runs, simulated LCP is about 3.88 s whenever the lazy chunk wave starts before the observed LCP, and 3.1–3.5 s otherwise.
+  - **Tried:** one targeted change, `decoding="sync"` on `img.hero-poster`.
+    - Measured 6 runs interleaved with the unchanged build: it made the poster paint in the first frame in 3 of 6 runs, but simulated LCP stayed at 3.77–3.88 s, against 3.50–3.89 s for the unchanged build.
+    - Reverted, so the change is not committed. The frame gap was a symptom, not the cause.
+  - **Rejected:** a further cycle on `/` before critical CSS. The ~750 ms render-blocking main stylesheet dominates every route.
+  - **Risk:** none new. Applied-throttling LCP on `/` improved (3.1 → 2.2 s).
+  - **Deviation:** no
+
+#### Process exceptions (recorded here because the R6 and R6.1 entries omit them)
+
+- `8a90a85` (R6) was gated through `npm test | grep …` rather than the plain `&&` chain. It showed 218 passing, and every later commit passed the plain gate.
+- `6a19619` (R6.1): the stored-consent preview cases were added to the commit after its gate run. `tsc -b` and a full `npm run e2e:preview` covered them, and the gate passed again before `8f0cca4`.
+
+#### Left open
+
+- Unchanged from R6.1. Critical-CSS inlining is the remaining LCP lever, against a target (not a bar) under `docs/prd.md`. Real Vercel serving and the service worker are still untested on a deploy.

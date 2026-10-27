@@ -30,9 +30,9 @@ describe("contactMailto", () => {
   it("addresses the site mailbox and encodes the note", () => {
     const href = contactMailto(
       { name: "Asha", email: "asha@example.com", message: "Line one" },
-      "mratyunjay.soni@gmail.com",
+      "site@example.com",
     );
-    expect(href.startsWith("mailto:mratyunjay.soni@gmail.com?")).toBe(true);
+    expect(href.startsWith("mailto:site@example.com?")).toBe(true);
     expect(decodeURIComponent(href)).toContain("Line one");
     expect(decodeURIComponent(href)).toContain("Asha");
   });

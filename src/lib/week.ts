@@ -33,6 +33,36 @@ export function resolveCurrentWeek(
   return { week: clampWeek(raw), source: "derived", complete };
 }
 
+/** Done-when check ids; the export format depends on this exact shape. */
+export function checkId(assignmentId: string, index: number): string {
+  return `${assignmentId}:check:${index}`;
+}
+
+/** A week is complete when every core task and every done-when check is done. */
+export function weekCompletion(week: Week, progress: Progress): { done: number; total: number; complete: boolean } {
+  const ids = [
+    ...week.tasks.filter((task) => task.core).map((task) => task.id),
+    ...week.assignment.checks.map((_, index) => checkId(week.assignment.id, index)),
+  ];
+  let done = 0;
+  for (const id of ids) if (progress.done[id] === true) done += 1;
+  return { done, total: ids.length, complete: ids.length > 0 && done === ids.length };
+}
+
+/** All task minutes, stretch included: the ledger's stated estimate for the week. */
+export function weekMinutes(week: Week): number {
+  return week.tasks.reduce((sum, task) => sum + task.minutes, 0);
+}
+
+export function formatHours(minutes: number): string {
+  if (minutes <= 0) return "0h";
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins}m`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
+}
+
 export function nextIncompleteTasks(week: Week, progress: Progress, limit: number): Task[] {
   if (limit <= 0) return [];
   const pending: Task[] = [];

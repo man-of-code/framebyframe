@@ -1,37 +1,23 @@
 import type { FormEvent, JSX } from "react";
-import { useEffect, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { BreakableTitle } from "@/components/BreakableTitle";
+import { Button } from "@/components/ui/button";
 import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
 import { HeroCanvas } from "@/components/atmosphere/HeroCanvas";
-import { Letterbox } from "@/components/atmosphere/Letterbox";
 import "@/components/filmstrip/filmstrip.css";
-import { content } from "@/content";
+import { gaps } from "@/content/gaps";
+import { MODULES } from "@/content/modules";
+import { weeks as allWeeks } from "@/content/weeks";
 import type { ProgressApi } from "@/hooks/ProgressProvider";
+import { useAuroraPause } from "@/hooks/useAuroraPause";
+import { useEdgeFade } from "@/hooks/useEdgeFade";
+import { useHydrated } from "@/hooks/useHydrated";
 import { startDateError } from "@/lib/form";
+import { toRoman } from "@/lib/title";
+import { readCanvasEnv, shouldRenderCanvas } from "@/lib/webgl-guard";
 import { LumenCta } from "@/vendor/threeui/lumen-cta/LumenCta";
 import "./pages.css";
-
-const MODULES = [
-  { n: 1, title: "Writing" },
-  { n: 2, title: "Pre-production" },
-  { n: 3, title: "Directing" },
-  { n: 4, title: "Cinematography" },
-  { n: 5, title: "Editing and Sound" },
-  { n: 6, title: "Post-production and VFX" },
-  { n: 7, title: "Marketing, Distribution and Career" },
-] as const;
-
-function useDocumentLight(): boolean {
-  const [light, setLight] = useState(() => document.documentElement.classList.contains("light"));
-  useEffect(() => {
-    const node = document.documentElement;
-    const sync = () => setLight(node.classList.contains("light"));
-    const observer = new MutationObserver(sync);
-    observer.observe(node, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
-  return light;
-}
 
 function localToday(): string {
   const now = new Date();
@@ -41,7 +27,7 @@ function localToday(): string {
 }
 
 function weekSpan(module: number): { first: number; label: string } | null {
-  const weeks = content.weeks.filter((week) => week.module === module).map((week) => week.n);
+  const weeks = allWeeks.filter((week) => week.module === module).map((week) => week.n);
   if (weeks.length === 0) return null;
   const first = Math.min(...weeks);
   const last = Math.max(...weeks);
@@ -53,11 +39,19 @@ function weekSpan(module: number): { first: number; label: string } | null {
 export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Element {
   const { api, replay } = props;
   const navigate = useNavigate();
-  const light = useDocumentLight();
-  const [date, setDate] = useState(api.progress.startDate ?? localToday());
+  const hero = useRef<HTMLElement>(null);
+  const hydrated = useHydrated();
+  // Live aurora only where a live surface may run (7.2 rule 1); aurora.css also stops it on phones and reduced motion.
+  // The prerender and the hydration render show the static band and an empty date; both fill in once hydrated.
+  const live = useMemo(() => hydrated && shouldRenderCanvas(readCanvasEnv()), [hydrated]);
+  useAuroraPause(hero);
+  const strip = useRef<HTMLOListElement>(null);
+  useEdgeFade(strip);
+  const [typed, setDate] = useState<string | null>(api.progress.startDate ?? null);
+  const date = typed ?? (hydrated ? localToday() : "");
   const [dateError, setDateError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const gap = content.gaps.find((item) => item.id === "indian-language-craft");
+  const gap = gaps.find((item) => item.id === "indian-language-craft");
   const buffer = weekSpan(0);
 
   function start(event?: FormEvent) {
@@ -72,48 +66,52 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
 
   return (
     <article className="page">
-      <header className="hero">
-        <Letterbox>
-          <HeroCanvas enabled={!replay} />
-          <div className="hero-copy">
-            <p className="eyebrow">16 weeks</p>
-            <DecodeHeading text="Frame by Frame" />
-            <div className="control-row">
-              <LumenCta
-                className="hero-lumen"
-                label="Start week 1"
-                type="button"
-                mode={light ? "light" : "dark"}
-                hue={-48}
-                saturation={0.85}
-                onClick={() => {
-                  const form = document.getElementById("start-date");
-                  if (form instanceof HTMLFormElement) form.requestSubmit();
-                }}
-              />
-              <Link className="text-link" to="/plan">Browse the plan first</Link>
+      <header ref={hero} className={live ? "hero aurora aurora--live" : "hero aurora"}>
+        <div className="hero-stage hud-grid">
+          <div className="hero-bill">
+            <div className="hero-bill__shadow halftone" aria-hidden="true" />
+            <div className="hero-bill__frame playbill-frame">
+              <p className="eyebrow orn-fleuron">16 weeks</p>
+              <DecodeHeading text="Frame by Frame" />
+              <div className="orn-rule-diamond" aria-hidden="true" />
+              <p className="page-copy">
+                A sixteen-week path to a short film, shot on an Android phone, with free tools.
+              </p>
+              <div className="control-row">
+                <LumenCta
+                  className="hero-lumen"
+                  label="Start week 1"
+                  ring={false}
+                  type="button"
+                  onClick={() => {
+                    const form = document.getElementById("start-date");
+                    if (form instanceof HTMLFormElement) form.requestSubmit();
+                  }}
+                />
+                <Link className="text-link" to="/plan">Browse the plan first</Link>
+              </div>
+              {replay ? <Link className="text-link" to="/">Back to today</Link> : null}
             </div>
-            <p className="page-copy">
-              A sixteen-week path to a short film, shot on an Android phone, with free tools.
-            </p>
-            {replay ? <Link className="text-link" to="/">Back to today</Link> : null}
           </div>
-        </Letterbox>
+          <div className="hero-screen grain grain--film" aria-hidden="true">
+            <HeroCanvas enabled={!replay} />
+          </div>
+        </div>
       </header>
 
       <section className="stack" aria-labelledby="shape-heading">
         <h2 id="shape-heading">The 16-week shape</h2>
         <nav className="filmstrip-nav" aria-label="Modules">
-          <ol className="filmstrip" data-orientation="horizontal">
+          <ol ref={strip} className="filmstrip module-strip" data-orientation="horizontal">
             {MODULES.map((module) => {
               const span = weekSpan(module.n);
               if (!span) return null;
               return (
                 <li key={module.n}>
                   <Link className="module-block" to={`/week/${span.first}`}>
-                    <span className="eyebrow">Module {String(module.n).padStart(2, "0")}</span>
+                    <span className="eyebrow">Module {toRoman(module.n)}</span>
                     <span>{module.title}</span>
-                    <span className="mono">{span.label}</span>
+                    <span className="hud-readout">{span.label}</span>
                   </Link>
                 </li>
               );
@@ -123,7 +121,7 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
                 <Link className="module-block" to={`/week/${buffer.first}`}>
                   <span className="eyebrow">Buffer</span>
                   <span>Weeks 13–16</span>
-                  <span className="mono">{buffer.label}</span>
+                  <span className="hud-readout">{buffer.label}</span>
                 </Link>
               </li>
             ) : null}
@@ -151,7 +149,7 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
       <section className="stack" aria-labelledby="missing-heading">
         <h2 id="missing-heading">What's missing</h2>
         <p className="page-copy">
-          {gap?.missing ?? "No verified Indian-language filmmaking-craft channels."}
+          <BreakableTitle text={gap?.missing ?? "No verified Indian-language filmmaking-craft channels."} />
         </p>
         <Link className="text-link" to="/about">Read the gap</Link>
       </section>
@@ -172,9 +170,9 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
           />
           {dateError ? <span className="field-error" id="start-date-error" role="alert">{dateError}</span> : null}
         </label>
-        <button className="page-button" type="submit" disabled={pending} aria-busy={pending}>
+        <Button className="self-start" type="submit" disabled={pending} aria-busy={pending} data-page-cta>
           {pending ? "Saving…" : "Set start date"}
-        </button>
+        </Button>
       </form>
     </article>
   );

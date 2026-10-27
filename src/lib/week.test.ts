@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { content } from "@/content";
-import { clampWeek, nextIncompleteTasks, rawWeekNumber, resolveCurrentWeek } from "@/lib/week";
+import {
+  checkId,
+  clampWeek,
+  formatHours,
+  nextIncompleteTasks,
+  rawWeekNumber,
+  resolveCurrentWeek,
+  weekCompletion,
+  weekMinutes,
+} from "@/lib/week";
+import type { Week } from "@/lib/types";
 import { emptyProgress } from "@/lib/progress";
 
 const at = (iso: string) => new Date(`${iso}T12:00:00`);
@@ -82,5 +92,34 @@ describe("nextIncompleteTasks", () => {
 
   it("stops at the limit when nothing is done", () => {
     expect(nextIncompleteTasks(week, emptyProgress, 1)).toEqual([week.tasks[0]]);
+  });
+});
+
+describe("weekCompletion", () => {
+  const core = { id: "c", kind: "do" as const, text: "core", resourceIds: [], minutes: 60, core: true };
+  const stretch = { ...core, id: "s", core: false, minutes: 30 };
+  const week: Week = {
+    n: 3, module: 1, title: "W", topics: [], tasks: [core, stretch],
+    assignment: { id: "a", text: "x", checks: ["one", "two"] }, community: "",
+  };
+  const buffer: Week = { ...week, n: 13, module: 0, tasks: [], extension: true };
+
+  it("needs every core task and every done-when check, and ignores stretch", () => {
+    const tasksOnly = { ...emptyProgress, done: { c: true, s: true } };
+    expect(weekCompletion(week, tasksOnly)).toEqual({ done: 1, total: 3, complete: false });
+    const all = { ...emptyProgress, done: { c: true, [checkId("a", 0)]: true, [checkId("a", 1)]: true } };
+    expect(weekCompletion(week, all).complete).toBe(true);
+  });
+
+  it("completes a week with no tasks on its checks alone", () => {
+    expect(weekCompletion(buffer, emptyProgress)).toEqual({ done: 0, total: 2, complete: false });
+    const checks = { ...emptyProgress, done: { [checkId("a", 0)]: true, [checkId("a", 1)]: true } };
+    expect(weekCompletion(buffer, checks).complete).toBe(true);
+  });
+
+  it("counts minutes across all tasks, stretch included", () => {
+    expect(weekMinutes(week)).toBe(90);
+    expect(formatHours(90)).toBe("1h 30m");
+    expect(formatHours(480)).toBe("8h");
   });
 });

@@ -82,4 +82,19 @@ describe("progress", () => {
     const p = toggleDone(emptyProgress, "removed-task");
     expect(countDone(p, ["still-here"])).toBe(0);
   });
+
+  it("drops a start date or week override that would not resolve to a real week", () => {
+    const load = (extra: Record<string, unknown>) => {
+      const result = importProgress(JSON.stringify({ ...emptyProgress, ...extra }));
+      if (!result.ok) throw new Error(result.reason);
+      return result.progress;
+    };
+    expect(load({ startDate: "garbage" }).startDate).toBeUndefined();
+    expect(load({ startDate: "2026-02-31" }).startDate).toBeUndefined();
+    expect(load({ startDate: "2026-10-22" }).startDate).toBe("2026-10-22");
+    for (const weekOverride of [3.5, -2, 0, 17, 99]) {
+      expect(load({ weekOverride }).weekOverride).toBeUndefined();
+    }
+    expect(load({ weekOverride: 9 }).weekOverride).toBe(9);
+  });
 });

@@ -1,9 +1,10 @@
 import { lazy, Suspense, type LazyExoticComponent } from "react";
-import { createBrowserRouter, Link, useParams } from "react-router-dom";
+import { Link, useParams, type RouteObject } from "react-router-dom";
+import { RouteError } from "@/components/RouteError";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseWeekParam } from "@/lib/route-week";
 import { TOTAL_WEEKS } from "@/lib/week";
-import { NotFound } from "@/routes/NotFound";
+import { NotFoundRoute } from "@/routes/NotFoundRoute";
 import { Root } from "@/routes/Root";
 
 const Home = lazy(() => import("@/routes/Dashboard").then((m) => ({ default: m.Home })));
@@ -22,11 +23,11 @@ function RouteFallback() {
   return (
     <div className="route-fallback" role="status" aria-live="polite">
       <span className="visually-hidden">Loading</span>
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-10 w-2/3" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-5/6" />
-      <Skeleton className="h-12 w-40" />
+      {/* Shaped like the page it stands in for: a square header band, a title, lines, a pop button (radius-sm). */}
+      <Skeleton className="route-fallback__band" />
+      <Skeleton className="h-4 w-full max-w-xl" />
+      <Skeleton className="h-4 w-5/6 max-w-lg" />
+      <Skeleton className="route-fallback__button" />
     </div>
   );
 }
@@ -57,23 +58,30 @@ function WeekRoute() {
   return <Lazy page={Week} />;
 }
 
-export const router = createBrowserRouter([
+/** Shared by the browser router (App.tsx) and the build-time prerender (entry-server.tsx). */
+export const routes: RouteObject[] = [
   {
     path: "/",
     element: <Root />,
     children: [
-      { index: true, element: <Lazy page={Home} /> },
-      { path: "plan", element: <Lazy page={Plan} /> },
-      { path: "week/:n", element: <WeekRoute /> },
-      { path: "library", element: <Lazy page={Library} /> },
-      { path: "capstone", element: <Lazy page={Capstone} /> },
-      { path: "toolkit", element: <Lazy page={Toolkit} /> },
-      { path: "about", element: <Lazy page={About} /> },
-      { path: "contact", element: <Lazy page={Contact} /> },
-      { path: "privacy", element: <Lazy page={Privacy} /> },
-      { path: "terms", element: <Lazy page={Terms} /> },
-      { path: "thank-you", element: <Lazy page={ThankYou} /> },
-      { path: "*", element: <NotFound /> },
+      {
+        // A failed lazy import (e.g. a stale chunk after a deploy) or a render error stays inside the shell.
+        errorElement: <RouteError />,
+        children: [
+          { index: true, element: <Lazy page={Home} /> },
+          { path: "plan", element: <Lazy page={Plan} /> },
+          { path: "week/:n", element: <WeekRoute /> },
+          { path: "library", element: <Lazy page={Library} /> },
+          { path: "capstone", element: <Lazy page={Capstone} /> },
+          { path: "toolkit", element: <Lazy page={Toolkit} /> },
+          { path: "about", element: <Lazy page={About} /> },
+          { path: "contact", element: <Lazy page={Contact} /> },
+          { path: "privacy", element: <Lazy page={Privacy} /> },
+          { path: "terms", element: <Lazy page={Terms} /> },
+          { path: "thank-you", element: <Lazy page={ThankYou} /> },
+          { path: "*", element: <Lazy page={NotFoundRoute} /> },
+        ],
+      },
     ],
   },
-]);
+];

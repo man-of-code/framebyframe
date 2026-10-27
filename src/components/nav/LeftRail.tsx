@@ -3,18 +3,17 @@ import { FilmstripRail } from "@/components/filmstrip/FilmstripRail";
 import { NAV_ITEMS } from "@/components/nav/items";
 import { ThemeToggle } from "@/components/nav/ThemeToggle";
 import { WeekNumeral } from "@/components/nav/WeekNumeral";
+import { weeks } from "@/content/weeks";
 import type { Progress } from "@/lib/types";
 
 export function LeftRail({ week, progress }: { week: number; progress: Progress }) {
+  const nowShowing = weeks.find((entry) => entry.n === week);
   return (
-    <aside className="left-rail">
-      <WeekNumeral week={week} />
+    <aside className="left-rail" data-lenis-prevent>
       <Link to="/" className="brand">
         Frame by Frame
       </Link>
-      <div data-slot="filmstrip">
-        <FilmstripRail orientation="vertical" compact progress={progress} />
-      </div>
+      <WeekNumeral week={week} />
       <nav aria-label="Primary">
         <ul className="nav-list">
           {NAV_ITEMS.map((item) => (
@@ -32,13 +31,18 @@ export function LeftRail({ week, progress }: { week: number; progress: Progress 
         </ul>
       </nav>
       <ThemeToggle />
-      <nav aria-label="Legal">
-        <ul className="nav-list">
-          <li><Link className="nav-link" to="/contact">Contact</Link></li>
-          <li><Link className="nav-link" to="/privacy">Privacy</Link></li>
-          <li><Link className="nav-link" to="/terms">Terms</Link></li>
-        </ul>
-      </nav>
+      <hr className="orn-rule" />
+      <div data-slot="filmstrip">
+        <FilmstripRail orientation="grid" progress={progress} />
+      </div>
+      {nowShowing ? (
+        <div className="now-showing">
+          <p className="eyebrow">Now showing</p>
+          <Link to={`/week/${nowShowing.n}`} className="now-showing-link">
+            {nowShowing.title}
+          </Link>
+        </div>
+      ) : null}
     </aside>
   );
 }

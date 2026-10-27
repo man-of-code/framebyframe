@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
     <script>
       (function () {
         try {
@@ -9,16 +10,45 @@
           if (!dark) document.documentElement.classList.add("light");
           document.documentElement.style.colorScheme = dark ? "dark" : "light";
         } catch (e) {}
+        // A stored start date marks a returning learner: html.has-progress hides the prerendered landing until
+        // React renders the dashboard (main.tsx never hydrates / for them). The hero poster is the LCP element on
+        // the first-run landing only; returning learners and learning routes get no preload.
+        try {
+          var saved = localStorage.getItem("fbf:progress:v1");
+          var started = false;
+          if (saved) {
+            try { started = !!JSON.parse(saved).startDate; } catch (e) {}
+          }
+          if (started) document.documentElement.classList.add("has-progress");
+          if (location.pathname === "/" && !started) {
+            var l = document.createElement("link");
+            l.rel = "preload";
+            l.as = "image";
+            l.href = "/posters/hero-crt.webp";
+            l.type = "image/webp";
+            l.setAttribute("fetchpriority", "high");
+            document.head.appendChild(l);
+          }
+        } catch (e) {}
+        // The cookie banner is in the prerendered HTML; a stored choice hides it before first paint (html.has-consent)
+        // until React, once hydrated, reads the same value and removes it. Same values as readConsent.
+        try {
+          var consent = localStorage.getItem("fbf:consent");
+          if (consent === "accepted" || consent === "rejected") document.documentElement.classList.add("has-consent");
+        } catch (e) {}
       })();
     </script>
+    <style>
+      html.has-progress #root[data-prerendered="/"] { display: none; }
+      html.has-consent .cookie-banner { display: none; }
+    </style>
     <link
       rel="preload"
-      href="/fonts/archivo-expanded-latin.woff2"
+      href="/fonts/abril-fatface-latin.woff2"
       as="font"
       type="font/woff2"
       crossorigin
     />
-    <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
@@ -26,7 +56,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#07090D" />
+    <meta name="theme-color" content="#0E0B16" />
     <title>Frame by Frame</title>
   </head>
   <body>

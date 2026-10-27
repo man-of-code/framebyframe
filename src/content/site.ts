@@ -1,6 +1,7 @@
-/** Published contact. The email is the git author address. No postal address exists in this repo. */
+/** Published contact and production origin: the only place either lives. */
 export const SITE = {
   name: "Frame by Frame",
-  email: "mratyunjay.soni@gmail.com",
+  email: "manofcode98@gmail.com",
+  origin: "https://framebyframe.manofcode.fyi",
   description: "A sixteen-week path to a short film, shot on an Android phone, with free tools.",
 } as const;

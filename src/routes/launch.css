@@ -10,8 +10,9 @@
   padding: var(--space-4);
   color: var(--text-secondary);
   background: var(--bg-overlay);
-  border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
+  /* An overlay: 2px pop outline (.pop-outline on the element) plus the hard overlay shadow (design-system.md 2.6 rule 4, 6). */
+  box-shadow: var(--shadow-overlay);
 }
 
 .cookie-banner p {
@@ -22,23 +23,15 @@
 
 .cookie-banner a {
   color: var(--accent-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
+/* Pop controls sit 12px apart (design-system.md 8). */
 .cookie-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-}
-
-.page-button-quiet {
-  color: var(--text-primary);
-  background: transparent;
-  border-color: var(--border-default);
-}
-
-.page-button:disabled {
-  cursor: wait;
-  opacity: 0.6;
+  gap: var(--space-3);
 }
 
 .sticky-cta {
@@ -90,12 +83,13 @@
     bottom: calc(56px + env(safe-area-inset-bottom));
     left: 0;
     display: flex;
-    padding: var(--space-2) var(--space-4);
+    /* Room for the raised button's 3px shadow under it. */
+    padding: var(--space-3) var(--space-4) var(--space-4);
     background: var(--bg-overlay);
-    border-top: 1px solid var(--border-subtle);
+    border-top: var(--pop-border) solid var(--pop-outline);
   }
 
-  .sticky-cta .page-button {
+  .sticky-cta [data-slot="button"] {
     width: 100%;
   }
 
@@ -115,4 +109,21 @@
   .cookie-banner {
     right: var(--space-8);
   }
+}
+
+/* DecodeHeading: the box is sized by the invisible final string; the live copy is laid over it. */
+.decode-heading {
+  position: relative;
+}
+
+.decode-heading__sizer {
+  display: block;
+  visibility: hidden;
+}
+
+/* Out of flow: whatever the scrambled glyphs measure, nothing around the heading can move. */
+.decode-heading__live {
+  position: absolute;
+  inset: 0;
+  contain: strict;
 }

@@ -1,0 +1,33 @@
+/* Sheen: a light leak across the primary pop button on hover (docs/design-system.md 5.2).
+   Sweep technique lifted from MengTo/threeui@68802d5428071ada5c20db8094b1649e6bb770ed
+   src/shaders/rectangle-buttons/RectangleButtons.tsx (.threeui-page-button--trochil::before and :hover::before), MIT.
+   Only the sweep is taken; the upstream lift and blurred glow are not. */
+.sheen {
+  position: absolute;
+  inset: var(--pop-border);
+  z-index: -1;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+
+.sheen::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(105deg, transparent 17%, var(--sheen-color) 48%, transparent 76%);
+  transform: translateX(-125%); /* rest: parked outside the clip; no transition, so leaving snaps back invisibly */
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-slot="button"][data-variant="default"]:hover:not(:disabled):not([aria-disabled="true"]) .sheen::before {
+    transform: translateX(125%);
+    transition: transform 650ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+}
+
+@media (forced-colors: active) {
+  .sheen {
+    display: none;
+  }
+}

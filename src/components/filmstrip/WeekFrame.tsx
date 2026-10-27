@@ -1,6 +1,7 @@
 import { useId, type JSX } from "react";
 import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
+import { BreakableTitle } from "@/components/BreakableTitle";
 import { TOTAL_WEEKS } from "@/lib/week";
 import "./filmstrip.css";
 
@@ -14,15 +15,13 @@ export function WeekFrame(props: {
   ratio?: { done: number; total: number };
   hours?: string;
   stage?: string;
-  moduleLabel?: string;
   extension?: boolean;
   heavy?: boolean;
-  orientation: "rail" | "card";
+  orientation: "rail" | "card" | "cell";
 }): JSX.Element {
-  const { n, module, title, state, ratio, hours, stage, moduleLabel, extension, heavy, orientation } = props;
+  const { n, title, state, ratio, hours, stage, extension, heavy, orientation } = props;
   const uid = useId();
   const codeId = `${uid}-code`;
-  const moduleId = `${uid}-module`;
   const titleId = `${uid}-title`;
   const hoursId = `${uid}-hours`;
   const ratioId = `${uid}-ratio`;
@@ -31,13 +30,14 @@ export function WeekFrame(props: {
   const pad = String(n).padStart(2, "0");
   const total = String(TOTAL_WEEKS).padStart(2, "0");
   const card = orientation === "card";
-  const moduleText = moduleLabel ?? (module > 0 ? `Module ${module}` : "");
+  const cell = orientation === "cell";
+  const cellLabel =
+    cell && ratio ? `Week ${n}: ${title}, ${ratio.done} of ${ratio.total} done` : undefined;
   const labelledBy = [
     codeId,
-    card && moduleText ? moduleId : "",
     titleId,
     card && hours ? hoursId : "",
-    card && ratio ? ratioId : "",
+    ratio ? ratioId : "",
     card && stage ? stageId : "",
     heavy ? heavyId : "",
   ].filter(Boolean).join(" ");
@@ -50,40 +50,46 @@ export function WeekFrame(props: {
       data-orientation={orientation}
       data-extension={extension ? "true" : undefined}
       aria-current={state === "current" ? "step" : undefined}
-      aria-labelledby={labelledBy}
+      aria-label={cellLabel}
+      aria-labelledby={cell ? undefined : labelledBy}
     >
-      <span id={codeId} className="week-frame-code">
-        WK {pad}
-        {orientation === "card" ? ` / ${total}` : ""}
+      <span id={codeId} className="week-frame-code" aria-hidden={cell ? true : undefined}>
+        {cell ? pad : `WK ${pad}`}
+        {card ? ` / ${total}` : ""}
       </span>
-      {card && moduleText ? (
-        <span id={moduleId} className="week-frame-module">{moduleText}</span>
-      ) : null}
-      <span id={titleId} className={card ? "week-frame-title" : "filmstrip-sr"}>
-        {title}
-      </span>
+      {/* Whitespace between the parts: flex and grid drop it from layout, but it keeps the link's visible text spaced like its accessible name. */}
+      {card ? " " : null}
+      {cell ? null : (
+        <span id={titleId} className={card ? "week-frame-title" : "filmstrip-sr"}>
+          {card ? <BreakableTitle text={title} /> : title}
+        </span>
+      )}
+      {card ? " " : null}
       {card && (hours || ratio || stage) ? (
         <span className="week-frame-meta">
           {hours ? <span id={hoursId}>{hours}</span> : null}
+          {hours ? " " : null}
           {ratio ? (
             <span id={ratioId} className="week-frame-ratio">
               {ratio.done}/{ratio.total}
             </span>
           ) : null}
+          {ratio ? " " : null}
           {stage ? <span id={stageId}>{stage}</span> : null}
         </span>
       ) : null}
-      {!card && ratio ? (
-        <span className="filmstrip-sr">
+      {!card && !cell && ratio ? (
+        <span id={ratioId} className="filmstrip-sr">
           {ratio.done}/{ratio.total}
         </span>
       ) : null}
-      {heavy ? (
+      {card && heavy ? " " : null}
+      {heavy && !cell ? (
         <span id={heavyId} className="week-frame-chip">
           Heavy
         </span>
       ) : null}
-      {state === "exposed" ? <Check className="week-frame-check" aria-label="Complete" size={20} /> : null}
+      {state === "exposed" ? <Check className="week-frame-check" aria-label="Complete" size={cell ? 14 : 20} /> : null}
     </Link>
   );
 }

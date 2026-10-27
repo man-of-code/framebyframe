@@ -46,7 +46,9 @@ export function ExportImport({
             void file.text().then((text) => {
               const result = importProgress(text);
               if (!result.ok) {
-                toast.error(result.reason);
+                toast.error("That file isn't a Frame by Frame progress export.", {
+                  description: `Reason: ${result.reason}`,
+                });
               } else {
                 replace(result.progress);
                 toast.success("Progress imported");

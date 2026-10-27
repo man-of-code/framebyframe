@@ -1,12 +1,12 @@
 import type { JSX } from "react";
 import { Link } from "react-router-dom";
 import { ContactAddress } from "@/components/ContactAddress";
+import { WorkingHeader } from "@/components/PageHeader";
 
 export function Privacy(): JSX.Element {
   return (
     <article className="page prose-page">
-      <p className="eyebrow">Privacy</p>
-      <h1>Privacy policy</h1>
+      <WorkingHeader band={false} eyebrow="Privacy" title="Privacy policy" />
       <p className="page-copy">Last updated 25 October 2026.</p>
       <section className="stack">
         <h2>Progress stays on this device</h2>
