@@ -21,7 +21,7 @@ export function ResourceCard(props: { resource: Resource; minutes?: number }): J
       <BadgeRow resource={resource} />
       <p className="resource-why">{resource.why}</p>
       {resource.licenseNote ? <p className="license-note">{resource.licenseNote}</p> : null}
-      <p className="mono">Verified {resource.verified}</p>
+      <p className="mono">Last checked {resource.verified}</p>
       {minutes !== undefined ? <p className="mono">{minutes} min</p> : null}
     </article>
   );

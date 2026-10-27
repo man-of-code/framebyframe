@@ -47,7 +47,7 @@ export function Library(): JSX.Element {
   return (
     <article className="library">
       <WorkingHeader
-        eyebrow="Verified resources"
+        eyebrow="Resources"
         title="Library"
         note="Search by title or topic, or filter by type, level, cost and status."
       />
@@ -68,7 +68,7 @@ export function Library(): JSX.Element {
           type="search"
           className="library-search"
           aria-label="Search the library"
-          placeholder="Search title, why, topics"
+          placeholder="Search by title or topic"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
@@ -122,7 +122,7 @@ export function Library(): JSX.Element {
       <div className="hud-frame library-count-frame">
         <p className="hud-readout library-count" role="status" aria-live="polite">
           {gapEmpty ? (
-            "No verified resources in this language"
+            "No resources in this language yet"
           ) : (
             <>
               <strong>{results.length}</strong> {results.length === 1 ? "result" : "results"}

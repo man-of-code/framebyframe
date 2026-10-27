@@ -6,12 +6,12 @@ test("a start date, a ticked task, and a library filter survive reload", async (
   await page.getByRole("button", { name: "Set start date" }).click();
   await expect(page).toHaveURL(/\/week\/1$/);
 
-  const task = page.getByRole("checkbox", { name: "Lessons from the Screenplay (2–3 videos)" });
+  const task = page.getByRole("checkbox", { name: "2–3 videos from Lessons from the Screenplay" });
   await task.click();
   await expect(task).toBeChecked();
   await page.waitForTimeout(400);
   await page.reload();
-  await expect(page.getByRole("checkbox", { name: "Lessons from the Screenplay (2–3 videos)" })).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: "2–3 videos from Lessons from the Screenplay" })).toBeChecked();
 
   await page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Library" }).click();
   await expect(page).toHaveURL(/\/library$/);

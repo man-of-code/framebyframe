@@ -111,7 +111,7 @@ describe("Library", () => {
     renderLibrary();
     await openMore();
     await userEvent.click(screen.getByRole("button", { name: "Tamil" }));
-    expect(screen.getByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /could not find good filmmaking channels in hindi, tamil/i })).toBeTruthy();
     expect(screen.getByText("Help wanted")).toBeTruthy();
     expect(screen.getByRole("status").textContent).not.toContain("0 results");
     expect(screen.getByTestId("url").textContent).toContain("language=ta");
@@ -123,13 +123,13 @@ describe("Library", () => {
     await userEvent.click(screen.getByRole("button", { name: "Hindi" }));
     expect(screen.getByRole("link", { name: /Cursa/i })).toBeTruthy();
     expect(screen.getByRole("status").textContent).toBe("1 result");
-    expect(screen.queryByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeNull();
+    expect(screen.queryByRole("heading", { name: /could not find good filmmaking channels in hindi, tamil/i })).toBeNull();
   });
 
   it("restores a Tamil link as the gap card", () => {
     renderLibrary("/library?language=ta");
     expect(screen.getByRole("button", { name: "Tamil" }).getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /could not find good filmmaking channels in hindi, tamil/i })).toBeTruthy();
     expect(screen.getByRole("status").textContent).not.toContain("0 results");
   });
 
@@ -194,7 +194,7 @@ describe("Library", () => {
     renderLibrary();
     await userEvent.type(screen.getByRole("searchbox", { name: "Search the library" }), "zzzz-no-such-resource");
     expect(screen.getByRole("status").textContent).toBe("0 results");
-    expect(screen.queryByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeNull();
+    expect(screen.queryByRole("heading", { name: /could not find good filmmaking channels in hindi, tamil/i })).toBeNull();
   });
 
   it("keeps facets in a sheet below 1024px and badges the applied count", async () => {
@@ -210,6 +210,6 @@ describe("Library", () => {
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("button", { name: /filters/i })));
     expect(screen.getByRole("button", { name: /filters/i }).textContent).toContain("1");
-    expect(screen.getByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /could not find good filmmaking channels in hindi, tamil/i })).toBeTruthy();
   });
 });

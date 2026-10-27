@@ -32,7 +32,7 @@ describe("Plan", () => {
 
     const buffer = screen.getByRole("region", { name: "Buffer" });
     expect(within(buffer).getAllByRole("link")).toHaveLength(4);
-    expect(within(buffer).getByText(/no mentors, no supplied footage, and thin brochure coverage in sound and VFX/i)).toBeTruthy();
+    expect(within(buffer).getByText(/no mentors or supplied footage, and sound and effects have fewer ready-made exercises/i)).toBeTruthy();
     expect(buffer.compareDocumentPosition(writing) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
   });
 

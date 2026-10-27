@@ -36,9 +36,9 @@ export function Contact(): JSX.Element {
 
   return (
     <article className="page prose-page">
-      <WorkingHeader band={false} eyebrow="Contact" title="Write to the project" />
+      <WorkingHeader band={false} eyebrow="Contact" title="Get in touch" />
       <p className="page-copy">
-        The note opens in your mail app, addressed to the maintainer. This site has no server, so it does not store or deliver the message itself.
+        Your note opens in your email app, addressed to us. This site has nowhere to keep messages, so it does not store or send anything itself. You send it from your email app.
       </p>
       <ContactAddress />
       <form className="stack" onSubmit={submit} noValidate>

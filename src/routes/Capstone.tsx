@@ -14,7 +14,7 @@ const CeremonyBadge = lazy(() => loadCeremony().then((mod) => ({ default: mod.Ce
 function ceremonyFailed() {
   // sonner is already loaded by the deferred chrome; importing it here keeps it out of this route's static graph.
   void import("sonner").then(({ toast }) => {
-    toast.error("The capstone ceremony could not load. Reload the page to see it.");
+    toast.error("The celebration could not load. Reload the page to see it.");
   });
 }
 
@@ -30,7 +30,7 @@ export function Capstone(): JSX.Element {
           <PlaybillHeader
             eyebrow="Capstone"
             title="Eight stages"
-            note="Premise through submissions. Each stage lists the weeks it covers and the done-when checks from those weeks."
+            note="Your capstone is the short film you are building, from first idea to festival submissions. Each stage shows the weeks it covers and the checklist items from those weeks."
           />
           <StageList
             stages={stages}

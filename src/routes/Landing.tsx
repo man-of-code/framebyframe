@@ -138,7 +138,7 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
 
       <section className="stack" aria-labelledby="cost-heading">
         <h2 id="cost-heading">What this costs</h2>
-        <p className="page-copy">₹0 for the curriculum and the free-path tools.</p>
+        <p className="page-copy">₹0 for the course and the free tools.</p>
         <ul className="plain-list">
           <li>Script registration is extra.</li>
           <li>Festival fees are extra.</li>
@@ -149,9 +149,9 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
       <section className="stack" aria-labelledby="missing-heading">
         <h2 id="missing-heading">What's missing</h2>
         <p className="page-copy">
-          <BreakableTitle text={gap?.missing ?? "No verified Indian-language filmmaking-craft channels."} />
+          <BreakableTitle text={gap?.missing ?? "We could not find good filmmaking channels in Indian languages."} />
         </p>
-        <Link className="text-link" to="/about">Read the gap</Link>
+        <Link className="text-link" to="/about">See what else is missing</Link>
       </section>
 
       <form id="start-date" className="stack" onSubmit={start} noValidate>

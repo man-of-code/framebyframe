@@ -10,7 +10,7 @@ import { toRoman } from "@/lib/title";
 import type { ShellOutletContext } from "@/routes/Root";
 
 const BUFFER_REASON =
-  "No mentors, no supplied footage, and thin brochure coverage in sound and VFX.";
+  "Spare time to catch up. There are no mentors or supplied footage, and sound and effects have fewer ready-made exercises.";
 
 export function Plan() {
   const { progress } = useOutletContext<ShellOutletContext>();
@@ -21,7 +21,7 @@ export function Plan() {
       <PlaybillHeader
         eyebrow="16 weeks"
         title="The plan"
-        note="Twelve core weeks in seven modules, then a four-week buffer."
+        note="Twelve main weeks in seven modules, then four spare weeks to catch up."
       />
       <div className="plan-rail">
         <FilmstripRail orientation="horizontal" compact progress={progress} />

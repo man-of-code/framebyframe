@@ -7,7 +7,7 @@ export function NotFound(): JSX.Element {
   return (
     <Intermission eyebrow="Missing reel" title="Page not found">
       <p className="page-copy">
-        That address is not one of the sixteen weeks, and it is not in the library.
+        We could not find that page. It is not one of the sixteen weeks, and it is not in the library.
       </p>
       <div className="control-row">
         <Button asChild>

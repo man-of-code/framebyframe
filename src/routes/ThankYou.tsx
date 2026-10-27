@@ -8,7 +8,7 @@ export function ThankYou(): JSX.Element {
   return (
     <Intermission eyebrow="Thank you" title="Your note is ready to send">
       <p className="page-copy">
-        If a mail app opened, the note is waiting there for you to send. Frame by Frame did not receive a copy, and it did not store one.
+        If your email app opened, your note is waiting there for you to send. We have not received it yet, and this site did not keep a copy.
       </p>
       <ContactAddress />
       <div className="control-row">

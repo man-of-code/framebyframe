@@ -73,13 +73,13 @@ for (const theme of ["dark", "light"] as const) {
 
           if (storage === "seeded") {
             if (path === "/week/1") {
-              await expect(page.getByRole("checkbox", { name: "Lessons from the Screenplay (2–3 videos)" })).toBeChecked();
+              await expect(page.getByRole("checkbox", { name: "2–3 videos from Lessons from the Screenplay" })).toBeChecked();
             }
             if (path === "/week/7") {
               await expect(
-                page.getByRole("checkbox", { name: "Every planned shot has a locked frame rate/shutter/exposure noted" }),
+                page.getByRole("checkbox", { name: "You have written down the frame rate, shutter and exposure settings for every planned shot" }),
               ).toBeChecked();
-              await expect(page.getByRole("checkbox", { name: "day 1 footage backed up in two places same night" })).not.toBeChecked();
+              await expect(page.getByRole("checkbox", { name: "Day 1 footage is backed up in two places the same night" })).not.toBeChecked();
             }
           }
           if (path === "/library") {
@@ -201,7 +201,7 @@ test("a query-string library link is client-rendered with its filter applied", a
   page.on("console", (message) => messages.push(message.text()));
   await page.goto("/library?language=ta", { waitUntil: "networkidle" });
   expect(await page.locator("#root").getAttribute("data-prerendered")).toBeNull();
-  await expect(page.getByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /could not find good filmmaking channels in hindi, tamil/i })).toBeVisible();
   expect(messages.filter((text) => HYDRATION_NOISE.test(text))).toEqual([]);
 });
 

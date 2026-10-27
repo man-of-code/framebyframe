@@ -134,7 +134,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Free screenwriting app. GPL-2.0.",
+    why: "Free, open-source screenwriting app.",
     verified,
   },
   {
@@ -147,7 +147,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Fountain in VS Code, a natural fit for a software engineer. MIT license. The ledger rates it beginner-to-intermediate.",
+    why: "Lets you write screenplays inside the free VS Code editor. Free and open source. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -239,7 +239,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "paid",
     language: "en",
-    why: "$25 for 10 years. Benchmark registration only — an India-based creator should use the SWA route in Module 7.",
+    why: "$25 for 10 years. Shown for comparison only. If you are based in India, use the SWA route in Module 7.",
     verified,
     benchmarkOnly: true,
   },
@@ -468,7 +468,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "Public-place permission, sensitive-area rules, and the FFO single-window system. This is the formal commercial-production system: practical norms, not verified law for a casual phone shoot.",
+    why: "Rules for filming in public places and sensitive areas, and the government's single-window permit system. That system is built for professional productions, so it goes further than a casual phone shoot needs. Treat it as a guide, not legal advice.",
     verified,
   },
   {
@@ -507,7 +507,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Best-fit Indian microgrant found: a ₹7 lakh grant plus a workshop, and the application itself is a phone-shot 2-minute film. Check taketen.in for a currently open 2026 cycle. The verified details are from the 2022 cycle.",
+    why: "A good-fit Indian micro-grant: ₹7 lakh plus a workshop, and the application itself is a 2-minute film shot on a phone. Check taketen.in to see whether applications are open this year. These details are from the 2022 round.",
     verified,
   },
   {
@@ -615,7 +615,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Full manual exposure, focus, white balance, and shutter, plus a log workflow. Official Android app since June 2024. The ledger rates it beginner-to-intermediate.",
+    why: "Full manual control of exposure, focus, white balance and shutter, plus a flat \"log\" recording mode that gives you more room when you color the footage later. Official Android app since June 2024. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -628,7 +628,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Long-standing free manual-control Android camera app. GPL.",
+    why: "A long-standing free Android camera app with manual controls.",
     verified,
   },
   {
@@ -641,7 +641,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "freemium",
     language: "en",
-    why: "Search term: mcpro24fps. Dedicated manual video app with a built-in 180° shutter calculator. The ledger gives the name, not an article path, so this is the site root.",
+    why: "A video app with full manual controls and a built-in shutter calculator. The link goes to the site's front page, so search for: mcpro24fps.",
     verified,
   },
   {
@@ -654,7 +654,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "How to lock exposure and focus on Android. Search AddictiveTips for: Google Camera AE AF lock. The ledger points at the site root.",
+    why: "How to lock exposure and focus on an Android phone. The link goes to the site's front page, so search for: Google Camera AE AF lock.",
     verified,
   },
   {
@@ -693,7 +693,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "The article is free. Search Digital Camera World for: clip-on lens roundup. Apexel universal-mount kits are confirmed on most Android phones; the lenses themselves run about $15–80. The ledger points at the site root.",
+    why: "The article is free. Apexel clip-on kits fit most Android phones, and the lenses cost about $15–80. The link goes to the site's front page, so search for: clip-on lens roundup.",
     verified,
   },
   {
@@ -706,7 +706,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Key, fill, and back, plus high-key versus low-key. Search No Film School for: three-point lighting technique. The ledger points at the site root.",
+    why: "The three lights behind most film looks, plus bright versus moody setups. The link goes to the site's front page, so search for: three-point lighting technique.",
     verified,
   },
   {
@@ -719,7 +719,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Low-key look for a thriller. The ledger labels this iFilmThings and points at the No Film School root as a search term, with no article path.",
+    why: "How to light a scene in a dark, moody style, which suits a thriller. The link goes to the No Film School front page, so search for: low-key lighting.",
     verified,
   },
   {
@@ -732,7 +732,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "A near-zero-cost stabilizer. Search No Film School for the DIY smartphone gimbal piece. The ledger points at the site root.",
+    why: "A homemade phone stabilizer that costs almost nothing. The link goes to the site's front page, so search for: DIY smartphone gimbal.",
     verified,
   },
   {
@@ -745,7 +745,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Verified Android-shot Indian short by Bishal Swargiary (Assam), filmed on a Redmi Note 7 Pro. The ledger names the film and gives no watch URL, so this links a review that confirms the phone.",
+    why: "An Indian short film by Bishal Swargiary (Assam), shot on a Redmi Note 7 Pro Android phone. The link goes to a review of the film.",
     verified,
   },
   {
@@ -758,7 +758,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "paid",
     language: "en",
-    why: "Background reading on Soderbergh's 2018 phone-shot thriller, the closest tonal match to the capstone. Paid to watch, and shot on an iPhone, not Android. The ledger gives no watch URL.",
+    why: "Background reading on Soderbergh's 2018 thriller, shot entirely on a phone, and the closest in mood to your short film. It costs money to watch and was shot on an iPhone, not an Android.",
     verified,
   },
   {
@@ -771,7 +771,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Phone-filmmaking community. Verified via a mirror; Reddit itself was unfetchable. Read the subreddit's rules before posting.",
+    why: "Phone-filmmaking community. Read the subreddit's rules before posting.",
     verified,
   },
   {
@@ -784,7 +784,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "General cinematography community. Verified via a mirror; Reddit itself was unfetchable. Read the subreddit's rules before posting.",
+    why: "General cinematography community. Read the subreddit's rules before posting.",
     verified,
   },
   {
@@ -810,7 +810,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Cinematography fundamentals. The ledger rates the channel beginner-to-intermediate.",
+    why: "Cinematography fundamentals. Suits beginner to intermediate learners.",
     verified,
   },
   // Named in the Module 4 gap note, not as its own row. The plan requires it.
@@ -824,7 +824,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "paid",
     language: "en",
-    why: "Paid reference library of film stills, with a 2-week trial. Benchmark only, not on the free path. The ledger names it and gives no URL, so this is the product site.",
+    why: "A paid library of film stills to study, with a 2-week trial. It is just a nice-to-have and is not part of the free path.",
     verified,
     benchmarkOnly: true,
   },
@@ -853,7 +853,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Editing-specific suspense tools, including Hitchcock and The Ring. The ledger rates it beginner-to-intermediate.",
+    why: "Editing-specific suspense tools, including Hitchcock and The Ring. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -892,7 +892,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "Folder structure and a ProRes 422 LT proxy export.",
+    why: "How to organize your folders and make lightweight copies of your footage so editing runs smoothly on a laptop.",
     verified,
   },
   {
@@ -905,7 +905,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Color-arc planning, with a free downloadable planner. The ledger rates it beginner-to-intermediate.",
+    why: "Color-arc planning, with a free downloadable planner. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -918,7 +918,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "The one LUT pack with a confirmed open license — lead with this. Free, CC BY 4.0, and commercial use is permitted. The ledger rates it beginner-to-intermediate.",
+    why: "Ready-made color looks for your film. It is the only pack we found with a clearly open license, so start here. Free to use, even commercially, as long as you credit the makers. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -944,7 +944,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Backup free NLE. GPL-3.0. The ledger rates it beginner-to-intermediate.",
+    why: "A free backup video editor. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -957,7 +957,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Backup free NLE. GPLv3.",
+    why: "A free backup video editor. Free and open source.",
     verified,
   },
   {
@@ -970,7 +970,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Certified Resolve trainer. The ledger rates the channel beginner-to-intermediate.",
+    why: "Certified Resolve trainer. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -1022,7 +1022,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Primary Resolve troubleshooting community, about 236k members. Verified via a mirror; Reddit itself was unfetchable. Read the subreddit's rules before posting. The ledger rates it beginner-to-intermediate.",
+    why: "Primary Resolve troubleshooting community, about 236k members. Read the subreddit's rules before posting. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -1048,7 +1048,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Concrete DIY Foley technique, with household substitutions. The ledger rates it beginner-to-intermediate.",
+    why: "Concrete DIY Foley technique, with household substitutions. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -1061,7 +1061,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Official two-step noise-cleanup workflow. GPL.",
+    why: "The official two-step guide to cleaning background noise out of dialogue.",
     verified,
   },
   {
@@ -1074,7 +1074,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "Full DAW for ambience and Foley mixing. GPL-2.0 or later.",
+    why: "A full free sound-mixing app for background sound and Foley. Free and open source.",
     verified,
   },
   {
@@ -1100,7 +1100,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "YouTube is about -14 LUFS and EBU R128 is -23 LUFS. No universal festival LUFS target exists — check each festival.",
+    why: "Loudness targets. YouTube plays at about -14 LUFS (a loudness measure) and broadcast TV uses -23 LUFS. There is no single target for festivals, so check each one.",
     verified,
   },
   {
@@ -1113,7 +1113,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Largest community SFX library. Licensing is per-file (CC0, CC-BY, CC-BY-NC, or Sampling+) — check each file.",
+    why: "The largest community library of sound effects. Each sound has its own license, so check it before you use it, and credit the maker if asked.",
     verified,
   },
   {
@@ -1126,7 +1126,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Broad audio library. The pre/post-2019 split applies: pre-2019 uploads are CC0, and post-2019 uploads use Pixabay's own royalty-free license. No attribution is required either way, and resale is not allowed.",
+    why: "A broad library of sounds and music. Anything uploaded before 2019 is free for anyone to use, and newer uploads fall under Pixabay's own free license. You never have to credit anyone, but you can't resell the sounds themselves.",
     verified,
   },
   {
@@ -1152,7 +1152,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Large mood- and genre-organized score catalog. Free under CC-BY, or $30 to waive attribution.",
+    why: "Large mood- and genre-organized score catalog. Free if you credit the composer, or $30 if you would rather not credit them.",
     verified,
   },
   {
@@ -1178,7 +1178,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Game and film sound-design tutorials. The ledger rates the channel beginner-to-intermediate.",
+    why: "Game and film sound-design tutorials. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -1191,7 +1191,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "Deconstructs real film sound from stems. The ledger rates the channel intermediate-to-advanced.",
+    why: "Deconstructs real film sound from stems. Suits intermediate to advanced learners.",
     verified,
   },
 
@@ -1232,7 +1232,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "3D, VFX, compositing, and tracking. GPL.",
+    why: "Free software for 3D, visual effects and motion tracking.",
     verified,
   },
   {
@@ -1245,7 +1245,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "Node compositor, and a Fusion-free backup. GPL.",
+    why: "Free effects software, and a backup if you skip DaVinci Resolve's built-in Fusion.",
     verified,
   },
   {
@@ -1323,7 +1323,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "A compositor-based glitch effect. The ledger rates it beginner-to-intermediate.",
+    why: "A tutorial for a glitch effect. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -1336,7 +1336,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "HDRIs, textures, and models for compositing. Free and CC0, confirmed via the official FAQ.",
+    why: "Free lighting images, textures and 3D models for adding effects to your shots. No credit needed.",
     verified,
   },
   {
@@ -1362,7 +1362,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Foundational Blender teaching, still active. The ledger rates it beginner-to-intermediate.",
+    why: "Foundational Blender teaching, still active. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -1375,7 +1375,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "Fast live-action-to-CG integration tricks. The tutorials are free on YouTube; the ledger's verified link is the Patreon page. The ledger rates it intermediate-to-advanced.",
+    why: "Fast live-action-to-CG integration tricks. The tutorials are free on YouTube; the link goes to his Patreon page. Suits intermediate to advanced learners.",
     verified,
   },
   {
@@ -1388,7 +1388,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "Achievable VFX on an indie budget. The ledger links this Wikipedia page rather than a channel URL. The ledger rates it intermediate-to-advanced.",
+    why: "Achievable VFX on an indie budget. The link goes to a Wikipedia page about the Corridor Crew channel. Suits intermediate to advanced learners.",
     verified,
   },
   {
@@ -1401,7 +1401,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "Case studies of solo and small-team Blender sci-fi VFX. Search BlenderNation for Rise, SkyCity, and The Letter. The ledger gives no article path, so this is the site root.",
+    why: "Case studies of sci-fi effects made by solo artists and small teams in Blender. The link goes to the site's front page, so search for: Rise, SkyCity, and The Letter.",
     verified,
   },
   {
@@ -1482,7 +1482,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "EPK components, plus a free downloadable template. The template requires an email.",
+    why: "What goes into a press kit (a short package of material about your film for festivals and the press), plus a free template. The template asks for your email address.",
     verified,
     emailGated: true,
   },
@@ -1548,7 +1548,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "paid",
     language: "en",
-    why: "State-run festival with a dedicated Short Fiction competition. The fee is described as likely nominal and is unconfirmed.",
+    why: "A state-run festival with a Short Fiction competition. The fee is probably small, but we could not confirm it.",
     verified,
   },
   {
@@ -1561,7 +1561,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "paid",
     language: "en",
-    why: "Major South Indian festival, FIAPF-accredited. The fee is unconfirmed on the about page, and the submission page itself was not verified.",
+    why: "A major South Indian festival that is recognized internationally. We could not confirm the entry fee, so check the festival's own site.",
     verified,
   },
   {
@@ -1629,7 +1629,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "paid",
     language: "en",
-    why: "Low-stakes sci-fi practice before the capstone. The entry fee is unconfirmed — check the current challenge page before entering.",
+    why: "A low-pressure sci-fi challenge to practice on before your short film. We could not confirm the entry fee, so check the current challenge page before entering.",
     verified,
   },
   {
@@ -1682,7 +1682,7 @@ export const resources: Resource[] = [
     level: "intermediate",
     cost: "free",
     language: "en",
-    why: "Indian equivalent of WGA East script registration. The article is free to read. SWA membership is about ₹7,500 plus a per-title fee the ledger could not confirm — verify the current fee at swaindia.org and copyright.gov.in.",
+    why: "The Indian way to register your script, like WGA East in the US. The article is free to read. SWA membership is about ₹7,500, plus a fee per title that we could not confirm, so check the current fee at swaindia.org and copyright.gov.in.",
     verified,
   },
 
@@ -1697,7 +1697,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "General filmmaking feedback community. Verified via a mirror; Reddit itself was unfetchable. Read the subreddit's rules before posting.",
+    why: "General filmmaking feedback community. Read the subreddit's rules before posting.",
     verified,
   },
   {
@@ -1710,7 +1710,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Indie filmmaking feedback community. Verified via a mirror; Reddit itself was unfetchable. Read the subreddit's rules before posting.",
+    why: "Indie filmmaking feedback community. Read the subreddit's rules before posting.",
     verified,
   },
   {
@@ -1723,7 +1723,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Filmmaker support community. Verified via a mirror; Reddit itself was unfetchable. Read the subreddit's rules before posting.",
+    why: "Filmmaker support community. Read the subreddit's rules before posting.",
     verified,
   },
   {
@@ -1736,7 +1736,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Blender community. Verified via a mirror; Reddit itself was unfetchable. Read the subreddit's rules before posting.",
+    why: "Blender community. Read the subreddit's rules before posting.",
     verified,
   },
   {
@@ -1749,7 +1749,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Sound-design community. Verified via a mirror; Reddit itself was unfetchable. Read the subreddit's rules before posting.",
+    why: "Sound-design community. Read the subreddit's rules before posting.",
     verified,
   },
   {
@@ -1775,7 +1775,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Analysis-focused, and it builds critical-viewing skill. Free and CC-licensed. The ledger rates it beginner-to-intermediate.",
+    why: "Analysis-focused, and it builds critical-viewing skill. Free and CC-licensed. Suits beginner to intermediate learners.",
     verified,
   },
   {
@@ -1827,7 +1827,7 @@ export const resources: Resource[] = [
     level: "beginner",
     cost: "free",
     language: "en",
-    why: "Telugu short by Deepak Reddy, self-taught from YouTube, that reached Oscar-qualifying festivals. A motivational case study. The ledger gives no watch URL, so this is a reference page.",
+    why: "A Telugu short film by Deepak Reddy, who taught himself filmmaking from YouTube, and which reached Oscar-qualifying festivals. A motivating example. The link goes to an information page about the film.",
     verified,
   },
 ];

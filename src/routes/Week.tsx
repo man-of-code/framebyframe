@@ -18,7 +18,7 @@ import { formatHours, weekMinutes } from "@/lib/week";
 import type { Gap, Resource, Task } from "@/lib/types";
 
 const SELF_REVIEW = [
-  "Did I hit this week's done-when checks?",
+  "Did I tick off this week's checklist?",
   "What's the one thing I'd redo if I had another day?",
   "Post one update (even a single sentence + a frame grab) to this week's named community.",
 ];

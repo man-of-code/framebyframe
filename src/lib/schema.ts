@@ -69,7 +69,6 @@ export const weekSchema = z.object({
   tasks: z.array(taskSchema),
   assignment: z.object({
     id: z.string(),
-    brochureNo: z.number().optional(),
     text: z.string(),
     checks: z.array(z.string()),
   }),

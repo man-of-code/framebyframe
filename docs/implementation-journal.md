@@ -2446,3 +2446,31 @@ Append below this line.
 #### Left open
 
 - Unchanged from R6.1. Critical-CSS inlining is the remaining LCP lever, against a target (not a bar) under `docs/prd.md`. Real Vercel serving and the service worker are still untested on a deploy.
+
+### Content: remove the LevelUp brochure references and write in plain language
+
+- **Status:** complete, on branch `content/plain-language-no-levelup` (not merged)
+- **When:** 2026-10-27
+- **Plan reference:** owner request (no plan task)
+
+#### Shipped
+
+- The LevelUp brochure is no longer named anywhere on the site, in the page descriptions, or in the code. The About and Terms credits are gone, the "Brochure A1" label on assignment cards is gone, and the `brochureNo` field is removed from the types, the schema and the week data. The "A1…A17" assignment numbers are removed from the week text too, because they match the brochure's numbering.
+- The About page is now a plain page for learners: what the site is, what to check before using music or footage, the places where we could not find good resources, the progress file, and contact. The method, trust, open-items and legal-research text is removed.
+- Process wording is removed from the site: "ledger", "research passes", "verified via a mirror", "the ledger gives no URL" and similar. The resource card label "Verified <date>" is now "Last checked <date>".
+- Week titles, tasks and done-when checks, the gaps, the toolkit notes and the resource blurbs are rewritten in plain language. Licence names (GPL, CC BY) and trade terms (NLE, DAW, LUT, EPK) are replaced or explained. The number and order of the checks in each week are unchanged, so saved progress keeps working.
+
+#### Decisions
+
+- **Decision:** the week titles and assignments were reworded, not just stripped of the brochure label.
+  - **Because:** the previous titles followed the brochure's wording, and plain wording was the other half of the request.
+  - **Risk:** the module order and the shape of the assignments still come from the brochure. This is a content question for the owner, not something wording can settle.
+  - **Deviation:** no
+
+#### Left open
+
+- `docs/` (the PRD, design system, plan and this journal) and the root file `Frame by Frame Research Ledger, Curriculum and PRD.md` still mention LevelUp. The repository is public, so those files and the git history are visible. The owner decides whether to remove them.
+
+#### Verified
+
+- validate, `tsc -b`, 261 unit tests, build (entry 131.2 KB), `npm run e2e` and `npm run e2e:preview` (236) all pass. A search of `dist/`, `src/`, `public/`, `e2e*/` and config for "level up", "brochure" and "BFP" finds nothing.

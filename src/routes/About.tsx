@@ -9,24 +9,14 @@ import { gaps as allGaps } from "@/content/gaps";
 import { WithProgress } from "@/hooks/ProgressProvider";
 import "./pages.css";
 
-const LEGAL = [
-  "Module order and week titles follow the LevelUp BFP brochure. Topic wording, assignments, and resources were written fresh. Credit the brochure as inspiration. LevelUp's own terms were not retrieved — the brochure page is JavaScript-rendered and screenshots were the source — and have to be checked before a public launch.",
-  "Link only to scripts the writer or the studio published. Script Slug, IMSDb, and similar gray-area reposts stay off the core path.",
-  "Every music and sound library carries its license caveat on the resource card. The BBC Sound Effects Archive is non-commercial, and it is not usable if the film is monetized.",
-  "Lead with the CC BY 4.0 CGChannel/Q-DDL LUT pack. Any other pack needs a check of the vendor's license before redistribution.",
-  "DaVinci Resolve's free edition lacks hardware-accelerated HEVC decode and several ResolveFX. The toolkit states that limit on the Resolve row.",
-  "ArtCraft is experimental, early-alpha, AI-generated software. It is not a dependable production tool. GIMP, Krita, and Inkscape are the reliable default.",
-  "Release templates are generic. They are not legal advice. Actors and locations sign a release before the shoot. Two of the three verified free templates are email-gated.",
-  "WGA East script registration is $25 for 10 years. The Indian SWA route is about ₹7,500 for membership, plus a per-title fee that is still unconfirmed. Leave that fee unconfirmed until a direct check at swaindia.org.",
-  "Paid items are benchmarks only. TakeTen's grant has to be re-checked for a live 2026 cycle before this site tells anyone to apply now.",
-];
-
-const OPEN_ITEMS = [
-  "LevelUp's own terms of use for the brochure credit",
-  "Current India copyright and SWA registration fees",
-  "Mixkit and YouTube Audio Library license text",
-  "getartcraft.com's actual license",
-  "Whether TakeTen has an open 2026 cycle",
+const LICENSING = [
+  "Free to watch does not mean free to use. Music, sound effects, footage and templates each come with their own rules. Check the license on every one before it goes into your film.",
+  "The BBC Sound Effects Archive is for non-commercial use only. Do not use it if you plan to earn money from your film.",
+  "For color presets, start with the free CGChannel/Q-DDL pack. For any other pack, check the maker's license before you share your film.",
+  "DaVinci Resolve's free edition cannot decode some phone video formats quickly, and it leaves out a few effects. The Toolkit page lists what to expect.",
+  "ArtCraft is a very early, experimental tool and is not dependable. GIMP, Krita and Inkscape are the reliable choices for posters and titles.",
+  "The release forms we link to are generic templates and are not legal advice. Have your actors and location owners sign one before you shoot.",
+  "Fees change. Always check the current price at the registration or festival site before you pay or apply.",
 ];
 
 export function About(): JSX.Element {
@@ -36,46 +26,25 @@ export function About(): JSX.Element {
     <article className="page prose-centered ruled-sections">
       <PlaybillHeader
         eyebrow="About"
-        title="How this was made"
-        heading={<DecodeHeading text="How this was made" />}
+        title="About Frame by Frame"
+        heading={<DecodeHeading text="About Frame by Frame" />}
       />
 
-      <section className="stack" aria-labelledby="method-heading">
-        <h2 id="method-heading">Method</h2>
+      <section className="stack" aria-labelledby="what-heading">
+        <h2 id="what-heading">What this is</h2>
         <p className="page-copy">
-          Resources were gathered in research passes, deduped, and dropped from the core path when they could not be verified. A missing resource stays visible as a gap. Nothing here was filled in to make a section look complete.
+          Frame by Frame is a free, sixteen-week path to making your first short film on an Android phone, using only free tools. Each week tells you what to watch, what to read and what to make, and the library collects free videos, articles and tools to help.
         </p>
-      </section>
-
-      <section className="stack" aria-labelledby="trust-heading">
-        <h2 id="trust-heading">Trust</h2>
         <p className="page-copy">
-          Verified means the page was fetched, or only seen in search results. Seen is the weaker of the two: the result was visible, and the page was not opened. A seen source is a lead, not a page this project read.
-        </p>
-      </section>
-
-      <section className="stack" aria-labelledby="credit-heading">
-        <h2 id="credit-heading">LevelUp brochure</h2>
-        <p className="page-copy">
-          Module order and week titles are inspired by the LevelUp BFP brochure. The topic wording, assignments, and resources on this site were written separately. This is not LevelUp's course, and it does not include their paid lessons.
+          Every resource shows what it costs and when we last checked it. Where we could not find something good, we say so below rather than guess.
         </p>
       </section>
 
       <section className="stack" aria-labelledby="legal-heading">
-        <h2 id="legal-heading">Legal and licensing</h2>
+        <h2 id="legal-heading">Before you use anything in your film</h2>
         <ul className="plain-list">
-          {LEGAL.map((note) => (
+          {LICENSING.map((note) => (
             <li key={note}>{note}</li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="stack" aria-labelledby="open-heading">
-        <h2 id="open-heading">Open items</h2>
-        <p className="page-copy">These still need a direct human check before a public launch.</p>
-        <ul className="plain-list">
-          {OPEN_ITEMS.map((item) => (
-            <li key={item}>{item}</li>
           ))}
         </ul>
       </section>
