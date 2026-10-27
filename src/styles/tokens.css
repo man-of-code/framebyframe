@@ -212,6 +212,7 @@
   --ornament: #8F7F66;
   --grain-opacity: 0;
   --grain-film-opacity: 0;
+  --aurora-strength: 0.14;
   --sheen-color: color-mix(in srgb, var(--bg-overlay) 50%, transparent);
   --scrim: rgba(27,20,36,0.40);
 }

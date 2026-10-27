@@ -52,7 +52,6 @@ export function ModuleGroup(props: {
               <WeekFrame
                 n={week.n}
                 module={week.module}
-                moduleLabel={week.module === 0 ? "Buffer" : undefined}
                 title={week.title}
                 state={frameState(week.n, current, ratio.complete)}
                 ratio={ratio}

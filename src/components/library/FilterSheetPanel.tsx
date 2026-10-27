@@ -34,7 +34,7 @@ export function FilterSheetPanel(props: {
           <SheetTitle>Filters</SheetTitle>
           <SheetDescription>Type, topic, week, level, cost, language, and status.</SheetDescription>
         </SheetHeader>
-        <FilterChips facets={facets} options={options} onToggle={onToggle} />
+        <FilterChips flat facets={facets} options={options} onToggle={onToggle} />
       </SheetContent>
     </Sheet>
   );

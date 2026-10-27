@@ -1,12 +1,31 @@
-/* Learning-route headers (design-system.md 3.3, 5.4, 6). Static aurora bands; the band is the header only.
-   Only --text-primary and --text-secondary sit directly on a band. */
+/* Learning-route headers (design-system.md 3.3, 5.4, 6). Static aurora bands that span --container-app on every
+   route; prose routes centre the title block or frame inside the band. Only --text-primary and --text-secondary
+   sit directly on a band. */
 .page-band {
-  padding: var(--space-6) var(--space-4);
   min-width: 0;
   max-width: 100%;
 }
 
-.page-band--working {
+/* Carries the band padding, and the faint HUD grid in light mode (grain and aurora own the band's own pseudo-elements). */
+.band-inner {
+  padding: var(--space-4);
+  min-width: 0;
+}
+
+.band-inner.hud-grid::before {
+  display: none;
+}
+
+.light .band-inner.hud-grid::before {
+  display: block;
+}
+
+.band-inner > * {
+  position: relative;
+  z-index: 1;
+}
+
+.page-band--working .band-inner {
   padding-block: var(--space-5);
 }
 
@@ -51,19 +70,34 @@
   flex-direction: column;
   gap: var(--space-4);
   min-width: 0;
-  padding: var(--space-6) var(--space-4);
+  max-width: var(--container-prose);
+  margin-inline: auto;
+  padding: var(--space-4);
+}
+
+/* A prose route keeps the band at full width and centres its reading column. */
+.page.prose-centered,
+.week-page.prose-centered {
+  max-width: var(--container-app);
+}
+
+.prose-centered > :not(.page-band) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--container-prose);
+  margin-inline: auto;
 }
 
 @media (min-width: 640px) {
-  .page-band {
+  .band-inner {
     padding: var(--space-7) var(--space-6);
   }
 
-  .page-band--working {
+  .page-band--working .band-inner {
     padding-block: var(--space-6);
   }
 
   .page-band .title-frame {
-    padding-inline: var(--space-6);
+    padding: var(--space-6);
   }
 }

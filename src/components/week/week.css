@@ -3,10 +3,9 @@
   flex-direction: column;
   gap: var(--space-6);
   min-width: 0;
-  max-width: var(--container-prose);
 }
 
-/* The frame is opaque (--bg-raised), so HUD readouts, chips and links may sit inside it; the band around it carries none. */
+/* The frame is opaque (--bg-raised), so HUD readouts and links may sit inside it; the band around it carries none. */
 .week-header-extras {
   display: flex;
   flex-direction: column;
@@ -28,7 +27,6 @@
   line-height: var(--text-mono-lh);
 }
 
-.topic-row,
 .week-nav {
   display: flex;
   flex-wrap: wrap;
@@ -39,26 +37,9 @@
   list-style: none;
 }
 
-.topic-row {
-  justify-content: center;
-}
-
 .week-nav {
   justify-content: space-between;
   width: 100%;
-}
-
-.topic-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 32px;
-  padding: 0 var(--space-2);
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  line-height: var(--text-sm-lh);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
 }
 
 .week-nav a,
@@ -88,6 +69,7 @@
 }
 
 .week-section h2,
+.assignment-card h3,
 .self-review-trigger {
   margin: 0;
   font-family: var(--font-display);

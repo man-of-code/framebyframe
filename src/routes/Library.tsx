@@ -27,7 +27,7 @@ function appliedCount(facets: Facets): number {
 
 export function Library(): JSX.Element {
   const { query, facets, setQuery, toggleFacet, clearAll, results, options, view, setView } = useLibraryFilters();
-  const wide = useMediaQuery("(min-width: 768px)");
+  const wide = useMediaQuery("(min-width: 1024px)");
   const [paletteOpen, setPaletteOpen] = useState(false);
   // Mounted on first open and kept, so the dialog's close animation still runs.
   const [paletteMounted, setPaletteMounted] = useState(false);

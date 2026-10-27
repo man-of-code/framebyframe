@@ -7,8 +7,8 @@ import { FACET_LABEL, FACET_ORDER, facetValueLabel } from "./labels";
 
 type FacetKey = (typeof FACET_ORDER)[number];
 
-// Week and Language have the most values; they fold behind a disclosure (design-system.md 1: the chip wall is the loud part).
-const FOLDED: readonly FacetKey[] = ["week", "language"];
+// Type, Level and Cost stay visible; the long chip walls fold behind a disclosure (design-system.md 6).
+const FOLDED: readonly FacetKey[] = ["topic", "status", "week", "language"];
 const ALWAYS = FACET_ORDER.filter((key) => !FOLDED.includes(key));
 
 type Options = Record<keyof Facets, (string | number)[]>;
@@ -54,12 +54,24 @@ export function FilterChips(props: {
   facets: Facets;
   options: Options;
   onToggle: (key: keyof Facets, value: string | number) => void;
+  /** Every facet in the open (the Filters sheet): no disclosure. */
+  flat?: boolean;
 }): JSX.Element {
-  const { facets, options, onToggle } = props;
+  const { facets, options, onToggle, flat = false } = props;
   const foldedSelected = FOLDED.reduce((sum, key) => sum + facets[key].length, 0);
   // Follows the selection until the learner opens or closes the disclosure themselves.
   const [chosen, setChosen] = useState<boolean | undefined>(undefined);
   const open = chosen ?? foldedSelected > 0;
+
+  if (flat) {
+    return (
+      <div className="filter-chips">
+        {FACET_ORDER.map((key) => (
+          <FacetGroup key={key} facetKey={key} facets={facets} options={options} onToggle={onToggle} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="filter-chips">
@@ -68,7 +80,7 @@ export function FilterChips(props: {
       ))}
       <Collapsible open={open} onOpenChange={setChosen} className="filter-more">
         <CollapsibleTrigger className="filter-more-trigger pop pop--outline">
-          Week and language
+          More filters
           {foldedSelected > 0 ? <span className="filter-more-count">{foldedSelected} selected</span> : null}
           <ChevronDown aria-hidden="true" size={16} />
         </CollapsibleTrigger>

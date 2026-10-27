@@ -42,7 +42,7 @@ function renderLibrary(path = "/library") {
 }
 
 async function openMore() {
-  await userEvent.click(screen.getByRole("button", { name: /Week and language/ }));
+  await userEvent.click(screen.getByRole("button", { name: /More filters/ }));
 }
 
 describe("Library", () => {
@@ -53,7 +53,7 @@ describe("Library", () => {
   });
 
   beforeEach(() => {
-    installMatchMedia((query) => query.includes("768"));
+    installMatchMedia((query) => query.includes("1024"));
     Element.prototype.scrollIntoView = () => {};
     window.ResizeObserver = class {
       observe() {}
@@ -138,29 +138,38 @@ describe("Library", () => {
     expect(screen.getByTestId("url").textContent).toContain("view=table");
   });
 
-  it("folds Week and Language behind a collapsed disclosure by default", async () => {
+  it("folds Topic, Status, Week and Language behind a collapsed disclosure by default", async () => {
     renderLibrary();
-    const trigger = screen.getByRole("button", { name: /Week and language/ });
+    const trigger = screen.getByRole("button", { name: /More filters/ });
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     expect(screen.queryByRole("button", { name: "Tamil" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Week 3" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Cinematography" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Gray area" })).toBeNull();
     // The other facets stay visible.
     expect(screen.getByRole("button", { name: "YouTube" })).toBeTruthy();
     await userEvent.click(trigger);
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     expect(screen.getByRole("button", { name: "Tamil" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Week 3" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Cinematography" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Gray area" })).toBeTruthy();
+  });
+
+  it("opens the disclosure when a topic or status value is selected", () => {
+    renderLibrary("/library?status=gray-area");
+    expect(screen.getByRole("button", { name: /More filters/ }).getAttribute("aria-expanded")).toBe("true");
   });
 
   it("opens the disclosure when a language value is selected", () => {
     renderLibrary("/library?language=ta");
-    expect(screen.getByRole("button", { name: /Week and language/ }).getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: /More filters/ }).getAttribute("aria-expanded")).toBe("true");
     expect(screen.getByRole("button", { name: "Tamil" }).getAttribute("aria-pressed")).toBe("true");
   });
 
   it("opens the disclosure when a week value is selected", () => {
     renderLibrary("/library?week=3");
-    expect(screen.getByRole("button", { name: /Week and language/ }).getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("button", { name: /More filters/ }).getAttribute("aria-expanded")).toBe("true");
     expect(screen.getByRole("button", { name: "Week 3" }).getAttribute("aria-pressed")).toBe("true");
   });
 
@@ -171,12 +180,13 @@ describe("Library", () => {
     expect(screen.queryByRole("heading", { name: /zero verified hindi\/tamil/i })).toBeNull();
   });
 
-  it("keeps facets in a sheet below 768px and badges the applied count", async () => {
+  it("keeps facets in a sheet below 1024px and badges the applied count", async () => {
     installMatchMedia(() => false);
     renderLibrary();
     expect(screen.queryByRole("button", { name: "Tamil" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Filters" }));
-    await userEvent.click(await screen.findByRole("button", { name: /Week and language/ }));
+    // The sheet shows every facet flat: no disclosure inside it.
+    expect(screen.queryByRole("button", { name: /More filters/ })).toBeNull();
     await userEvent.click(await screen.findByRole("button", { name: "Tamil" }));
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("button", { name: /filters/i })));

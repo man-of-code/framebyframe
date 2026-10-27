@@ -19,7 +19,10 @@ export function toRoman(n: number): string {
   return out;
 }
 
-/** Splits after every "/" so a renderer can put a <wbr> there (design-system.md 3.2). Text is unchanged. */
+/**
+ * Splits after every "/" so a renderer can put a <wbr> there (design-system.md 3.2). Text is unchanged.
+ * A slash with a digit on both sides ("3/5/7-act") is not a break opportunity.
+ */
 export function splitAtSlashes(text: string): string[] {
-  return text.split(/(?<=\/)/);
+  return text.split(/(?<=\/)(?:(?<!\d\/)|(?!\d))/);
 }

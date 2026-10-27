@@ -15,15 +15,13 @@ export function WeekFrame(props: {
   ratio?: { done: number; total: number };
   hours?: string;
   stage?: string;
-  moduleLabel?: string;
   extension?: boolean;
   heavy?: boolean;
   orientation: "rail" | "card" | "cell";
 }): JSX.Element {
-  const { n, module, title, state, ratio, hours, stage, moduleLabel, extension, heavy, orientation } = props;
+  const { n, title, state, ratio, hours, stage, extension, heavy, orientation } = props;
   const uid = useId();
   const codeId = `${uid}-code`;
-  const moduleId = `${uid}-module`;
   const titleId = `${uid}-title`;
   const hoursId = `${uid}-hours`;
   const ratioId = `${uid}-ratio`;
@@ -32,13 +30,11 @@ export function WeekFrame(props: {
   const pad = String(n).padStart(2, "0");
   const total = String(TOTAL_WEEKS).padStart(2, "0");
   const card = orientation === "card";
-  const moduleText = moduleLabel ?? (module > 0 ? `Module ${module}` : "");
   const cell = orientation === "cell";
   const cellLabel =
     cell && ratio ? `Week ${n}: ${title}, ${ratio.done} of ${ratio.total} done` : undefined;
   const labelledBy = [
     codeId,
-    card && moduleText ? moduleId : "",
     titleId,
     card && hours ? hoursId : "",
     card && ratio ? ratioId : "",
@@ -61,9 +57,6 @@ export function WeekFrame(props: {
         {cell ? pad : `WK ${pad}`}
         {card ? ` / ${total}` : ""}
       </span>
-      {card && moduleText ? (
-        <span id={moduleId} className="week-frame-module">{moduleText}</span>
-      ) : null}
       {cell ? null : (
         <span id={titleId} className={card ? "week-frame-title" : "filmstrip-sr"}>
           {card ? <BreakableTitle text={title} /> : title}

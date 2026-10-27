@@ -15,7 +15,7 @@ export function Capstone(): JSX.Element {
   return (
     <WithProgress>
       {(api) => (
-        <article className="page prose-page">
+        <article className="page prose-page prose-centered">
           <PlaybillHeader
             eyebrow="Capstone"
             title="Eight stages"

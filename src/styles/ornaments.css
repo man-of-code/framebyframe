@@ -8,15 +8,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75em;
+  gap: 0.5em;
 }
 
 .orn-fleuron::before,
 .orn-fleuron::after {
   content: "";
   flex: none;
-  width: 1em;
-  height: 1em;
+  width: 1.5em;
+  height: 1.5em;
   background-color: var(--ornament);
   -webkit-mask-image: var(--orn-leaf);
   mask-image: var(--orn-leaf);

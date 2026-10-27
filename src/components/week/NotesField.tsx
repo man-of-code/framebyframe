@@ -48,7 +48,7 @@ function NotesBody({ assignmentId, api }: { assignmentId: string; api: ProgressA
 
   return (
     <div className="notes-field">
-      <label htmlFor={fieldId}>Notes</label>
+      <label htmlFor={fieldId} className="visually-hidden">Notes</label>
       <Textarea
         id={fieldId}
         value={value}

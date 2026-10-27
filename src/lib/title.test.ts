@@ -14,6 +14,12 @@ describe("splitAtSlashes", () => {
     expect(parts.join("")).toBe("movement/angles/framing, lenses");
   });
 
+  it("does not break a slash with a digit on both sides", () => {
+    expect(splitAtSlashes("hero's journey, 3/5/7-act structure")).toEqual(["hero's journey, 3/5/7-act structure"]);
+    expect(splitAtSlashes("act 3/ready and 5/x")).toEqual(["act 3/", "ready and 5/", "x"]);
+    expect(splitAtSlashes("scene/opening 3/5")).toEqual(["scene/", "opening 3/5"]);
+  });
+
   it("returns one piece when there is no slash", () => {
     expect(splitAtSlashes("Open on an image")).toEqual(["Open on an image"]);
   });

@@ -42,11 +42,6 @@ export function WeekHeader(props: {
             Heavy
           </Badge>
         ) : null}
-        <ul className="topic-row">
-          {week.topics.map((topic) => (
-            <li key={topic} className="topic-chip">{topic}</li>
-          ))}
-        </ul>
         <nav className="week-nav" aria-label="Adjacent weeks">
           {week.n > 1 ? (
             <Link to={`/week/${week.n - 1}`}>

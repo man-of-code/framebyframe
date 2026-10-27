@@ -1853,3 +1853,60 @@ Append below this line.
 - The 12px gap between pop controls holds for chips, the active-chip row and the disclosure; the Cards / Table group and the capstone segments are joined by design.
 - `Letterbox`, `.letterbox*` CSS and the landing hero are untouched (R4). `.heavy-chip` (dashboard) remains in `pages.css`.
 - Contrast was asserted by tokens only; no new token pairs were added, but the badge and HUD pairs were not re-measured in the browser.
+
+### Redesign R3.1: Visual critique fixes
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/design-system.md` §6 "Rules added after the R3 visual critique"; §2.1, §3.2, §5.2
+
+#### Shipped
+
+- Prose routes centre (`src/styles/page-header.css`): `/week/:n` and `/capstone` carry `.prose-centered` (page `--container-app`, every child except the band `--container-prose` and `margin-inline: auto`); the band spans the full width and the frame or title block is centred in it. `.week-page` lost its own prose max-width.
+- Bands: padding moved to `.band-inner`, which also carries `.hud-grid` (shown in light only; `.aurora::before` owns the fields, so the grid needed its own element). `--aurora-strength: 0.14` in `.light`; contrast test unchanged and green.
+- `src/lib/title.ts` — no break after a `/` with a digit on both sides (`3/5/7-act` stays whole); tests added in `title.test.ts`, `BreakableTitle.test.tsx` adjusted (week 1's title no longer breaks).
+- Week header: topic chips removed (markup and CSS); frame padding `--space-4` below 640px, band padding `--space-4`. At 360×780 the Watch heading and first task show above the fold (`shots-after/week-7-360-dark.png`).
+- `/library`: Type, Level, Cost visible; Topic, Status, Week, Language in "More filters" (open when any is selected); below 1024px every facet is in the Filters sheet, shown flat (`FilterChips flat`). Tests updated (1024 media query, new labels, sheet has no disclosure, Topic and Status fold and auto-open).
+- `StickyCta`: shown only on `/` and `/plan` (`stickyCtaRoute` in `src/components/stickyRoute.ts`), hidden while `#main .page-button` or `.lumen-cta__button` intersects the viewport (IntersectionObserver). `StickyCta.test.tsx` covers the route rule. Browser: sticky present on `/plan`, absent on `/week/3`, `/library`, `/capstone`.
+- Assignment card: Abril h3 "Assignment", eyebrow "Brochure A10", Notes field label visually hidden. `src/content/weeks.ts`: removed "New (no brochure source):" (week 6 task and assignment) and "(replaced — brochure duplicate)" (weeks 7, 8, 12); weeks 7 and 8 gained `brochureNo: 10` and `11` so the A-numbers still show. `npm run validate` passes.
+- Fleurons `1.5em` with `0.5em` gap. Plan week cards no longer print "MODULE n" (`moduleLabel` and `.week-frame-module` removed). Heavy badge, "Auto" label, module-head readout and table rules were already as the spec now says; unchanged.
+
+#### Verified
+
+- `npm test` → 37 files, 208 tests pass. `npx tsc -b` → exit 0. `npm run build` → exit 0, no warnings. `npm run validate` → pass. `npm run e2e` → 1 passed. `npx oxlint` → 42 warnings (the first try, 43, was `only-export-components` on an export from `StickyCta.tsx`, moved to `stickyRoute.ts`).
+- Sizes (JS gzip): entry 128.9 KB; Plan 130.9; Week 155.0 (5.0 KB under the 160 KiB target); Library 152.2; Toolkit 132.6; Capstone 131.6.
+- No horizontal overflow on the 30 route shots (5 routes × 360 / 768 / 1440 × both themes) and none with the 360 Filters sheet open and Tamil selected.
+- Shots in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r3/shots-after/` (30, same names, plus `library-sheet-360-dark.png`, `library-sheet-tamil-360-dark.png`). Looked at: week-7 1440 light and 360 dark, library 1440 dark and 768 dark, capstone 1440 light, the open Filters sheet.
+
+#### Decisions
+
+- **Decision:** the clapper stripe's period is 12px measured horizontally: the 45° gradient repeats every 8.485px along its axis (6px ÷ √2 per colour).
+  - **Because:** the old `0 6px, 6px 12px` was a 12px period along the axis, about 17px across; the spec reads as a 12px visible period.
+  - **Rejected:** keeping the axis period.
+  - **Risk:** if the spec meant the axis, the stripe is now finer than intended.
+  - **Deviation:** no
+- **Decision:** weeks 7 and 8 get `brochureNo` 10 and 11 instead of keeping "A10" / "A11" in the text.
+  - **Because:** the card shows "Brochure A10" from that field; keeping the code in the text would repeat it.
+  - **Rejected:** leaving the text prefix.
+  - **Risk:** `brochureNo` now also exists where the source brochure item was "replaced"; the export or validation scripts do not read it.
+  - **Deviation:** no
+- **Decision:** week 12 keeps "A16 EPK … · A17: build …" in its text with no `brochureNo`, only dropping "(replaced — brochure duplicate)".
+  - **Because:** the card has one brochure field and two items.
+  - **Rejected:** picking one number.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the sticky CTA finds the page's primary CTA by selector (`#main .page-button, #main .lumen-cta__button`), looked up on mount and once more after 400ms.
+  - **Because:** the landing and dashboard CTAs are those two classes and R4 owns their markup.
+  - **Rejected:** a `data-` attribute on R4's surfaces.
+  - **Risk:** R4 must keep the selector in step when it migrates to `Button asChild`.
+  - **Deviation:** no
+- **Decision:** the HUD grid on light bands lives on an inner `.band-inner.hud-grid` wrapper rather than on the band.
+  - **Because:** `.aurora::before` and `.hud-grid::before` would collide on one element.
+  - **Rejected:** a second pseudo-element on the band.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- Spec §5.6 "film grain on always-dark pictures in both themes" is R4's (hero screen, ceremony stage).
+- The assignment card's new stripe and h3 were not viewed after the change.

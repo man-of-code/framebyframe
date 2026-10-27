@@ -24,7 +24,9 @@ export function PlaybillHeader(props: {
   );
   return (
     <header className={`page-band aurora ${className ?? ""}`.trim()}>
-      {framed ? <div className="playbill-frame title-frame">{block}</div> : block}
+      <div className="band-inner hud-grid">
+        {framed ? <div className="playbill-frame title-frame">{block}</div> : block}
+      </div>
     </header>
   );
 }
@@ -39,10 +41,12 @@ export function WorkingHeader(props: {
   const { eyebrow, title, note, className } = props;
   return (
     <header className={`page-band page-band--working aurora ${className ?? ""}`.trim()}>
-      <div className="working-block">
-        <p className="eyebrow">{eyebrow}</p>
-        <h1>{title}</h1>
-        {note ? <p className="title-note">{note}</p> : null}
+      <div className="band-inner hud-grid">
+        <div className="working-block">
+          <p className="eyebrow">{eyebrow}</p>
+          <h1>{title}</h1>
+          {note ? <p className="title-note">{note}</p> : null}
+        </div>
       </div>
     </header>
   );

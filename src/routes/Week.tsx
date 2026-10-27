@@ -121,7 +121,7 @@ export function Week() {
   const parts = communityParts(week.community);
 
   return (
-    <article className="week-page">
+    <article className="week-page prose-centered">
       <WeekHeader
         week={week}
         moduleTitle={MODULES.find((item) => item.n === week.module)?.title ?? BUFFER_TITLE}
