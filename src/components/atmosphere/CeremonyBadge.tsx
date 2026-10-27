@@ -1,5 +1,6 @@
 import { useEffect, useRef, type JSX } from "react";
 import { SparkBadge } from "@/vendor/threeui/spark-badge/SparkBadge";
+import { Button } from "@/components/ui/button";
 import { GrainSurface } from "./GrainSurface";
 
 function reducedMotion(): boolean {
@@ -33,9 +34,9 @@ export function CeremonyBadge(props: { open: boolean; onClose: () => void }): JS
       <GrainSurface className="ceremony-stage">
         <SparkBadge />
       </GrainSurface>
-      <button ref={button} className="page-button ceremony-dismiss" type="button" onClick={onClose}>
+      <Button ref={button} className="ceremony-dismiss" type="button" onClick={onClose}>
         Continue
-      </button>
+      </Button>
     </div>
   );
 }

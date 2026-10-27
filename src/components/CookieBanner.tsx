@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentType, type JSX } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const KEY = "fbf:consent";
 
@@ -58,18 +59,18 @@ export function CookieBanner({
   if (consent !== "unknown") return null;
 
   return (
-    <aside className="cookie-banner" aria-label="Cookie consent">
+    <aside className="cookie-banner pop-outline" aria-label="Cookie consent">
       <p>
         Analytics stay off until you accept. Progress on this site stays in this browser either way.{" "}
         <Link to="/privacy">Privacy</Link>
       </p>
       <div className="cookie-actions">
-        <button className="page-button" type="button" onClick={() => onChoose("accepted")}>
+        <Button variant="outline" type="button" onClick={() => onChoose("accepted")}>
           Accept
-        </button>
-        <button className="page-button page-button-quiet" type="button" onClick={() => onChoose("rejected")}>
+        </Button>
+        <Button variant="outline" type="button" onClick={() => onChoose("rejected")}>
           Reject
-        </button>
+        </Button>
       </div>
     </aside>
   );

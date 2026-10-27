@@ -77,7 +77,6 @@
   align-items: flex-start;
 }
 
-.page-button,
 .field input,
 .field select,
 .field textarea,
@@ -88,46 +87,13 @@
   font-size: 1rem;
 }
 
-.page-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 var(--space-4);
-  /* Interim pop treatment until R4 moves these links to Button asChild + ButtonSheen. */
-  color: var(--pop-ink);
-  font-weight: 600;
-  text-decoration: none;
-  background: var(--pop-teal);
-  border: var(--pop-border) solid var(--pop-ink);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--pop-offset) var(--pop-offset) 0 var(--pop-shadow-color);
-  cursor: pointer;
-  transition: transform var(--dur-fast) var(--ease-out);
-}
-
-@media (hover: hover) {
-  .page-button:hover {
-    transform: translate(-1px, -1px);
-  }
-}
-
-.page-button:active {
-  transform: translate(2px, 2px);
-}
-
-/* The ring is never drawn across the offset shadow (design-system.md 5.2). */
-.page-button:focus-visible {
-  box-shadow: none;
-}
-
-.page-button:focus-visible,
 .module-block:focus-visible,
 .field input:focus-visible,
 .field select:focus-visible,
 .field textarea:focus-visible,
 .tool-table a:focus-visible {
   outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 .week-now {
@@ -189,10 +155,16 @@
   padding: 0 var(--space-3);
   color: var(--text-primary);
   font: inherit;
+  /* Input look (design-system.md 2.7): inset well, 2px control boundary; focus adds the ring, the border stays. */
   background: var(--bg-inset);
-  border: 1px solid var(--border-default);
+  border: var(--pop-border) solid var(--border-strong);
   border-radius: var(--radius-md);
   color-scheme: dark;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--text-tertiary);
 }
 
 .field textarea {

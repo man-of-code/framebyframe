@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import { ContactAddress } from "@/components/ContactAddress";
+import { Button } from "@/components/ui/button";
 import { SITE } from "@/content/site";
 import { contactErrors, contactMailto, type ContactErrors } from "@/lib/form";
 
@@ -79,9 +80,9 @@ export function Contact(): JSX.Element {
           />
           {errors.message ? <span className="field-error" id="contact-message-error" role="alert">{errors.message}</span> : null}
         </label>
-        <button className="page-button" type="submit" disabled={pending} aria-busy={pending}>
+        <Button className="self-start" type="submit" disabled={pending} aria-busy={pending}>
           {pending ? "Opening mail…" : "Send"}
-        </button>
+        </Button>
       </form>
     </article>
   );

@@ -1,6 +1,7 @@
 import type { FormEvent, JSX } from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
 import { HeroCanvas } from "@/components/atmosphere/HeroCanvas";
 import { Letterbox } from "@/components/atmosphere/Letterbox";
@@ -164,9 +165,9 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
           />
           {dateError ? <span className="field-error" id="start-date-error" role="alert">{dateError}</span> : null}
         </label>
-        <button className="page-button" type="submit" disabled={pending} aria-busy={pending}>
+        <Button className="self-start" type="submit" disabled={pending} aria-busy={pending} data-page-cta>
           {pending ? "Saving…" : "Set start date"}
-        </button>
+        </Button>
       </form>
     </article>
   );

@@ -1,10 +1,9 @@
 import { useEffect, useState, type JSX } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { stickyCtaRoute } from "@/components/stickyRoute";
+import { PAGE_CTA, stickyCtaRoute } from "@/components/stickyRoute";
+import { Button, ButtonSheen } from "@/components/ui/button";
 import type { Progress } from "@/lib/types";
 import { resolveCurrentWeek } from "@/lib/week";
-
-const PAGE_CTA = "#main .page-button, #main .lumen-cta__button";
 
 /** True while one of the page's own primary CTAs is in the viewport, so a phone never shows two primaries. */
 function usePageCtaInView(active: boolean, pathname: string): boolean {
@@ -43,8 +42,7 @@ export function StickyCta({ progress }: { progress: Progress }): JSX.Element | n
   if (!progress.startDate) {
     return (
       <div className="sticky-cta">
-        <button
-          className="page-button"
+        <Button
           type="button"
           onClick={() => {
             const form = document.getElementById("start-date");
@@ -56,7 +54,7 @@ export function StickyCta({ progress }: { progress: Progress }): JSX.Element | n
           }}
         >
           Start week 1
-        </button>
+        </Button>
       </div>
     );
   }
@@ -64,14 +62,18 @@ export function StickyCta({ progress }: { progress: Progress }): JSX.Element | n
   if (current.complete && current.source !== "override") {
     return (
       <div className="sticky-cta">
-        <Link className="page-button" to="/capstone">Open the capstone</Link>
+        <Button asChild>
+          <Link to="/capstone"><ButtonSheen />Open the capstone</Link>
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="sticky-cta">
-      <Link className="page-button" to={`/week/${current.week}`}>Continue week {current.week}</Link>
+      <Button asChild>
+        <Link to={`/week/${current.week}`}><ButtonSheen />Continue week {current.week}</Link>
+      </Button>
     </div>
   );
 }

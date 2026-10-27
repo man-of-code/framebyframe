@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import { Link } from "react-router-dom";
+import { Button, ButtonSheen } from "@/components/ui/button";
 import { ContactAddress } from "@/components/ContactAddress";
 
 export function ThankYou(): JSX.Element {
@@ -12,7 +13,9 @@ export function ThankYou(): JSX.Element {
       </p>
       <ContactAddress />
       <div className="control-row">
-        <Link className="page-button" to="/">Back to today</Link>
+        <Button asChild>
+          <Link to="/"><ButtonSheen />Back to today</Link>
+        </Button>
         <Link className="text-link" to="/contact">Write another note</Link>
       </div>
     </article>

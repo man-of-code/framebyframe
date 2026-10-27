@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { StartDateControl } from "@/components/dashboard/StartDateControl";
 import { NextTasks } from "@/components/dashboard/NextTasks";
+import { Button, ButtonSheen } from "@/components/ui/button";
 import { FilmstripRail } from "@/components/filmstrip/FilmstripRail";
 import { content } from "@/content";
 import { BUFFER_TITLE, MODULES } from "@/content/modules";
@@ -77,7 +78,9 @@ function Dashboard({ api }: { api: ProgressApi }): JSX.Element {
           <p className="page-copy">
             The calendar is past the sixteen weeks. What is left is the capstone, and a place to get feedback.
           </p>
-          <Link className="page-button" to="/capstone">Open the capstone</Link>
+          <Button asChild className="self-start">
+            <Link to="/capstone" data-page-cta><ButtonSheen />Open the capstone</Link>
+          </Button>
           <h2>Feedback communities</h2>
           <ul className="link-list">
             {feedbackPlaces().map((place) => (
@@ -152,7 +155,9 @@ function WeekCard(props: { week: Week; heading: "h1" | "h2" }): JSX.Element {
           Heavy week
         </p>
       ) : null}
-      <Link className="page-button" to={`/week/${week.n}`}>Open this week</Link>
+      <Button asChild>
+        <Link to={`/week/${week.n}`} data-page-cta><ButtonSheen />Open this week</Link>
+      </Button>
     </section>
   );
 }
