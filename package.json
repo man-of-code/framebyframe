@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
+    "e2e:preview": "playwright test -c playwright.preview.config.ts",
     "validate": "tsx scripts/validate-content.ts",
     "check-links": "tsx scripts/check-links.ts",
     "lint": "oxlint"
