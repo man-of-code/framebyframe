@@ -210,7 +210,7 @@
   display: flex;
   flex: none;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--space-2);
   box-sizing: border-box;
   width: 168px;
@@ -507,4 +507,35 @@
 .ruled-sections > section + section {
   padding-top: var(--space-6);
   border-top: 1px solid var(--ornament);
+}
+
+/* Landing module strip: a 32px fade to --bg-base (the page behind) on whichever side still overflows (useEdgeFade). */
+.module-strip[data-fade-start="true"] {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 32px);
+  mask-image: linear-gradient(to right, transparent, black 32px);
+}
+
+.module-strip[data-fade-end="true"] {
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+}
+
+.module-strip[data-fade-start="true"][data-fade-end="true"] {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 32px, black calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to right, transparent, black 32px, black calc(100% - 32px), transparent);
+}
+
+/* Dashboard "Next up": the minutes run inline after the title and wrap with it (R4 critique). */
+.next-task-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.next-task-minutes {
+  margin-inline-start: var(--space-1);
+  color: var(--text-tertiary);
+  font-family: var(--font-hud);
+  font-size: var(--text-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
