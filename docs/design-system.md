@@ -75,6 +75,8 @@ There is **no pop cyan**: it would sit next to action teal and read as a link.
 | `--pop-shadow-color` | `#F2E8D5` | Offset shadows: paper "misregistration" on ink |
 | `--ornament` | `#7A6C93` | Rules, frames, fleurons (= `--border-strong`) |
 | `--grain-opacity` | `0.03` | §5.6 |
+| `--grain-picture-opacity` | `0.06` | Film grain on the always-dark pictures (hero screen, ceremony stage); same value in both themes (added in R4) |
+| `--stage-black` | `#000000` | The ceremony and hero-screen stage; identical in both themes (added in R4) |
 
 Also defined in both theme blocks of `tokens.css`, with values in their own sections: `--sheen-color` (§5.2), `--grain-film-tile` and `--grain-film-opacity` (§5.6).
 
@@ -308,7 +310,7 @@ Ornaments are **CSS utilities**. They cost zero JS and are invisible to assistiv
 | `.orn-rule-double` | `border-top` + `border-bottom`, 1px each, `height: 3px` between | 5px |
 | `.orn-rule-diamond` | A `linear-gradient` hairline as background, plus a centred 7px diamond drawn as a rotated square on the element's own `::before` (a stretched mask would distort the diamond) | 9px |
 | `.playbill-frame` | **Background layers only — no pseudo-elements, no mask** (a mask on a container masks its children). Double rule: `border: 1px solid var(--ornament)` plus `box-shadow: inset 0 0 0 4px <surface>, inset 0 0 0 5px var(--ornament)`; corner squares: four 10px `linear-gradient` layers at the corners | — |
-| `.orn-seal` | Guilloché seal (§5.1.1). An **empty** `<div class="orn-seal" aria-hidden="true">` (no children, so its own mask is safe): `display: block; aspect-ratio: 1; margin-inline: auto; background-color: var(--ornament); mask: url("../assets/ornaments/guilloche-seal.svg") center / contain no-repeat;` plus the identical `-webkit-mask`. `@media (forced-colors: active) { display: none }` | `240px` wide; `320px` at ≥ 640; `min(64vw, 280px)` in the static ceremony |
+| `.orn-seal` | Guilloché seal (§5.1.1). An **empty** `<div class="orn-seal" aria-hidden="true">` (no children, so its own mask is safe): `display: block; aspect-ratio: 1; margin-inline: auto; background-color: var(--ornament); mask: url("../assets/ornaments/guilloche-seal.svg") center / contain no-repeat;` plus the identical `-webkit-mask`. `@media (forced-colors: active) { display: none }` | `240px` wide; `320px` at ≥ 640; `min(64vw, 280px)` in the static ceremony, where it sits on the `--stage-black` film-grain stage inside the playbill frame (R4), with Continue below on `--bg-raised` |
 
 SVG data-URI rules: encode `#` as `%23`; give paths an opaque fill (`currentColor` inside a data URI resolves to black, so colour comes from `background-color`); emit both `mask-*` and `-webkit-mask-*`. In forced-colors mode ornaments disappear; acceptable, because they are decorative.
 
@@ -496,8 +498,7 @@ Rules:
 - **Tables:** header row has a 2px `--border-strong` bottom rule; rows hover to `--bg-hover`.
 
 **Interim rules added after the R2b visual critique (2026-10-27):**
-- `.light { --vignette: none; }` until R4 deletes `--vignette`: the v1 black vignette smears grey on paper.
-- `.force-dark` re-declares the full dark token set on its subtree. The landing hero's CRT screen is a dark picture in both themes, so the hero copy that sits on it uses `.force-dark` until R4 moves the copy off the screen into `.playbill-frame`.
+- *(Retired in R4: the interim `.light { --vignette: none }` and `.force-dark` rules. `--vignette` is deleted, and the hero copy now sits beside the screen in a `.playbill-frame`.)*
 - The mobile bar shows the brand wordmark (Abril, `--text-h3` size) and the week readout; it no longer repeats the page eyebrow.
 - The sticky mobile CTA hides while the page's own primary CTA is in the viewport (`IntersectionObserver`), so a phone viewport never shows two primaries (R4).
 
@@ -518,7 +519,8 @@ Rules:
 | Capstone ceremony, live (only when **none** of the §7.2 rule 1 constrained-device conditions holds) | `.playbill-frame` around the badge | Continue button (with sheen), on the frame's `--bg-raised` surface, never on the aurora | — | `.aurora--live` + band grain around the frame | Film grain on the SparkBadge stage |
 | Capstone ceremony, static (when **any** §7.2 rule 1 constrained-device condition holds) | Fixed overlay `.ceremony.ceremony--static` (`position: fixed; inset: 0; background: var(--bg-base)`) whose first child is an `.aurora` layer with `position: absolute; inset: 0` (static fields and band grain; the absolute position overrides `.aurora`'s `relative`, so the overlay stays fixed). The live ceremony's surrounding aurora uses the same inner-layer pattern. Centred `.playbill-frame` with `background: var(--bg-raised)`, padding `--space-8`, `max-width: 28rem`, holding top to bottom with `--space-6` gaps: `.orn-seal` at `min(64vw, 280px)`; eyebrow `CAPSTONE · COMPLETE` with fleurons; Abril `--text-h1` "Capstone complete" in `--text-primary`; Continue | Continue button (no sheen: touch) | — | Static `.aurora` (no `--live`) | — |
 | 404, `/thank-you` (intermission cards) | `.orn-seal` centred above a centred playbill title block (eyebrow `MISSING REEL` / `THANK YOU` with fleurons, Abril `--text-h1`, diamond rule); copy and actions centred, `--container-prose` | Buttons (primary with sheen) | — | — | Film grain on the page root `.intermission` (§5.6) |
-| `/about`, `/privacy`, `/terms`, `/contact` | Working header; decode heading on about | Buttons (primary with sheen), form controls | — | Static band (about only) | — |
+| `/about` | **Playbill title block** (centred, per §3.3, which wins over the earlier working-header note) with the decode heading | Buttons (primary with sheen) | — | Static band | — |
+| `/privacy`, `/terms`, `/contact` | Working header | Buttons (primary with sheen), form controls | — | — | — |
 | Cookie banner, sticky CTA | — | Buttons, 2px pop border, offset shadow | — | — | — |
 | Resource card, gap card | Title Inter 600 | Badges only | Verified date, minutes mono | — | — |
 
