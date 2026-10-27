@@ -37,7 +37,7 @@ export function WeekFrame(props: {
     codeId,
     titleId,
     card && hours ? hoursId : "",
-    card && ratio ? ratioId : "",
+    ratio ? ratioId : "",
     card && stage ? stageId : "",
     heavy ? heavyId : "",
   ].filter(Boolean).join(" ");
@@ -57,27 +57,33 @@ export function WeekFrame(props: {
         {cell ? pad : `WK ${pad}`}
         {card ? ` / ${total}` : ""}
       </span>
+      {/* Whitespace between the parts: flex and grid drop it from layout, but it keeps the link's visible text spaced like its accessible name. */}
+      {card ? " " : null}
       {cell ? null : (
         <span id={titleId} className={card ? "week-frame-title" : "filmstrip-sr"}>
           {card ? <BreakableTitle text={title} /> : title}
         </span>
       )}
+      {card ? " " : null}
       {card && (hours || ratio || stage) ? (
         <span className="week-frame-meta">
           {hours ? <span id={hoursId}>{hours}</span> : null}
+          {hours ? " " : null}
           {ratio ? (
             <span id={ratioId} className="week-frame-ratio">
               {ratio.done}/{ratio.total}
             </span>
           ) : null}
+          {ratio ? " " : null}
           {stage ? <span id={stageId}>{stage}</span> : null}
         </span>
       ) : null}
       {!card && !cell && ratio ? (
-        <span className="filmstrip-sr">
+        <span id={ratioId} className="filmstrip-sr">
           {ratio.done}/{ratio.total}
         </span>
       ) : null}
+      {card && heavy ? " " : null}
       {heavy && !cell ? (
         <span id={heavyId} className="week-frame-chip">
           Heavy

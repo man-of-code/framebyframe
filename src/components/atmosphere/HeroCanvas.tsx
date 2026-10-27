@@ -128,6 +128,8 @@ export function HeroCanvas(props: { enabled: boolean }): JSX.Element {
         src="/posters/hero-crt.webp"
         alt="Still of a film countdown leader on a CRT screen, beside the landing title."
         aria-hidden="true"
+        fetchPriority="high"
+        decoding="async"
       />
       {show ? (
         <CanvasBoundary onError={drop}>

@@ -118,6 +118,7 @@ export function Library(): JSX.Element {
           </button>
         </div>
       ) : null}
+      <h2 className="visually-hidden">Results</h2>
       <div className="hud-frame library-count-frame">
         <p className="hud-readout library-count" role="status" aria-live="polite">
           {gapEmpty ? (

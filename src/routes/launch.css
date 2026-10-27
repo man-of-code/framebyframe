@@ -110,3 +110,20 @@
     right: var(--space-8);
   }
 }
+
+/* DecodeHeading: the box is sized by the invisible final string; the live copy is laid over it. */
+.decode-heading {
+  position: relative;
+}
+
+.decode-heading__sizer {
+  display: block;
+  visibility: hidden;
+}
+
+/* Out of flow: whatever the scrambled glyphs measure, nothing around the heading can move. */
+.decode-heading__live {
+  position: absolute;
+  inset: 0;
+  contain: strict;
+}

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
     <script>
       (function () {
         try {
@@ -8,6 +9,25 @@
           var dark = p === "dark" || (p === "system" && !window.matchMedia("(prefers-color-scheme: light)").matches);
           if (!dark) document.documentElement.classList.add("light");
           document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        } catch (e) {}
+        // The hero poster is the LCP element on the first-run landing only. Returning learners and learning routes get no preload.
+        try {
+          if (location.pathname === "/") {
+            var saved = localStorage.getItem("fbf:progress:v1");
+            var started = false;
+            if (saved) {
+              try { started = !!JSON.parse(saved).startDate; } catch (e) {}
+            }
+            if (!started) {
+              var l = document.createElement("link");
+              l.rel = "preload";
+              l.as = "image";
+              l.href = "/posters/hero-crt.webp";
+              l.type = "image/webp";
+              l.setAttribute("fetchpriority", "high");
+              document.head.appendChild(l);
+            }
+          }
         } catch (e) {}
       })();
     </script>
@@ -18,7 +38,6 @@
       type="font/woff2"
       crossorigin
     />
-    <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />

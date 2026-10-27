@@ -2165,3 +2165,45 @@ Append below this line.
 - The Dashboard chunk contains a WebGL capability probe that creates a detached canvas. It never attaches to the DOM (DOM canvas count 0 on phone routes), but the dashboard route was not in the battery sample (the audited `/` was the clean-storage landing).
 - The previous Left open items still stand unless named above: the contact address is still the personal Gmail in `src/content/site.ts` (user-owned, needs the dedicated address); `SITE_ORIGIN` is unset so no sitemap ships (user-owned, needs the production origin); the Vercel rewrite and the service worker content-type check have not run on a real deploy; Abril Fatface at 360 px on the longest titles was only covered by the overflow check; primitives not rendered by any route (tooltip, switch, tabs, select, dialog) were never seen in a browser; the sticky mobile CTA still shows beside the page's own primary CTA; the plan card variant prints `MODULE 1` under `MODULE I`; the Lumen/ceremony `SparkBadge` reads "Codex" (user decision pending: keep, swap source, or go static); `.bleach-bypass` and `.heavy-chip` have no consumer (not deleted); `design-system.md` spec edits for the parent (§7.1 row 1 CRT path, §5.6 / §6 static ceremony, §2.2 `--grain-picture-opacity` / `--stage-black`, §3.3 / §6 About conflict, R2b aurora order); real macOS trackpad inertia over nested scrollers was not tried; the light-theme hero aurora strength (0.14 / 0.30) is a taste call.
 - The new palette focus-return test was not mutation-checked against the unfixed code; the browser run showed focus landing on `<body>` before the fix and on the opener after it.
+
+### Redesign R5.1: Polish and corrections
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R5 — Hardening; R5 Left open
+
+#### Shipped
+
+- `index.html`: the existing inline script injects `<link rel="preload" as="image" fetchpriority="high">` for `/posters/hero-crt.webp` only when the path is `/` and stored progress has no `startDate` (first-run landing). Returning learners and learning routes get none. `<meta charset>` moved to the top of `<head>` (the longer script had pushed it past 1024 bytes and Lighthouse `charset` failed, best-practices 96). `HeroCanvas.tsx`: the poster `<img>` has `fetchPriority="high"` and `decoding="async"`; it was never lazy.
+- `DecodeHeading.tsx` + `launch.css`: the `h1` carries `aria-label` (one accessible name); an invisible `aria-hidden` sizer holds the final string and sets the box; the animated copy is `aria-hidden`, absolutely positioned over it with `contain: strict`. Reduced motion is unchanged (the vendored decode returns early and the live copy shows the final text).
+- `Library.tsx`: a visually hidden `<h2>Results</h2>` before the count (fixes `heading-order`).
+- `WeekFrame.tsx`: the ratio id is now in `aria-labelledby` for rail frames too, and the card variant has literal spaces between its parts (ignored by the flex layout) so the visible text reads exactly like the accessible name. The names are identical in wording to before for cards; no test changed.
+- Dashboard WebGL probe: no change needed. The probe lives in `HeroCanvas`, which only `Landing` renders. The `Dashboard` chunk contains the code, but a returning learner never mounts `Landing` (see the battery rows below: 0 canvases created).
+
+#### Verified
+
+- `npm run validate && npm test && npx tsc -b && npm run build && npm run e2e` exit 0; 218 tests; e2e 1 passed; oxlint 42 warnings. Per-route gzip: entry 129.2 KB, plan 131.3, week 155.3, library 152.6, toolkit 133.0, capstone 131.6.
+- Lighthouse 12.8.2, same method. Before (R5) to after (R5.1):
+
+| Route | Perf | A11y | BP | LCP | CLS |
+|---|---|---|---|---|---|
+| `/` | 82 to 81-83 | 100 to 100 | 100 to 100 | 3.7 s to 3.9 s | 0.101 to 0.058-0.09 (3 runs) |
+| `/plan` | 90 to 90 | 100 to 100 | 100 to 100 | 3.1 s to 3.1 s | 0 to 0 |
+| `/week/7` | 87 to 87 | 100 to 100 | 100 to 100 | 3.3 s to 3.3 s | 0 to 0 |
+| `/library` | 88 to 88 | 98 to 100 | 100 to 100 | 3.3 s to 3.3 s | 0 to 0 |
+
+  `heading-order` and `label-content-name-mismatch` no longer fail; `lcp-discovery-insight` and `prioritize-lcp-image` now pass on `/`. LCP did not improve: it is still bound by render-blocking CSS, unused JS and the chunk chain, so the LCP target (< 2.0 s) and the perf >= 90 target on `/`, `/week/7`, `/library` stay unmet. `/` CLS is under 0.1 but not zero: the decode still changes glyph widths of centred text inside a fixed box, and Lighthouse reports small shifts on the live copy (a perf run varies 0.009 to 0.098).
+- Phone battery (390x844, 3 s idle + 5 s sample): first-run `/`: 0 rAF, 0 running animations, 0 canvases in DOM, 0 canvases created, no Lenis, preload present. Returning-learner dashboard `/`: 0 rAF, 0 animations, 0 canvases in DOM, 0 created, no Lenis, no preload. (R5 sampled only the first-run landing.)
+
+#### Decisions
+
+- **Decision:** the CLS fix keeps the decode but sizes the box by an invisible final string; it does not remove the animation.
+  - **Because:** the coordinator asked to reserve the final layout and keep reduced-motion and one accessible name.
+  - **Rejected:** a monospaced decode font (a visible design change).
+  - **Risk:** `/` CLS can still read up to about 0.1 on some runs.
+  - **Deviation:** no
+
+#### Left open
+
+- Items from the R5 entry that are already closed (verified in code): "Codex" SparkBadge (`536ddea`; `public/ceremony-badge.html` reads "Fin"); design-system spec edits for §7.1 CRT path, §5.6 / §6 static ceremony, §2.2 tokens and the About header (`e11e00c`, `ac928c1`, `b4e12b7`); sticky CTA beside the page CTA (R3.1: `stickyRoute.ts` and the `StickyCta` IntersectionObserver); duplicate "MODULE 1" label on `/plan` (dropped in R3.1; only `Module <Roman>` eyebrows remain). Also closed here: `heading-order` on `/library`, `label-content-name-mismatch` on `/plan`, the Dashboard WebGL probe concern.
+- Still open: perf < 90 on `/`, `/week/7`, `/library`; LCP > 2.0 s on all four routes; `/` CLS not zero; `/library` DOM size (3,193 elements); contact address and `SITE_ORIGIN` (user-owned); Vercel rewrite and service worker untested on a real deploy; unrendered primitives never seen in a browser; trackpad inertia untried; light hero aurora strength is a taste call.
