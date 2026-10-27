@@ -2207,3 +2207,31 @@ Append below this line.
 
 - Items from the R5 entry that are already closed (verified in code): "Codex" SparkBadge (`536ddea`; `public/ceremony-badge.html` reads "Fin"); design-system spec edits for §7.1 CRT path, §5.6 / §6 static ceremony, §2.2 tokens and the About header (`e11e00c`, `ac928c1`, `b4e12b7`); sticky CTA beside the page CTA (R3.1: `stickyRoute.ts` and the `StickyCta` IntersectionObserver); duplicate "MODULE 1" label on `/plan` (dropped in R3.1; only `Module <Roman>` eyebrows remain). Also closed here: `heading-order` on `/library`, `label-content-name-mismatch` on `/plan`, the Dashboard WebGL probe concern.
 - Still open: perf < 90 on `/`, `/week/7`, `/library`; LCP > 2.0 s on all four routes; `/` CLS not zero; `/library` DOM size (3,193 elements); contact address and `SITE_ORIGIN` (user-owned); Vercel rewrite and service worker untested on a real deploy; unrendered primitives never seen in a browser; trackpad inertia untried; light hero aurora strength is a taste call.
+
+### Redesign R6.0: Contact address and production origin
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → §5 open items (user supplied both)
+
+#### Shipped
+
+- `src/content/site.ts` — `email: "manofcode98@gmail.com"` (replaces the personal Gmail), `origin: "https://framebyframe.manofcode.fyi"`.
+- `src/components/PageMeta.tsx` — canonical, `og:url` and `og:image` use `SITE.origin`, not `window.location.origin`.
+- `scripts/finalize-dist.ts` — sitemap and robots use `SITE_ORIGIN` when set, else `SITE.origin`.
+
+#### Verified
+
+- `npm test` → 218 passed. `npx tsc -b` → 0. `npm run build` → `sitemap: https://framebyframe.manofcode.fyi/sitemap.xml`; `dist/robots.txt` has the absolute `Sitemap:` line; `<loc>` values are absolute.
+
+#### Decisions
+
+- **Decision:** Canonical and Open Graph URLs always name the production origin.
+  - **Because:** a Vercel preview URL must not present itself as canonical, and link previews need an absolute image URL; prerendered HTML (next phase) also has no `window`.
+  - **Rejected:** keeping `window.location.origin`.
+  - **Risk:** a staging deploy's canonical points at production, which is the intended behaviour.
+  - **Deviation:** no
+
+#### Left open
+
+- Prerendering (user request 2026-10-27) is the next phase.

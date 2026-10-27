@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { SITE } from "@/content/site";
 
 export const SW_PLACEHOLDER = "__BUILD_ID__";
 
@@ -63,6 +64,7 @@ if (isDirectRun()) {
   const dist = join(process.cwd(), "dist");
   if (!existsSync(dist)) throw new Error("dist/ is missing; run vite build first");
   console.log(`service worker cache: fbf-${stampServiceWorker(dist)}`);
-  const origin = writeSeo(dist, process.env.SITE_ORIGIN);
-  console.log(origin ? `sitemap: ${origin}/sitemap.xml` : "sitemap: skipped (SITE_ORIGIN not set)");
+  // SITE_ORIGIN overrides the production origin (e.g. for a staging build).
+  const origin = writeSeo(dist, process.env.SITE_ORIGIN ?? SITE.origin);
+  console.log(origin ? `sitemap: ${origin}/sitemap.xml` : "sitemap: skipped (no origin)");
 }

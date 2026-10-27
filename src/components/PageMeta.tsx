@@ -1,11 +1,13 @@
 import type { JSX } from "react";
 import { useLocation } from "react-router-dom";
+import { SITE } from "@/content/site";
 import { pageMeta } from "@/lib/meta";
 
 export function PageMeta(): JSX.Element {
   const { pathname } = useLocation();
   const meta = pageMeta(pathname);
-  const origin = window.location.origin;
+  // Canonical and Open Graph URLs always name production, so previews never compete with it.
+  const origin = SITE.origin;
   const url = `${origin}${pathname}`;
   const image = `${origin}/og.png`;
 
