@@ -22,7 +22,7 @@ import "./atmosphere.css";
 const SLOT = "hero";
 
 const CrtBackground = lazy(() =>
-  import("@/vendor/threeui/crt/CrtBackground").then((mod) => ({ default: mod.CrtBackground })),
+  import("@/vendor/threeui-derived/crt/CrtBackground").then((mod) => ({ default: mod.CrtBackground })),
 );
 
 function webglAvailable(): boolean {

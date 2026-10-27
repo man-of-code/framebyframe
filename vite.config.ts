@@ -16,7 +16,7 @@ export default defineConfig({
           groups: [
             {
               name: "atmosphere",
-              test: /src[\\/]vendor[\\/]threeui[\\/]crt[\\/]/,
+              test: /src[\\/]vendor[\\/]threeui-derived[\\/]crt[\\/]/,
               includeDependenciesRecursively: false,
             },
           ],
