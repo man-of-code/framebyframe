@@ -74,6 +74,12 @@ for (const theme of ["dark", "light"] as const) {
               await expect(page.getByRole("checkbox", { name: "day 1 footage backed up in two places same night" })).not.toBeChecked();
             }
           }
+          if (path === "/library") {
+            // The HTML carries the first page of cards; once hydrated the grid holds every result.
+            const total = Number(await page.locator(".library-count strong").innerText());
+            expect(total).toBeGreaterThan(9);
+            await expect(page.locator(".resource-card")).toHaveCount(total);
+          }
           await expect(page.getByText("Progress is read-only")).toHaveCount(0);
 
           // Production React keeps server attributes on a mismatch without reporting it, so a useId divergence

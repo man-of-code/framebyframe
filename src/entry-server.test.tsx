@@ -49,6 +49,13 @@ describe("prerender (Node, no window)", () => {
     expect(body).toContain('class="bottom-tabs"');
   });
 
+  it("renders only the library's first page of cards", async () => {
+    const { body } = splitHead(await render("/library"));
+    expect(body.match(/class="resource-card"/g)).toHaveLength(9);
+    // The count still names every result; the rest of the cards arrive once hydrated.
+    expect(body).toMatch(/<strong>138<\/strong> (<!-- -->)?results/);
+  });
+
   it("renders the first-run landing on / with the static aurora and an empty date", async () => {
     const html = await render("/");
     expect(html).toContain('class="hero aurora"');
