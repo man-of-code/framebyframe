@@ -75,8 +75,8 @@ There is **no pop cyan**: it would sit next to action teal and read as a link.
 | `--pop-shadow-color` | `#F2E8D5` | Offset shadows: paper "misregistration" on ink |
 | `--ornament` | `#7A6C93` | Rules, frames, fleurons (= `--border-strong`) |
 | `--grain-opacity` | `0.03` | §5.6 |
-| `--grain-picture-opacity` | `0.06` | Film grain on the always-dark pictures (hero screen, ceremony stage); same value in both themes (added in R4) |
-| `--stage-black` | `#000000` | The ceremony and hero-screen stage; identical in both themes (added in R4) |
+| `--grain-picture-opacity` | `0.10` | Film grain on the always-dark, text-free pictures: `.hero-screen` and the live ceremony stage; same value in both themes (R4; raised from 0.06 after the R4 critique) |
+| `--stage-black` | `#000000` | The hero screen and the **live** ceremony stage; identical in both themes (added in R4) |
 
 Also defined in both theme blocks of `tokens.css`, with values in their own sections: `--sheen-color` (§5.2), `--grain-film-tile` and `--grain-film-opacity` (§5.6).
 
@@ -310,7 +310,7 @@ Ornaments are **CSS utilities**. They cost zero JS and are invisible to assistiv
 | `.orn-rule-double` | `border-top` + `border-bottom`, 1px each, `height: 3px` between | 5px |
 | `.orn-rule-diamond` | A `linear-gradient` hairline as background, plus a centred 7px diamond drawn as a rotated square on the element's own `::before` (a stretched mask would distort the diamond) | 9px |
 | `.playbill-frame` | **Background layers only — no pseudo-elements, no mask** (a mask on a container masks its children). Double rule: `border: 1px solid var(--ornament)` plus `box-shadow: inset 0 0 0 4px <surface>, inset 0 0 0 5px var(--ornament)`; corner squares: four 10px `linear-gradient` layers at the corners | — |
-| `.orn-seal` | Guilloché seal (§5.1.1). An **empty** `<div class="orn-seal" aria-hidden="true">` (no children, so its own mask is safe): `display: block; aspect-ratio: 1; margin-inline: auto; background-color: var(--ornament); mask: url("../assets/ornaments/guilloche-seal.svg") center / contain no-repeat;` plus the identical `-webkit-mask`. `@media (forced-colors: active) { display: none }` | `240px` wide; `320px` at ≥ 640; `min(64vw, 280px)` in the static ceremony, where it sits on the `--stage-black` film-grain stage inside the playbill frame (R4), with Continue below on `--bg-raised` |
+| `.orn-seal` | Guilloché seal (§5.1.1). An **empty** `<div class="orn-seal" aria-hidden="true">` (no children, so its own mask is safe): `display: block; aspect-ratio: 1; margin-inline: auto; background-color: var(--ornament); mask: url("../assets/ornaments/guilloche-seal.svg") center / contain no-repeat;` plus the identical `-webkit-mask`. `@media (forced-colors: active) { display: none }` | `240px` wide; `320px` at ≥ 640; `min(64vw, 280px)` in the static ceremony, where it sits **directly on the playbill frame's `--bg-raised` surface** (no black stage, no film grain; band grain only), with Continue below it |
 
 SVG data-URI rules: encode `#` as `%23`; give paths an opaque fill (`currentColor` inside a data URI resolves to black, so colour comes from `background-color`); emit both `mask-*` and `-webkit-mask-*`. In forced-colors mode ornaments disappear; acceptable, because they are decorative.
 
@@ -484,6 +484,16 @@ Rules:
 ---
 
 ## 6. Surfaces map
+
+**Rules added after the R4 visual critique (2026-10-27):**
+- **Halftone that reads as Ben-Day:** `--halftone-gap: 4px`, `--halftone-dot: 1.25px`, `--pop-offset-lg: 12px` (about three dot columns visible in the offset).
+- **Hero aurora in light mode:** `--aurora-strength-hero: 0.30` in `.light` only (dark hero stays 0.20). Allowed because no text sits on the hero band; the title is inside the playbill frame's raised surface.
+- **Film grain levels:** `.hero-screen` and the live ceremony stage use `--grain-picture-opacity` (0.10); intermission cards (404, `/thank-you`) keep `--grain-film-opacity` (0.06).
+- **No foreign product names on screen.** The CRT cinematic screen's corner label reads "FRAME BY FRAME" (upstream "MONO · ACADEMY") and its title card "Y O U R   F I R S T   F I L M" (upstream "T H E   L O N G   Q U I E T"), via a recorded derived copy of the CRT files (§7.1 row 1); the ceremony badge reads "Fin". `og.png` must show neither.
+- **Lumen CTA** shows no trailing indicator dot ("○"); hide it through the wrapper/CSS hook, never by editing the vendored file.
+- **Landing module strip:** card content aligns to the top; the horizontal scroller gets a 32px edge fade to `--bg-base` on the overflowing side(s); eyebrows use Roman numerals (`MODULE IV`).
+- **Dashboard "Next up" rows:** minutes stay inline after the task title in a mono `--text-tertiary` span and wrap with it.
+- **OG image:** title set in Abril Fatface (load the self-hosted font when rasterising), no fake buttons.
 
 **Rules added after the R3 visual critique (2026-10-27):**
 - **Prose routes centre.** `/week/:n` and `/capstone` centre their `--container-prose` column (`margin-inline: auto`). On every route the `.aurora` band spans `--container-app` (full content width), with the title block or frame centred inside it on prose routes; band width no longer changes from route to route.
