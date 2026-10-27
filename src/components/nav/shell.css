@@ -325,7 +325,18 @@
 
 .route-fallback {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
+}
+
+.route-fallback__band {
+  height: 9rem;
+  border-radius: 0;
+}
+
+.route-fallback__button {
+  width: 10rem;
+  height: 48px;
+  border-radius: var(--radius-sm);
 }
 
 @media (min-width: 640px) {

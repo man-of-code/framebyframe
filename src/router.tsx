@@ -22,11 +22,11 @@ function RouteFallback() {
   return (
     <div className="route-fallback" role="status" aria-live="polite">
       <span className="visually-hidden">Loading</span>
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-10 w-2/3" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-5/6" />
-      <Skeleton className="h-12 w-40" />
+      {/* Shaped like the page it stands in for: a square header band, a title, lines, a pop button (radius-sm). */}
+      <Skeleton className="route-fallback__band" />
+      <Skeleton className="h-4 w-full max-w-xl" />
+      <Skeleton className="h-4 w-5/6 max-w-lg" />
+      <Skeleton className="route-fallback__button" />
     </div>
   );
 }
