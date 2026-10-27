@@ -2034,3 +2034,67 @@ Append below this line.
 - `.bleach-bypass` in `atmosphere.css` has no consumer (pre-existing; not deleted).
 - The light-theme hero aurora (strength 0.14) is barely visible behind the frame and screen; taste call for the critique.
 - Lighthouse was not run (R5).
+
+### Redesign R4.1: Visual critique fixes and robustness
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/design-system.md` §6 "Rules added after the R4 visual critique", §2.2 (`--grain-picture-opacity` 0.10), §5.1 (static ceremony seal on the frame); R4 Left open
+
+#### Shipped
+
+- CRT (`cfd62ec` rename only, `621969a` changes): `git mv src/vendor/threeui/crt src/vendor/threeui-derived/crt`. Only `crtScreens.ts` differs from upstream ("MONO · ACADEMY" → "FRAME BY FRAME", "T H E   L O N G   Q U I E T" → "Y O U R   F I R S T   F I L M"). Every moved file has an MIT header naming `src/shaders/crt/<file>` at `68802d5…`. `HeroCanvas` import and the vite `atmosphere` group regex point at the new path. `SOURCE.md` records the derived copy. `public/posters/hero-crt.webp` was recaptured (932×699, q80, 21.3 KB).
+- Tokens (`152036d`): `--halftone-gap: 4px`, `--halftone-dot: 1.25px`, `--pop-offset-lg: 12px`, `--grain-picture-opacity: 0.10`. `.light` adds `--aurora-strength-hero: 0.30` and `--aurora-fields-hero`; `.hero.aurora::before` uses `var(--aurora-fields-hero, var(--aurora-fields))`. The static ceremony seal is now directly on the frame (no stage, no film grain). The live stage alone keeps the `#000` film grain, at 4:3. `.bleach-bypass` deleted.
+- Lumen CTA: `ring={false}` (a prop; no CSS, vendor untouched).
+- Landing module strip (`5a5649c`, `1a0bcd0`): cards top-aligned; eyebrows `MODULE I`…`VII` (`toRoman`); `src/hooks/useEdgeFade.ts` sets `data-fade-start` / `data-fade-end`, and a 32px `mask-image` fade (to the `--bg-base` behind) applies only on the overflowing side or sides.
+- Dashboard Next up: minutes inline after the title (`.next-task-minutes`: JetBrains Mono, `--text-tertiary`, nowrap, wraps with the title).
+- Ceremony robustness (`aea34ce`): `src/lib/ceremony.ts` `openCeremonyWhenLoaded` imports the chunk first, then calls `seeCeremony()` and opens it. On failure nothing is recorded and a sonner error toast says "The capstone ceremony could not load. Reload the page to see it." (sonner is imported dynamically). Tests in `src/lib/ceremony.test.ts` (3).
+- Route errors: `src/components/RouteError.tsx` (intermission card "Reel jammed" / "This page did not load", a Reload button using the pop classes directly to keep `Button` out of the entry). A pathless route with `errorElement` wraps every child route, so the shell stays. `RouteError.test.tsx` covers a lazy import that rejects. The lazy 404 declaration moved to `src/routes/NotFoundRoute.ts`.
+- OG (`745a4b4`): new poster, the fake "Start week 1" pill replaced by a mono `7 MODULES · FREE TOOLS` readout, halftone at 4px / 1.25px / 12px; title in self-hosted Abril (fonts reported `loaded` in the rasterising page).
+
+#### Verified
+
+- `npm test` → 40 files, 217 tests pass. `npx tsc -b --noEmit` → 0. `npm run build` → 0, no warnings. `npm run e2e` → 1 passed. `npx oxlint` → 42. `npm run validate` → pass.
+- Sizes (gzip KB, R4 → R4.1): entry 128.8 → 129.2, Plan 130.8 → 131.2, Week 154.9 → 155.3, Library 152.1 → 152.5, Toolkit 132.5 → 132.9, Capstone 131.0 → 131.6. `atmosphere-*.js` 9.33 KB, only on first-run desktop `/`. The gate's canvas checks pass.
+- Learning routes `/plan`, `/week/7`, `/library`, `/toolkit`, `/capstone` request no `atmosphere-*.js` and mount no canvas. No overflow on 48 page/width/theme combinations (360/768/1440, both themes).
+- Poster and canvas: frame 0 shows "FRAME BY FRAME"; a title-card frame shows "Y O U R   F I R S T   F I L M". Neither upstream string appears anywhere. `og.svg` has no "MONO", "ACADEMY", "QUIET" or "Start week".
+- Landing (dark / light): `.hero-screen::before` opacity 0.1 in both; halftone `background-size` 4px, shadow `translate(12px, 12px)`; hero fields alpha 0.2 dark / 0.3 light; no `.lumen-cta__ring`; strip `data-fade-start=false, end=true` at rest, both true after scrolling 200px.
+- Ceremony: live at 1440 shows "Fin", stage grain 0.1. Static at 360 and 1440 (both themes): the seal's parent is the frame, 0 `.grain--film` elements, no stage. With the CeremonyBadge chunk aborted (service workers blocked, see below): toast shown, no ceremony, `ceremonySeen` still false.
+- Route error: `/toolkit` with its chunk aborted shows the card inside the shell; Reload with the chunk restored shows "Free software". Skeleton: `/library` with its chunk held 3s shows the 144px square band and the 4px-radius button block.
+- Toast (`/about`, invalid progress file): 2px outline, 4px left bar `rgb(255,107,107)` dark / `rgb(179,38,30)` light, `6px 6px 0` overlay shadow. Cookie banner at 768 in both themes: correct, no overflow.
+- Shots: 43 PNGs in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r4/shots-after/` (the R4 set plus `cookie-banner-768-*`, `toast-1440-*`, `route-skeleton-1440-dark`, `route-error-1440-dark`, `ceremony-failed-toast-1440-dark`, `next-up-390-dark`, `og.png`). Looked at by eye: landing 1440 both themes and 360 light; ceremony live 1440 dark, static 360 light; route error; toast light; cookie banner 768 dark; Next up 390; og.png at 100%.
+
+#### Decisions
+
+- **Decision:** the light hero gets its own `--aurora-fields-hero` token in `.light`.
+  - **Because:** a custom property resolves `var()` where it is declared, so `--aurora-strength` overridden on `.hero` would not reach `--aurora-fields` (computed on `:root`).
+  - **Rejected:** scaling the layer's opacity (cannot exceed 1); a `:root, .aurora` field block (the contrast test reads the `:root` block).
+  - **Risk:** the three gradient positions now exist twice in `tokens.css`.
+  - **Deviation:** no
+- **Decision:** the edge fade is a `mask-image` on the scroller, driven by a 20-line hook.
+  - **Because:** the cards are opaque, so a background gradient would paint under them; CSS alone cannot tell which side overflows.
+  - **Rejected:** scroll-driven animations (Firefox); always fading both ends.
+  - **Risk:** a focused card's outline inside the 32px edge is faded until it scrolls in.
+  - **Deviation:** no
+- **Decision:** `RouteError` draws its Reload button with the pop classes and the sheen span, not `Button`.
+  - **Because:** the error element must be in the entry graph (a lazy one could fail too), and `Button` there costs about 0.6 KB on every learning route.
+  - **Rejected:** `Button` (+0.6 KB); a lazy error element.
+  - **Risk:** two spellings of the primary button to keep in step. The learning routes still grew 0.4 KB (the error route and `Intermission` in the entry); Week is 4.7 KB under target.
+  - **Deviation:** no
+- **Decision:** the ceremony failure toast imports `sonner` dynamically.
+  - **Because:** a static import would put sonner into Capstone's static graph; the deferred chrome has already loaded it.
+  - **Rejected:** a static import.
+  - **Risk:** if sonner's chunk also fails, there is no toast; the ceremony is still not marked seen.
+  - **Deviation:** no
+- **Decision:** this entry corrects R4's oxlint record: R4's lazy 404 (`e7bef61`) raised the count to 43 after my R4 count of 42 was taken. Moving that declaration to `NotFoundRoute.ts` restores 42.
+  - **Because:** R4's Verified line was measured one commit early.
+  - **Rejected:** editing the R4 entry.
+  - **Risk:** none.
+  - **Deviation:** no
+
+#### Left open
+
+- The production service worker serves hashed `/assets` cache-first, so a tab that has a chunk cached never sees a "stale chunk" failure; Playwright routing also needed `serviceWorkers: "block"` to simulate one. Client-side navigations run in a transition, so the route skeleton shows only on a direct load.
+- §7.1 row 1 still lists the CRT under "Vendored" at `src/vendor/threeui/crt/`; it is now a derived copy at `src/vendor/threeui-derived/crt/` (spec edit for the parent).
+- The import-failure toast shows the validator's raw reason ("expected version 1, got 9"); copy unchanged.
+- Lighthouse (R5).
