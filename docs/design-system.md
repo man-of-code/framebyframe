@@ -558,7 +558,7 @@ All rows come from `MengTo/threeui` at **`68802d5428071ada5c20db8094b1649e6bb770
 
 | # | Piece | Kind | Upstream path | Local files | Surface | Layer | Phone / reduced motion |
 |---|---|---|---|---|---|---|---|
-| 1 | CRT background (raw WebGL) | Vendored | `src/shaders/crt/{CrtBackground.tsx, crtRenderer.ts, crtScreens.ts, crtShaders.ts}` | `src/vendor/threeui/crt/` (same names) | Landing hero screen | HUD | Poster only (§7.2) |
+| 1 | CRT background (raw WebGL) | **Derived** (R4.1): moved by rename, then only the two cinematic strings changed ("FRAME BY FRAME", "Y O U R   F I R S T   F I L M"); MIT header on each file | `src/shaders/crt/{CrtBackground.tsx, crtRenderer.ts, crtScreens.ts, crtShaders.ts}` | `src/vendor/threeui-derived/crt/` (same names) | Landing hero screen | HUD | Poster only (§7.2) |
 | 2 | Lumen CTA | Vendored | `src/shaders/lumen-cta/{LumenCta.tsx, lumen-cta.css}` (its `sources/lumen.html` loads three@0.149 from a CDN; that file is **not** vendored, and the TSX does not import `three`) | `src/vendor/threeui/lumen-cta/` | Landing primary action | Pop | As shipped |
 | 3 | SparkBadge (canvas 2D in an iframe) | Vendored | `src/shaders/spark-badge/{SparkBadge.tsx, spark-badge.html}` | `src/vendor/threeui/spark-badge/SparkBadge.tsx`; `public/spark-badge.html` | Capstone ceremony, **live variant, desktop only** (§6) | Atmosphere (ceremony) | Not mounted; the static seal ceremony replaces it (§6), as §7.4 rule 1 requires |
 | 4 | `articleHeadingDecode` | Vendored | `src/shaders/article-headings/articleHeadingDecode.ts` | `src/vendor/threeui/article-headings/` | Landing H1, `/about` H1 | Victorian (type) | As shipped (one-shot) |
