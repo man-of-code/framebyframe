@@ -2235,3 +2235,104 @@ Append below this line.
 #### Left open
 
 - Prerendering (user request 2026-10-27) is the next phase.
+
+### Redesign R6: Build-time prerendering
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R6 — Build-time prerendering; §2 non-negotiables; `docs/design-system.md` §7.2–7.4, §8
+
+#### Shipped
+
+- `package.json` `build`: `tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && tsx scripts/prerender.ts && tsx scripts/finalize-dist.ts && tsx scripts/assert-bundle.ts`. `dist-ssr/` is gitignored and not deployed (`vite.config.ts`: no `public/` copy, no manifest for the SSR build). New `e2e:preview` script.
+- `src/router.tsx` exports `routes` (no router); `src/App.tsx` creates the browser router from them. `src/entry-server.tsx` renders a path with `createStaticHandler` + `createStaticRouter` + `<StaticRouterProvider hydrate={false}>` (no loaders, so no hydration data) inside `StrictMode`, through React 19 `prerenderToNodeStream`, which waits for every `React.lazy` route.
+- `scripts/prerender.ts`: renders `PRERENDER_ROUTES` (`/`, `/plan`, `/week/1`…`/week/16`, `/library`, `/toolkit`, `/capstone`, `/about`, `/contact`, `/privacy`, `/terms`, `/thank-you`) plus `/404` → `dist/404.html`. Each file is the built `dist/index.html` with: React's hoisted title/meta/canonical (production origin) replacing the template `<title>`, each marked `data-prerendered-head`; the route chunk graph's CSS as `<link rel="stylesheet">` and its JS as `<link rel="modulepreload">` (read from `dist/.vite/manifest.json`, minus what the template already loads; `/` gets CSS only, see Decisions); `#root data-prerendered="<path>"` around the markup. React's own `<link rel="preload" as="image">` for the hero is dropped. Runs before `finalize-dist`, so the SW cache name hashes the prerendered `index.html`. `assert-bundle` and its constants are unchanged and still read `dist/index.html`.
+- `src/main.tsx` + `src/lib/hydrate-guard.ts` (+ test): `hydrateRoot` with `onRecoverableError` → `console.error("[hydration]", error, componentStack)` only when `data-prerendered` equals `location.pathname` (trailing slash normalised), `location.search` is empty, and it is not `/` with a truthy stored `startDate` (defensive parse). Otherwise it removes the attribute, clears `#root`, removes the `data-prerendered-head` tags and `createRoot`s.
+- `index.html`: the theme block keeps its own `try` and runs first; the second block now parses progress once, adds `html.has-progress` when `startDate` is set, and adds the hero preload only on first-run `/`. Inline `<style>`: `html.has-progress #root[data-prerendered="/"] { display: none }`.
+- `src/hooks/useHydrated.ts`: `useSyncExternalStore` with a `false` server snapshot. `useProgress` starts from `{ progress: emptyProgress, status: "empty" }` when not hydrated and loads storage in a mount effect inside `startTransition`; its returned API is memoized. `useTheme` shows `"system"` and applies nothing until hydrated. `useMediaQuery` returns `false` until hydrated. `Landing`: static aurora and an empty date input until hydrated (then today). Plain client renders (`createRoot`, jsdom tests) read storage on the first render as before.
+- `src/routes/Root.tsx` + `shell.css`: the rail and the mobile bar + bottom tabs both render; `display: none` hides the inactive set at 768px. `Library.tsx` + `library.css`: chips and the Filters trigger both render in `display: contents` wrappers, hidden at 1024px. `ResultsGrid`: the plain grid's columns are CSS media queries; `useMediaQuery` column counts remain only for the virtualizer (> 200 items, not reached by the 138 resources).
+- `vercel.json`: `{ "cleanUrls": false, "trailingSlash": false }`, no rewrites. `scripts/vercel-config.test.ts` asserts that and the output layout. `vite.config.ts` `vercelLikePreview`: `vite preview` serves a real file, else `<path>/index.html`, else `404.html` with 404; a trailing slash 308s.
+- Tests: `src/entry-server.test.tsx` (`@vitest-environment node`) renders all 27 paths without `window`; `src/testing/viewport-css.ts` injects a stylesheet's matching `@media` bodies so jsdom tests see the CSS-only layout (`LeftRail.test.tsx` footer test, `Library.test.tsx`); `e2e/expected-headings.ts`; `playwright.preview.config.ts` + `e2e-preview/hydration.spec.ts`.
+- `docs/redesign-plan.md` (R6 status), `docs/prd.md` (§3 deep links, §7 rendering and hosting rows, §8 quality bar), `README.md` (build section), `.cursor/rules/framebyframe-architecture.mdc` (prerender and hydration rules). `public/sw.js` unchanged.
+
+#### Verified
+
+- `npm run validate` → exit 0 (138 resources, 16 weeks). `npm test` → 42 files, 257 tests passed (218 before; +7 guard, +31 Node prerender/buildPage, +1 vercel config). `npx tsc -b` → exit 0. `npm run build` → exit 0. `npm run e2e` → 1 passed (dev server). `npx oxlint` → 42 warnings (baseline 42).
+- Node prerender test: every route's `<h1>` accessible name equals `e2e/expected-headings.ts`; no "read-only", `readonly-banner`, `cookie-banner` or `<canvas` in any body; `/` has `class="hero aurora"` (no `aurora--live`) and `<input type="date" value="">`.
+- Budget gate (limits untouched, target 160KiB / ceiling 180KiB): entry 130.0 KB (R5.1 129.2), `/plan` 132.0 (131.3), `/week` 156.1 (155.3), `/library` 153.3 (152.6), `/toolkit` 133.7 (133.0), `/capstone` 132.4 (131.6). No route over target. HTML (raw / gzip): `/` 25,946 / 5,921 B; `/plan` 41,469 / 6,988; `/week/7` 44,039 / 7,401; `/library` 386,543 / 22,002; `404.html` 22,402 / 4,984.
+- `curl` against `npx vite preview --port 4400 --strictPort` with `vercelLikePreview`: all 26 routes return 200 with their own `data-prerendered` and `<h1>` (`/plan` → "The plan", `/week/7` → "Director's expectations of a DP, camera movement/angles/framing, gear", each week its own title); `/definitely-missing` → 404 with `data-prerendered="/404"`; `/plan/` → 308 `Location: /plan`; `/assets/nope.js` → 404; `/library?language=ta` → library HTML (client-rendered by the guard). Before the plugin, stock `vite preview` answered every path, `/assets/nope.js` included, with the landing `index.html` and 200 (`data-prerendered="/"` on `/plan`). Preview does not read `vercel.json`; Vercel itself was not exercised.
+- `npm run e2e:preview -- --workers=6` → 212 passed: 26 routes × dark/light × clean/seeded × 360×780 (`isMobile`, `hasTouch`) and 1440×900, plus the 404 status path and `/library?language=ta`. Each asserts no console text matching `[hydration]|Hydration|did not match|recoverable`, no console error or page error, the `<h1>`, `data-prerendered` kept (hydrated) everywhere except seeded `/` (client-rendered dashboard, "Today's programme"), the stored theme's root class, no read-only text, and seeded ticks (`/week/1` "Lessons from the Screenplay", `/week/7` check 0 ticked, check 1 not). Mutation check: reading storage in the hydration render made all 8 seeded `/plan` and `/week/7` tests fail with `[hydration] Minified React error #418`. Removing `startTransition` failed nothing, locally or with 600 ms added latency (see Decisions).
+- Offline (SW enabled, preview :4400): after visiting `/`, `/plan`, `/week/7` online, offline `/plan` and `/week/7` hydrate from their cached HTML; uncached `/week/9` gets the cached `/` shell, is client-rendered as week 9 with one `<title>`; zero hydration messages.
+- Lighthouse 12.8.2, mobile, `--headless=new`, Playwright Chrome for Testing, before = `a8e4706` built in a scratch worktree and served by stock preview :4390, after = this build on :4400. Simulated throttling (the R5 method), median of 3:
+
+| Route | Perf before → after | FCP | LCP | TBT | CLS | LCP element (after) |
+|---|---|---|---|---|---|---|
+| `/` | 82 → 88 | 2.8 → 2.4 s | 3.9 → 3.4 s | 11 → 14 ms | 0.083 → 0.089 | `img.hero-poster` |
+| `/plan` | 90 → 90 | 2.7 → 2.6 s | 3.1 → 3.0 s | 7 → 14 ms | 0 → 0 | `aside.cookie-banner > p` |
+| `/week/7` | 87 → 89 | 2.8 → 2.9 s | 3.3 → 3.1 s | 11 → 15 ms | 0 → 0 | `h1` |
+| `/library` | 88 → 85 | 2.8 → 3.0 s | 3.3 → 3.5 s | 11 → 16 ms | 0 → 0 | `aside.cookie-banner > p` |
+
+  A11y, best practices and SEO 100 on all, before and after. Applied (`--throttling-method=devtools`) runs, 2 each, were noisy: FCP 2.3 → 1.8–1.9 s on all four routes; LCP `/` 2.3/6.7 → 3.0/3.0 s, `/week/7` 6.2 → 2.2 s, `/library` 5.4/3.5 → 2.3/6.1 s, `/plan` 2.8 → 5.4 s (the cookie banner, which renders only after the deferred chrome chunk, is the LCP element whenever it lands last). With `fbf:consent=rejected` seeded (no banner; Lighthouse on a Playwright-seeded profile with `--disable-storage-reset`), simulated LCP before → after: `/plan` 3.1 → 3.1, `/week/7` 3.3 → 3.5, `/library` 3.8 → 3.8 s; applied: `/plan` 2.9 → 3.7 (FCP 3.7 outlier), `/week/7` 2.3 → 2.2, `/library` 6.2 → 2.3 s. Raw JSON: scratchpad `r6/lh-*.json`, `lhd-*.json`, `lhs-*.json`.
+- CLS on `/week/7` with the seeded progress: Lighthouse (seeded profile) 0 before and 0 after, simulated and applied. Playwright (4× CPU, ~1.6 Mbps, 150 ms) 360×780 ×3: 0.0001 each; 1440×900: 0.0001; one ticked checkbox after load.
+- Phone battery (390×844, `isMobile`, `hasTouch`, 3 s idle + 5 s sample, rAF and `createElement("canvas")` wrapped by `addInitScript`): `/`, `/plan`, `/week/7` and seeded `/` (dashboard): 0 rAF callbacks, 0 running animations, 0 canvases in DOM, 0 created, no `html.lenis`. Desktop 1440 first-run `/`: 1 canvas, `.aurora--live`, Lenis (the expected live hero after hydration); `/plan`, `/week/7`: 0 canvases.
+
+#### Decisions
+
+- **Decision:** the "hydrating" signal is `useSyncExternalStore`'s server snapshot (`useHydrated`), not a module flag set by `main.tsx`.
+  - **Because:** route content hydrates after `hydrateRoot` returns (each lazy chunk resolves later), and React gives each component the server snapshot exactly while it hydrates, then re-renders it once with the client value. `createRoot` renders and jsdom tests get `true` on the first render, so the 218 existing tests are unchanged in intent.
+  - **Rejected:** a global flag (no correct moment to clear it while lazy boundaries are still hydrating).
+  - **Risk:** any new per-user read during render must use it; the architecture rule now says so.
+  - **Deviation:** no
+- **Decision:** the post-hydration storage load runs in `startTransition`, and `useProgress` returns a memoized object.
+  - **Because:** an urgent context update that reaches a route Suspense boundary still waiting for its lazy chunk makes React discard the server HTML and client-render it (a recoverable error); the `useHydrated` re-render of the provider must not count as a context change.
+  - **Rejected:** a plain `setState` in the effect. In my runs it produced no error (the modulepreloads, and the slow entry under added latency, let the chunk win the race), so this guard is not proven necessary by a failing test.
+  - **Risk:** none known.
+  - **Deviation:** no
+- **Decision:** `/` (`dist/index.html`) carries its route CSS but no route `modulepreload`.
+  - **Because:** `assert-bundle` treats every `modulepreload` in `dist/index.html` as part of the shell that each learning route is measured with; adding the Dashboard graph there would add it to every route's number, which changes what the gate measures.
+  - **Rejected:** modulepreload links on `/` (inflates the gate); injecting them from the inline script (hides them from the gate).
+  - **Risk:** `/` hydration (first run) and the returning-learner dashboard wait on the entry → Dashboard chunk chain, as before R6. LCP on `/` is the poster `<img>` in the HTML, so it does not wait on that chain.
+  - **Deviation:** yes. Plan step: "Add `<link rel=\"modulepreload\">` for the route's own lazy chunk(s)". Did this instead: every route except `/`.
+- **Decision:** route chunk CSS is linked as render-blocking stylesheets in each prerendered page.
+  - **Because:** Vite injects a lazy chunk's CSS only when the dynamic import runs, after first paint, so prerendered markup would paint unstyled and shift.
+  - **Rejected:** inlining critical CSS (a new build step, and a dependency for extraction).
+  - **Risk:** one or two more render-blocking requests per route (Lighthouse names them: `Week-*.css` and `GapCard-*.css` each ~300 ms simulated on `/week/7`).
+  - **Deviation:** no
+- **Decision:** `vercel.json` has no rewrites, `cleanUrls: false`, `trailingSlash: false`; unknown paths rely on Vercel serving `404.html` with status 404.
+  - **Because:** real files must win and unknown paths must be real 404s; any catch-all rewrite would answer 200. No files need `.html` stripping, and one slash-free canonical form matches the sitemap and `PageMeta`.
+  - **Rejected:** per-route rewrites to `/<path>/index.html` (a second route list to keep in sync).
+  - **Risk:** that Vercel resolves `/plan` to `plan/index.html` with `trailingSlash: false` and serves `404.html` for unmatched paths is documented behaviour I could not exercise; check the first preview deploy (`/plan`, `/week/7`, `/plan/` → 308, `/nope` → 404).
+  - **Deviation:** no
+- **Decision:** `vite preview` gets a small `vercelLikePreview` middleware in `vite.config.ts`.
+  - **Because:** stock preview served the landing (200) for every path, so `curl`, Playwright and Lighthouse on `/plan` would have measured the landing being client-rendered.
+  - **Rejected:** `appType: "mpa"` (also turns off the dev server's SPA fallback that `npm run e2e` uses).
+  - **Risk:** it emulates, not reproduces, Vercel.
+  - **Deviation:** no
+- **Decision:** the client-render path also removes the prerendered head tags (`data-prerendered-head`), and `has-progress` hides all of `#root` on the `/` page, not just the landing.
+  - **Because:** React reuses a matching hoistable but not one whose `content`/`href` differs, so another page's description and canonical would remain; hiding only the landing would leave a prerendered rail with blank progress next to it.
+  - **Rejected:** listing PageMeta's selectors in `main.tsx`.
+  - **Risk:** with JavaScript off, a returning learner sees a blank `/` (the same as before R6).
+  - **Deviation:** no
+- **Decision:** the cookie banner stays client-only (behind the deferred `LaunchChrome`), as the brief preferred.
+  - **Because:** consent cannot be known at build time.
+  - **Rejected:** prerendering the banner and hiding it with a pre-paint `has-consent` class (it would move `CookieBanner` and `Button` into the entry).
+  - **Risk:** for first-time visitors the banner paragraph is the LCP element on `/plan` and `/library`, so their LCP still waits on JS (see Left open).
+  - **Deviation:** no
+- **Decision:** jsdom tests check the CSS-only layouts by injecting the stylesheet's matching `@media` bodies (`src/testing/viewport-css.ts`), read with `node:fs`.
+  - **Because:** jsdom evaluates no media queries and loads no CSS imports (`?raw` returned an empty string under Vitest), so both variants would be accessible and the narrow-library test could not tell them apart.
+  - **Rejected:** dropping those assertions.
+  - **Risk:** the helper understands only `min-width`/`max-width` conditions in px.
+  - **Deviation:** no
+- **Decision:** the landing's date input is empty in the HTML and filled with today's date once hydrated.
+  - **Because:** the build date would otherwise be baked into `value` and differ from the visitor's day.
+  - **Rejected:** none.
+  - **Risk:** before JS, a first-run visitor sees an empty date field.
+  - **Deviation:** no
+
+#### Left open
+
+- Prerendering did not reach the LCP target. Simulated Lighthouse: `/` 3.9 → 3.4 s (perf 82 → 88), `/plan` 3.1 → 3.0, `/week/7` 3.3 → 3.1, `/library` 3.3 → 3.5 s (perf 88 → 85, regressed). It is still bound by render-blocking CSS (`index-*.css` ~750 ms, plus route CSS), and on localhost Lantern also counts the JS chain that has finished before the observed paint. Applied throttling shows FCP 2.3 → ~1.9 s, with noisy LCP. Candidates, not done: inline critical CSS; prerender the cookie banner (above); render fewer library cards into the HTML (`/library` is 386 KB raw / 22 KB gzip, 138 cards).
+- `/` first-run CLS is unchanged (0.06–0.11 simulated), the decode-heading shifts from R5.1.
+- Vercel serving (directory index, `404.html` with 404, `/plan/` 308) and the service worker on a real deploy are untested.
+- The hydration matrix runs against `vite preview` on one machine; slow-device timing is covered only by the single 600 ms-latency check.
+- Previous open items still stand (R5.1 Left open): `/library` DOM size, unrendered primitives, trackpad inertia, light hero aurora strength.

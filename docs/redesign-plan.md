@@ -1,6 +1,6 @@
 # Frame by Frame — Redesign ("Kinetoscope") and Fix Plan
 
-**Status:** complete, 2026-10-27 — phases R0–R5.1 shipped on `feat/redesign-kinetoscope`; see the `Redesign R*` entries in `docs/implementation-journal.md` (R5 and R5.1 hold the final measurements and open items). Approved direction 2026-10-27. Supersedes the visual sections of `docs/design-system.md` (rewritten in Phase R1) and closes the review findings against `docs/implementation-plan.md`.
+**Status:** complete, 2026-10-27 — phases R0–R6 shipped (R6, build-time prerendering, added on user request) on `feat/redesign-kinetoscope`; see the `Redesign R*` entries in `docs/implementation-journal.md` (R5 and R5.1 hold the final measurements and open items). Approved direction 2026-10-27. Supersedes the visual sections of `docs/design-system.md` (rewritten in Phase R1) and closes the review findings against `docs/implementation-plan.md`.
 **Branch:** `feat/redesign-kinetoscope`.
 **Journal:** append one entry per phase to `docs/implementation-journal.md`, heading `### Redesign R<N>: <title>`, same template and `**Decision:**` / `**Deviation:**` rules as the v1 tasks.
 
@@ -129,6 +129,8 @@ Landing hero (animated aurora + playbill title + CRT canvas framed as a prosceni
 `npm run e2e`; update smoke spec selectors if the redesign moved them. Lighthouse mobile on `/`, `/plan`, `/week/7`, `/library` (target ≥90 perf, ≥95 a11y, LCP <2.0s; record honestly if missed). Manual audit against design-system v2 checklist in both themes. Journal entry lists any v1 or R-phase item still open.
 
 ### R6 — Build-time prerendering (user request 2026-10-27)
+
+**Status:** shipped 2026-10-27 — see the journal entry `Redesign R6: Build-time prerendering` (measurements, decisions, left open).
 
 Goal: first paint from static HTML per route instead of an empty `#root`, to cut LCP (R5.1: 3.1–3.9s) without changing what the learner sees once JS runs.
 

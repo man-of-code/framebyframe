@@ -51,7 +51,7 @@ Carried forward unchanged from the ledger's Part 3: Android-first camera guidanc
 | `/toolkit` | — | No | Free software, license, download, first week of use |
 | `/about` | — | Heading effect only | Credits, method, licensing notes, the open gaps, help-wanted |
 
-Vercel needs `rewrites: [{ source: "/(.*)", destination: "/index.html" }]` for deep links.
+Every route above (and each `/week/1`…`/week/16`) is prerendered at build time to its own `dist/<path>/index.html` (*amended 2026-10-27, R6*), so Vercel serves a real file for each deep link with no SPA rewrite; unknown paths get `404.html` with status 404. The page hydrates in place when the HTML matches the URL and the learner's state; otherwise it is client-rendered (query strings, returning learners on `/`, offline fallback).
 
 **Navigation model**
 
@@ -226,7 +226,8 @@ Content lives as typed TS modules in `src/content/` (`resources.ts`, `weeks.ts`,
 | Validation | Zod schemas run in a `prebuild` script over `src/content/` | Fails fast |
 | Link check | Scheduled GitHub Action, weekly | Critical given how many ledger pages were only partially fetchable |
 | Tests | Vitest for schema, progress logic, week derivation, filter logic; one Playwright smoke test | Covers what breaks quietly |
-| Hosting | GitHub → Vercel, preview per branch, prod on main, SPA rewrite | Free tier |
+| Rendering | Build-time prerender of every static route (`src/entry-server.tsx`, `scripts/prerender.ts`, React 19 `prerenderToNodeStream`), then `hydrateRoot` when safe, else `createRoot` (*R6, 2026-10-27*) | No server at runtime; per-user state is client-only (neutral server snapshot) |
+| Hosting | GitHub → Vercel, preview per branch, prod on main, static files + `404.html` (no SPA rewrite since R6) | Free tier |
 
 **Suggested structure**
 
@@ -249,6 +250,7 @@ scripts/          validate-content.ts  check-links.ts  assert-bundle.ts
 
 ## 8. Quality bars
 
+- First paint comes from prerendered HTML on every static route; hydration produces no mismatch or recoverable error in either theme, with clean or stored progress, at 360px and 1440px (`npm run e2e:preview`, *R6*).
 - Learning routes: **160KB JS gzipped target / 180KB ceiling** before first paint, per route (*amended 2026-10-27*: the budget protects phone battery and is weighed against design and UX). Lighthouse mobile ≥90 and LCP <2.0s on throttled 4G are **targets**; measured results are recorded in the implementation journal (R5/R5.1).
 - Phone battery: nothing runs continuously while reading (no canvas, live aurora, infinite animation, or smooth-scroll loop); see `design-system.md` §7.4.
 - Landing/About: **+≤25KB** lazy canvas chunk loaded after LCP; Lighthouse mobile ≥90 here too. Three.js is never installed.
