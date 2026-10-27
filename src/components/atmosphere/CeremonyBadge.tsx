@@ -42,6 +42,7 @@ function CeremonyOverlay(props: { onClose: () => void }): JSX.Element {
       role="dialog"
       aria-modal="true"
       aria-labelledby="ceremony-title"
+      data-lenis-prevent
     >
       <div
         ref={aurora}
