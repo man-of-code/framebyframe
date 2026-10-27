@@ -132,6 +132,8 @@ Landing hero (animated aurora + playbill title + CRT canvas framed as a prosceni
 
 **Status:** shipped 2026-10-27 — see the journal entry `Redesign R6: Build-time prerendering` (measurements, decisions, left open).
 
+**R6.1 (2026-10-27):** `/library` prerenders a fixed first page of 9 cards (all 138 had shipped, 385 KB of HTML, LCP 3.3 → 4.0 s) and the rest follow in a transition after hydration. The cookie banner is prerendered and hidden before paint by a pre-paint `html.has-consent` class when a choice is stored (reverses the R6 client-only decision). See the journal entry `Redesign R6.1: library first page and prerendered consent banner`.
+
 Goal: first paint from static HTML per route instead of an empty `#root`, to cut LCP (R5.1: 3.1–3.9s) without changing what the learner sees once JS runs.
 
 - Build: client build → SSR build into a non-deployed dir → prerender every static route (`/`, `/plan`, `/week/1`…`/week/16`, `/library`, `/toolkit`, `/capstone`, `/about`, `/contact`, `/privacy`, `/terms`, `/thank-you`, plus `404.html`) with React Router's static handler and React 19 `prerenderToNodeStream` → `finalize-dist` (after prerender, since it hashes `index.html`) → `assert-bundle`.

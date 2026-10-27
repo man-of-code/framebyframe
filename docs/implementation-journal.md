@@ -2341,3 +2341,76 @@ Append below this line.
 - Vercel serving (directory index, `404.html` with 404, `/plan/` 308) and the service worker on a real deploy are untested.
 - The hydration matrix runs against `vite preview` on one machine; slow-device timing is covered only by the single 600 ms-latency check.
 - Previous open items still stand (R5.1 Left open): `/library` DOM size, unrendered primitives, trackpad inertia, light hero aurora strength.
+
+### Redesign R6.1: library first page and prerendered consent banner
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R6 — Build-time prerendering (R6 Left open: the `/library` regression and the client-only banner); `docs/design-system.md` §7.3–7.4
+
+#### Shipped
+
+- `src/components/library/ResultsGrid.tsx`: diagnosis: the 138 resources are under `VIRTUALIZE_AFTER` (200), so the plain grid rendered every card into the prerendered `/library`. Now the prerender and the hydration render show `FIRST_PAGE = 9` cards. `complete` starts from `useHydrated()`, and a mount effect sets it in `startTransition`. The cap applies before the virtualizer branch. A plain client render (client navigation, `createRoot`, jsdom tests) shows everything on its first render.
+- `src/components/CookieBanner.tsx`: `useConsent` reads a module-level store through `useSyncExternalStore`. The server snapshot is `"unknown"`. The client snapshot is the in-memory choice, else storage. `choose()` writes storage and notifies every reader. `src/routes/Root.tsx` renders the banner from a leaf `ConsentBanner`, after `DeferredChrome`. `LaunchChrome` keeps only `ConsentAnalytics`, which reads the same store, so an Accept on the prerendered banner loads analytics without a reload.
+- `index.html`: the pre-paint script adds `html.has-consent` in its own `try` when `fbf:consent` is `accepted` or `rejected` (the same values as `readConsent`). The inline style has `html.has-consent .cookie-banner { display: none; }` next to the `has-progress` rule.
+- Tests:
+  - `CookieBanner.test.tsx`: the server markup carries the banner with a stored choice; hydration drops it with no recoverable error; an Accept reaches a second reader and storage.
+  - `ResultsGrid.test.tsx`: the server markup has 9 cards, and hydration expands them to 138 with no recoverable error.
+  - `entry-server.test.tsx`: the banner is in every body, but not the sticky CTA or the toaster; `/library` has exactly 9 cards and a count of 138.
+  - `LeftRail.test.tsx`: the rail check now picks `.left-rail` out of the complementary landmarks, because the banner is one too.
+  - `e2e-preview/hydration.spec.ts`:
+    - In the matrix, the banner is visible with clean storage and absent with seeded storage, and the `/library` card count equals the result count.
+    - Stored `"accepted"` and `"rejected"` without progress on `/`, `/plan`, `/week/7` and `/library` at both viewports. Each run checks that the page hydrates, `has-consent` is set, the banner leaves the DOM, there is no hydration noise, and a probe (MutationObserver plus a frame sampler, installed before any page script) never saw the banner visible. Analytics never load on `"rejected"`; on `"accepted"` they load.
+    - On clean storage, no analytics chunk and no `/_vercel/insights` request load before Accept, and both load after it.
+    - The no-JS pair: banner visible with no stored choice, hidden with one.
+- `.cursor/rules/framebyframe-architecture.mdc`: the client-only chrome list no longer names the banner; it records the `has-consent` mechanism and the library first page.
+
+#### Verified
+
+- `npm test && npx tsc -b && npm run build` exit 0: 43 files, 261 tests (257 before). `npm run validate` exit 0. `npm run e2e` 1 passed. `npm run e2e:preview -- --workers=6`: 236 passed (216 before). `npx oxlint` 42 warnings (baseline 42).
+- Mutation: stripping the `has-consent` rule from the built HTML failed all 18 targeted preview tests (16 stored-consent probes and both no-JS tests). A first attempt whose `sed` missed the minified rule changed nothing and is not counted.
+- Budget gate (limits untouched, target 160 KiB): entry 130.0 → 130.8 KB, `/plan` 132.0 → 132.8, `/week` 156.1 → 156.9, `/library` 153.3 → 154.2, `/toolkit` 133.7 → 134.5, `/capstone` 132.4 → 133.2. The banner brings `Button`, `cva` and `Slot` into the entry.
+- HTML, raw / gzip -9, R6 → now: `/library` 384,903 / 21,232 → 70,012 / 7,106 B; `/` 24,306 / 5,219 → 25,874 / 5,518; `/plan` 39,829 / 6,294 → 41,397 / 6,656; `/week/7` 42,399 / 6,915 → 43,967 / 7,260. The preview's gzip transfer of `/library` dropped from 21,603 to 6,798 B (after the first commit). `/library` raw markup is 63.4 KB, still above the 17–42 KB of other routes. The rest is the wide filter chips (23.6 KB, present at every width and hidden by CSS below 1024px), the shell (about 12 KB) and the nine cards (21.1 KB).
+- Lighthouse 12, mobile, simulated, median of 3, interleaved against the R6 build (HEAD `41014d3` rebuilt in a scratch worktree, stock preview :4390; this build :4400). R5.1 is the stored R6 "before" set, from another session; `/` uses 6 runs per side here because its run-to-run spread is wide.
+
+| Route | R5.1 Perf / LCP | R6 stored | R6 re-run | Now | FCP now | LCP element now |
+|---|---|---|---|---|---|---|
+| `/` | 82 / 3.9 s | 85 / 3.5 s | 85 / 3.5 s | 81 / 3.9 s | 3.1 s | `img.hero-poster` |
+| `/plan` | 90 / 3.1 s | 90 / 3.1 s | 90 / 3.1 s | 89 / 3.1 s | 2.7 s | `aside.cookie-banner > p` |
+| `/week/7` | 87 / 3.3 s | 89 / 3.1 s | 89 / 3.1 s | 89 / 3.1 s | 2.9 s | `h1` |
+| `/library` | 88 / 3.3 s | 80 / 4.0 s | 80 / 4.0 s | 87 / 3.3 s | 3.0 s | `aside.cookie-banner > p` |
+
+  A11y, best practices and SEO are 100 everywhere, and CLS is 0 to 0.001 except on `/` (0.09, the decode heading from R5.1).
+  - `/library` after the first commit alone: 87 / 3.3 s in all 3 runs (R6 80 / 4.0 s in all 3).
+  - Observed (unthrottled) trace: LCP now equals FCP on `/plan` (103 ms) and `/library` (114 ms), because the banner paints in the first frame. On R6 it came later (125 against 91 ms; 168 against 103 ms).
+  - Applied throttling (`--throttling-method=devtools`), R6 → now. `/plan`: LCP 5.5 / 5.4 → 1.9 / 1.9 s, Perf 79 → 98. `/library`: LCP 2.0 / 6.2 → 1.9 / 1.9 s, Perf 97 / 76 → 98 / 98. `/` (3 runs each): LCP 3.1 → 2.2 s (runs 2.8 / 2.2 / 2.1), Perf 92 → 95.
+  - In the simulation, LCP is about 2.7–2.9 s of Lantern "render delay" behind render-blocking CSS: `index-*.css` is charged about 750 ms, and each route stylesheet about 300 ms (`Plan`, `Library` + `GapCard`, `Dashboard`).
+  - The simulated drop on `/` comes from Lantern, not from painting. Lantern charges every request that starts before the observed LCP. On R6 the poster usually painted in the first frame (about 102–107 ms), before the wave of lazy chunks at about 95 ms (LaunchChrome, Dashboard and its content), and simulated at 3.1–3.5 s. Its one run that painted after the wave simulated at 3.9 s. Now the poster paints one frame after FCP (+8 ms), so that wave counts, and LCP simulates at 3.9 s. Applied throttling, which measures real paints, improves on `/`.
+- CLS with seeded storage, Playwright (4× CPU, about 1.6 Mbps, 150 ms latency), R6 → now. `/week/7` 360×780 ×3 and 1440×900: 0.0001 each, the same as R6. `/library` 360×780 ×3: 0.0015 each; 1440×900: 0.0003. Also 412×823, 768×1024, 1024×768, 1920×1080 and 2560×1440: 0 to 0.0001. R6 shows identical values at every viewport, so the shift comes from fonts and badges and the expansion adds none. Every run ends with 138 cards.
+- Phone battery (390×844, `isMobile`, 3 s idle + 5 s sample; the clean runs now show the prerendered banner) for `/`, `/plan`, `/week/7` and seeded `/`: 0 rAF callbacks, 0 running animations, 0 canvases in the DOM, 0 created, no `html.lenis`.
+
+#### Decisions
+
+- **Decision:** the prerendered first page is 9 cards, fixed and identical on the server and in the hydration render.
+  - **Because:** measured without JS, the first screen holds 1 card at 360×780, 2 at 412×823, 3 at 1440×900, 6 at 1920×1080 and 9 at 2560×1440. Three rows at three columns end below the fold up to 1440 px tall, so the cards and the footer that arrive after hydration land off-screen (CLS unchanged at every viewport measured).
+  - **Rejected:** 6 cards (the footer would be on-screen at 2560×1440 and shift); a viewport-dependent count (it cannot match on hydration).
+  - **Risk:** without JavaScript the library shows 9 of 138 cards under a "138 results" count. Crawlers lose 129 outbound resource links, which the brief accepted.
+  - **Deviation:** no
+- **Decision:** the cookie banner is prerendered, reversing the R6 decision that kept it client-only (that entry stays as written).
+  - **Because:** for first-time visitors it was the LCP element on `/plan` and `/library` and waited for the deferred chrome chunk. Applied-throttling LCP on those routes is now 1.9 s.
+  - **Rejected:** keeping it client-only.
+  - **Risk:** `Button`, `cva` and `Slot` move into the entry (+0.8 KB on every route). A visitor with storage disabled sees the banner on every load, as before. The banner's buttons do nothing without JavaScript.
+  - **Deviation:** no
+- **Decision:** consent is a module-level external store read with `useSyncExternalStore`, consumed by a leaf `ConsentBanner` and by `ConsentAnalytics`.
+  - **Because:** when hydration ends, the switch from the server value to the client value is a sync re-render. In `RootLayout` it would hand a new `Outlet` context to a route boundary that may still be hydrating (the R6 `startTransition` concern). A leaf re-renders only itself, and the store lets an Accept reach the analytics loader.
+  - **Rejected:** state in `RootLayout` passed down as props.
+  - **Risk:** module state persists across tests in one file (`CookieBanner.test.tsx` keeps the Accept test last).
+  - **Deviation:** no
+
+#### Left open
+
+- LCP is still above 2.0 s under the simulated method of record on all four routes (`/` 3.9, `/plan` 3.1, `/week/7` 3.1, `/library` 3.3 s); Perf is under 90 on all four. Render-blocking CSS dominates: `index-*.css` (~750 ms simulated) plus one or two route stylesheets (~300 ms each). Inlining critical CSS is the remaining lever. It was not attempted (out of scope; it needs a build step).
+- `/library` Perf is 87 against R5.1's 88 (LCP matches at 3.3 s), and FCP is 3.0 against 2.8 s: R5.1 painted an empty root with no route stylesheets to wait for.
+- `/` simulated reads worse than R6 (81 / 3.9 against 85 / 3.5 s), a Lantern artifact explained above. Applied throttling improves.
+- `/library` raw markup is 63 KB, mostly the wide filter chips, which render at every width.
+- Items from the R6 and R5.1 Left open lists still stand (Vercel serving and the service worker untested on a real deploy, `/` CLS, DOM size, unrendered primitives, trackpad inertia, light hero aurora strength).
