@@ -1,9 +1,7 @@
 /* Transcribed from docs/design-system.md v2 "Kinetoscope" (section numbers in comments). Do not invent values.
    :root is the dark theme (default). .light overrides it. Pop fills, geometry and motion are theme-independent. */
 
-/* .force-dark re-declares the full dark set on its subtree (design-system.md 6, interim rule). */
-:root,
-.force-dark {
+:root {
   /* 2.2 dark "Night show" */
   --bg-base: #0E0B16;
   --bg-raised: #17121F;
@@ -36,6 +34,11 @@
   --ornament: #7A6C93;
   --grain-opacity: 0.03;
   --grain-film-opacity: 0.06;
+  /* 6 (R3 critique): the hero screen and the ceremony stage are always-dark #000 pictures, so their film grain
+     stays at 0.06 in both themes. Not redeclared in .light. Text-bearing surfaces keep --grain-film-opacity. */
+  --grain-picture-opacity: 0.06;
+  /* 5.6 rule 3: the picture surfaces (.hero-screen, .ceremony-stage) are #000 in either theme. */
+  --stage-black: #000000;
   /* 5.2 sheen: only lightens the teal under ink */
   --sheen-color: color-mix(in srgb, var(--text-primary) 38%, transparent);
   /* 2.7 scrim (values from the dialog/sheet row; the token name is ours) */
@@ -61,9 +64,6 @@
 
   /* 5.6 film grain tile: desaturated, alpha forced to 1, sRGB maths */
   --grain-film-tile: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjgnIGhlaWdodD0nMTI4Jz48ZmlsdGVyIGlkPSdmJyBjb2xvci1pbnRlcnBvbGF0aW9uLWZpbHRlcnM9J3NSR0InPjxmZVR1cmJ1bGVuY2UgdHlwZT0nZnJhY3RhbE5vaXNlJyBiYXNlRnJlcXVlbmN5PScwLjg1JyBudW1PY3RhdmVzPSczJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJy8+PGZlQ29sb3JNYXRyaXggdHlwZT0nc2F0dXJhdGUnIHZhbHVlcz0nMCcvPjxmZUNvbXBvbmVudFRyYW5zZmVyPjxmZUZ1bmNBIHR5cGU9J2xpbmVhcicgc2xvcGU9JzAnIGludGVyY2VwdD0nMScvPjwvZmVDb21wb25lbnRUcmFuc2Zlcj48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTI4JyBoZWlnaHQ9JzEyOCcgZmlsdGVyPSd1cmwoI2YpJy8+PC9zdmc+");
-
-  /* Legacy v1 token, still read by the letterbox until R4 deletes it. */
-  --vignette: radial-gradient(ellipse at 50% 0%, transparent 35%, rgba(0,0,0,0.55) 100%);
 
   /* 4 spacing: 4 8 12 16 24 32 48 64 96 128 */
   --space-1: 4px;
@@ -172,14 +172,7 @@
   --radius: var(--radius-md);
 }
 
-.force-dark {
-  color: var(--text-primary);
-  color-scheme: dark;
-}
-
 .light {
-  /* Interim (6): the v1 black vignette smears grey on paper; R4 deletes the token. */
-  --vignette: none;
   /* 2.3 light "Matinee paper". Tokens absent here (pop fills, geometry, motion) inherit the :root value. */
   --bg-base: #F5EDDC;
   --bg-raised: #FFF9EE;

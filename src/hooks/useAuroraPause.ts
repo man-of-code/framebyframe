@@ -7,7 +7,7 @@ import { useEffect, type RefObject } from "react";
 export function useAuroraPause(ref: RefObject<HTMLElement | null>): void {
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || typeof IntersectionObserver === "undefined") return;
     let visible = true;
     const apply = () => {
       el.dataset.paused = String(!visible || document.hidden);

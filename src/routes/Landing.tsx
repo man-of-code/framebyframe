@@ -1,30 +1,20 @@
 import type { FormEvent, JSX } from "react";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { BreakableTitle } from "@/components/BreakableTitle";
 import { Button } from "@/components/ui/button";
 import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
 import { HeroCanvas } from "@/components/atmosphere/HeroCanvas";
-import { Letterbox } from "@/components/atmosphere/Letterbox";
 import "@/components/filmstrip/filmstrip.css";
 import { gaps } from "@/content/gaps";
 import { MODULES } from "@/content/modules";
 import { weeks as allWeeks } from "@/content/weeks";
 import type { ProgressApi } from "@/hooks/ProgressProvider";
+import { useAuroraPause } from "@/hooks/useAuroraPause";
 import { startDateError } from "@/lib/form";
+import { readCanvasEnv, shouldRenderCanvas } from "@/lib/webgl-guard";
 import { LumenCta } from "@/vendor/threeui/lumen-cta/LumenCta";
 import "./pages.css";
-
-function useDocumentLight(): boolean {
-  const [light, setLight] = useState(() => document.documentElement.classList.contains("light"));
-  useEffect(() => {
-    const node = document.documentElement;
-    const sync = () => setLight(node.classList.contains("light"));
-    const observer = new MutationObserver(sync);
-    observer.observe(node, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
-  return light;
-}
 
 function localToday(): string {
   const now = new Date();
@@ -46,7 +36,10 @@ function weekSpan(module: number): { first: number; label: string } | null {
 export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Element {
   const { api, replay } = props;
   const navigate = useNavigate();
-  const light = useDocumentLight();
+  const hero = useRef<HTMLElement>(null);
+  // Live aurora only where a live surface may run (7.2 rule 1); aurora.css also stops it on phones and reduced motion.
+  const [live] = useState(() => shouldRenderCanvas(readCanvasEnv()));
+  useAuroraPause(hero);
   const [date, setDate] = useState(api.progress.startDate ?? localToday());
   const [dateError, setDateError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -65,33 +58,36 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
 
   return (
     <article className="page">
-      <header className="hero force-dark">
-        <Letterbox>
-          <HeroCanvas enabled={!replay} />
-          <div className="hero-copy">
-            <p className="eyebrow">16 weeks</p>
-            <DecodeHeading text="Frame by Frame" />
-            <div className="control-row">
-              <LumenCta
-                className="hero-lumen"
-                label="Start week 1"
-                type="button"
-                mode={light ? "light" : "dark"}
-                hue={-48}
-                saturation={0.85}
-                onClick={() => {
-                  const form = document.getElementById("start-date");
-                  if (form instanceof HTMLFormElement) form.requestSubmit();
-                }}
-              />
-              <Link className="text-link" to="/plan">Browse the plan first</Link>
+      <header ref={hero} className={live ? "hero aurora aurora--live" : "hero aurora"}>
+        <div className="hero-stage hud-grid">
+          <div className="hero-bill">
+            <div className="hero-bill__shadow halftone" aria-hidden="true" />
+            <div className="hero-bill__frame playbill-frame">
+              <p className="eyebrow orn-fleuron">16 weeks</p>
+              <DecodeHeading text="Frame by Frame" />
+              <div className="orn-rule-diamond" aria-hidden="true" />
+              <p className="page-copy">
+                A sixteen-week path to a short film, shot on an Android phone, with free tools.
+              </p>
+              <div className="control-row">
+                <LumenCta
+                  className="hero-lumen"
+                  label="Start week 1"
+                  type="button"
+                  onClick={() => {
+                    const form = document.getElementById("start-date");
+                    if (form instanceof HTMLFormElement) form.requestSubmit();
+                  }}
+                />
+                <Link className="text-link" to="/plan">Browse the plan first</Link>
+              </div>
+              {replay ? <Link className="text-link" to="/">Back to today</Link> : null}
             </div>
-            <p className="page-copy">
-              A sixteen-week path to a short film, shot on an Android phone, with free tools.
-            </p>
-            {replay ? <Link className="text-link" to="/">Back to today</Link> : null}
           </div>
-        </Letterbox>
+          <div className="hero-screen grain grain--film" aria-hidden="true">
+            <HeroCanvas enabled={!replay} />
+          </div>
+        </div>
       </header>
 
       <section className="stack" aria-labelledby="shape-heading">
@@ -144,7 +140,7 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
       <section className="stack" aria-labelledby="missing-heading">
         <h2 id="missing-heading">What's missing</h2>
         <p className="page-copy">
-          {gap?.missing ?? "No verified Indian-language filmmaking-craft channels."}
+          <BreakableTitle text={gap?.missing ?? "No verified Indian-language filmmaking-craft channels."} />
         </p>
         <Link className="text-link" to="/about">Read the gap</Link>
       </section>

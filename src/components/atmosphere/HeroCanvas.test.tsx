@@ -23,7 +23,7 @@ describe("HeroCanvas", () => {
     const poster = container.querySelector("img");
     expect(poster?.getAttribute("src")).toBe("/posters/hero-crt.webp");
     expect(poster?.getAttribute("alt")).toBe(
-      "Still of a green phosphor terminal, the poster behind the landing title.",
+      "Still of a film countdown leader on a CRT screen, beside the landing title.",
     );
     expect(poster?.getAttribute("aria-hidden")).toBe("true");
     expect(container.querySelector("canvas")).toBeNull();

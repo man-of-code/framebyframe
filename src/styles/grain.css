@@ -22,6 +22,11 @@
   mix-blend-mode: normal;
 }
 
+/* The always-dark pictures keep their film grain in light mode too (design-system.md 6, R3 critique). */
+.grain.grain--film:is(.hero-screen, .ceremony-stage)::before {
+  opacity: var(--grain-picture-opacity);
+}
+
 @media (forced-colors: active) {
   .grain::before { display: none; }
 }

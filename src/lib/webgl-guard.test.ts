@@ -26,6 +26,7 @@ describe("shouldRenderCanvas", () => {
   it("refuses low core counts", () => expect(shouldRenderCanvas({ ...env, cores: 4 })).toBe(false));
   it("refuses low memory", () => expect(shouldRenderCanvas({ ...env, memory: 4 })).toBe(false));
   it("refuses save-data", () => expect(shouldRenderCanvas({ ...env, saveData: true })).toBe(false));
+  it("refuses a coarse pointer", () => expect(shouldRenderCanvas({ ...env, coarse: true })).toBe(false));
   it("allows when optional hints are absent", () => {
     expect(shouldRenderCanvas({ reducedMotion: false, width: 1440 })).toBe(true);
   });

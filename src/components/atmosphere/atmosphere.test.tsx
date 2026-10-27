@@ -10,7 +10,6 @@ import { emptyProgress } from "@/lib/progress";
 import type { Resource, Week } from "@/lib/types";
 import { Landing } from "@/routes/Landing";
 import { GrainSurface } from "./GrainSurface";
-import { Letterbox } from "./Letterbox";
 
 function LandingFrame() {
   const api = useProgress();
@@ -57,18 +56,7 @@ describe("static atmosphere", () => {
     expect(frame.textContent).toContain("Frame");
   });
 
-  it("letterboxes at 2.39 and can switch to 1.85", () => {
-    const { rerender } = render(<Letterbox><p>Wide</p></Letterbox>);
-    const wide = frameOf("Wide");
-    expect(wide.classList.contains("letterbox")).toBe(true);
-    expect(wide.classList.contains("letterbox-239")).toBe(true);
-    expect(wide.classList.contains("grain")).toBe(true);
-
-    rerender(<Letterbox ratio="1.85"><p>Wide</p></Letterbox>);
-    expect(frameOf("Wide").classList.contains("letterbox-185")).toBe(true);
-  });
-
-  it("frames the landing hero in a letterbox, and the week header and a plan module in playbill frames", () => {
+  it("puts the landing title in a playbill frame beside a film-grain screen, and the week header and a plan module in playbill frames", () => {
     render(
       <MemoryRouter>
         <LandingFrame />
@@ -77,13 +65,20 @@ describe("static atmosphere", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole("heading", { name: "Frame by Frame" }).closest(".letterbox-239")).toBeTruthy();
+    const heroTitle = screen.getByRole("heading", { name: "Frame by Frame" });
+    expect(heroTitle.closest(".playbill-frame")).toBeTruthy();
+    expect(heroTitle.closest(".hero-screen")).toBeNull();
+    const hero = heroTitle.closest(".hero");
+    expect(hero?.classList.contains("aurora")).toBe(true);
+    expect(hero?.classList.contains("grain")).toBe(false);
+    const heroScreen = hero?.querySelector(".hero-screen");
+    expect(heroScreen?.classList.contains("grain--film")).toBe(true);
+    expect(heroScreen?.textContent).toBe("");
+    expect(hero?.querySelector(".halftone")).toBeTruthy();
     const weekTitle = screen.getByRole("heading", { name: "Open on an image" });
     expect(weekTitle.closest(".playbill-frame")).toBeTruthy();
     expect(weekTitle.closest(".aurora")).toBeTruthy();
-    expect(weekTitle.closest(".letterbox")).toBeNull();
     expect(screen.getByRole("heading", { name: "Writing", level: 2 }).closest(".playbill-frame")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Writing", level: 2 }).closest(".letterbox")).toBeNull();
   });
 
   it("leaves library cards ungained and marks the assignment with the clapper stripe", () => {
