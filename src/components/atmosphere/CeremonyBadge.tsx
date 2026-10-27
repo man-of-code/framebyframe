@@ -51,7 +51,7 @@ function CeremonyOverlay(props: { onClose: () => void }): JSX.Element {
       />
       <div className="ceremony__frame playbill-frame">
         <div className="ceremony-stage grain grain--film" aria-hidden="true">
-          {live ? <SparkBadge /> : <div className="orn-seal ceremony__seal" />}
+          {live ? <SparkBadge sourceUrl="/ceremony-badge.html" /> : <div className="orn-seal ceremony__seal" />}
         </div>
         <p className="eyebrow orn-fleuron">Capstone · Complete</p>
         <h2 id="ceremony-title" className="ceremony__title">Capstone complete</h2>
