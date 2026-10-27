@@ -11,7 +11,9 @@ import { MODULES } from "@/content/modules";
 import { weeks as allWeeks } from "@/content/weeks";
 import type { ProgressApi } from "@/hooks/ProgressProvider";
 import { useAuroraPause } from "@/hooks/useAuroraPause";
+import { useEdgeFade } from "@/hooks/useEdgeFade";
 import { startDateError } from "@/lib/form";
+import { toRoman } from "@/lib/title";
 import { readCanvasEnv, shouldRenderCanvas } from "@/lib/webgl-guard";
 import { LumenCta } from "@/vendor/threeui/lumen-cta/LumenCta";
 import "./pages.css";
@@ -40,6 +42,8 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
   // Live aurora only where a live surface may run (7.2 rule 1); aurora.css also stops it on phones and reduced motion.
   const [live] = useState(() => shouldRenderCanvas(readCanvasEnv()));
   useAuroraPause(hero);
+  const strip = useRef<HTMLOListElement>(null);
+  useEdgeFade(strip);
   const [date, setDate] = useState(api.progress.startDate ?? localToday());
   const [dateError, setDateError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -73,6 +77,7 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
                 <LumenCta
                   className="hero-lumen"
                   label="Start week 1"
+                  ring={false}
                   type="button"
                   onClick={() => {
                     const form = document.getElementById("start-date");
@@ -93,14 +98,14 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
       <section className="stack" aria-labelledby="shape-heading">
         <h2 id="shape-heading">The 16-week shape</h2>
         <nav className="filmstrip-nav" aria-label="Modules">
-          <ol className="filmstrip" data-orientation="horizontal">
+          <ol ref={strip} className="filmstrip module-strip" data-orientation="horizontal">
             {MODULES.map((module) => {
               const span = weekSpan(module.n);
               if (!span) return null;
               return (
                 <li key={module.n}>
                   <Link className="module-block" to={`/week/${span.first}`}>
-                    <span className="eyebrow">Module {String(module.n).padStart(2, "0")}</span>
+                    <span className="eyebrow">Module {toRoman(module.n)}</span>
                     <span>{module.title}</span>
                     <span className="hud-readout">{span.label}</span>
                   </Link>
