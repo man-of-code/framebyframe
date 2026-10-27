@@ -128,6 +128,17 @@ Landing hero (animated aurora + playbill title + CRT canvas framed as a prosceni
 
 `npm run e2e`; update smoke spec selectors if the redesign moved them. Lighthouse mobile on `/`, `/plan`, `/week/7`, `/library` (target ≥90 perf, ≥95 a11y, LCP <2.0s; record honestly if missed). Manual audit against design-system v2 checklist in both themes. Journal entry lists any v1 or R-phase item still open.
 
+### R6 — Build-time prerendering (user request 2026-10-27)
+
+Goal: first paint from static HTML per route instead of an empty `#root`, to cut LCP (R5.1: 3.1–3.9s) without changing what the learner sees once JS runs.
+
+- Build: client build → SSR build into a non-deployed dir → prerender every static route (`/`, `/plan`, `/week/1`…`/week/16`, `/library`, `/toolkit`, `/capstone`, `/about`, `/contact`, `/privacy`, `/terms`, `/thank-you`, plus `404.html`) with React Router's static handler and React 19 `prerenderToNodeStream` → `finalize-dist` (after prerender, since it hashes `index.html`) → `assert-bundle`.
+- **Hydrate only when safe.** `#root` carries `data-prerendered="<path>"`; `main.tsx` calls `hydrateRoot` only when it equals `location.pathname`, `location.search` is empty, and it is not `/` with a stored `startDate`; otherwise `createRoot`. Covers the SW offline fallback, Vercel fallbacks, query-string library links and returning learners.
+- **Returning learners never see the prerendered landing:** the pre-paint script marks `<html>` and CSS hides it.
+- **Server/hydration snapshot of per-user state is neutral:** progress `{ blank, status: "empty" }` (no read-only banner), theme/consent/media queries via server snapshots; plain client renders (and the jsdom tests) still read storage on first render.
+- **No render-time viewport reads:** rail vs tabs and library chips vs sheet and grid columns move to CSS (hidden variants `display: none`).
+- Verify: Node-environment prerender test (no `window`); Playwright against the built preview asserting zero hydration/recoverable errors across prerendered routes × themes × clean/seeded storage × 360/1440; `curl` each route from preview for its own `<h1>`; Lighthouse re-run; CLS with seeded storage on `/week/7`; battery sample; budget gate unchanged.
+
 ## 4. Review protocol
 
 After each phase:
@@ -149,6 +160,7 @@ Chosen with the advisor, 2026-10-27. Phases run one at a time; they share one wo
 | R3 | Sonnet subagent | Large but mechanical application of the R1 surface map |
 | R4 | Opus subagent | Taste-heavy: hero composition, CRT framing without editing vendor files, poster, OG image, favicon |
 | R5 | Sonnet subagent | Runs tools and records results; told explicitly to record misses and never adjust limits |
+| R6 | Opus subagent | Prerendering is architecture: hydration correctness across stored state, viewport and the service worker |
 
 Every subagent brief carries: branch, plan path and its phase section, design-system v2 path, journal heading and rules, user decisions (analytics stays; `flag.txt` stays untouched; contact email only in `SITE.email`), vendor files unmodified, load `ui-ux-pro-max` first, commit attribution, no push.
 
