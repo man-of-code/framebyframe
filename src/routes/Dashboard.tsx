@@ -1,8 +1,11 @@
 import { TriangleAlert } from "lucide-react";
 import type { JSX } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { BreakableTitle } from "@/components/BreakableTitle";
 import { StartDateControl } from "@/components/dashboard/StartDateControl";
 import { NextTasks } from "@/components/dashboard/NextTasks";
+import { WorkingHeader } from "@/components/PageHeader";
+import { Badge } from "@/components/ui/badge";
 import { Button, ButtonSheen } from "@/components/ui/button";
 import { FilmstripRail } from "@/components/filmstrip/FilmstripRail";
 import { content } from "@/content";
@@ -10,6 +13,7 @@ import { BUFFER_TITLE, MODULES } from "@/content/modules";
 import { WithProgress, type ProgressApi } from "@/hooks/ProgressProvider";
 import { useCurrentWeek } from "@/hooks/useCurrentWeek";
 import { countDone } from "@/lib/progress";
+import { toRoman } from "@/lib/title";
 import type { Progress, Week } from "@/lib/types";
 import { formatHours, nextIncompleteTasks, TOTAL_WEEKS, weekCompletion, weekMinutes } from "@/lib/week";
 import { Landing } from "@/routes/Landing";
@@ -70,18 +74,22 @@ function Dashboard({ api }: { api: ProgressApi }): JSX.Element {
   const showWeek = week !== undefined && (!current.complete || current.source === "override");
 
   return (
-    <article className="page">
+    <article className="page dashboard">
       {current.complete ? (
-        <section className="stack" aria-labelledby="complete-heading">
-          <p className="eyebrow">Past week 16</p>
-          <h1 id="complete-heading">Curriculum complete</h1>
-          <p className="page-copy">
-            The calendar is past the sixteen weeks. What is left is the capstone, and a place to get feedback.
-          </p>
+        <WorkingHeader
+          eyebrow="Past week 16"
+          title="Curriculum complete"
+          note="The calendar is past the sixteen weeks. What is left is the capstone, and a place to get feedback."
+        />
+      ) : (
+        <WorkingHeader eyebrow="Dashboard" title="Today's programme" />
+      )}
+      {current.complete ? (
+        <section className="stack" aria-labelledby="feedback-heading">
           <Button asChild className="self-start">
             <Link to="/capstone" data-page-cta><ButtonSheen />Open the capstone</Link>
           </Button>
-          <h2>Feedback communities</h2>
+          <h2 id="feedback-heading">Feedback communities</h2>
           <ul className="link-list">
             {feedbackPlaces().map((place) => (
               <li key={place.label}>
@@ -101,15 +109,16 @@ function Dashboard({ api }: { api: ProgressApi }): JSX.Element {
         </section>
       ) : null}
       {showWeek && week ? (
-        <WeekCard week={week} heading={current.complete ? "h2" : "h1"} />
-      ) : null}
-      {showWeek && week ? (
-        <NextTasks tasks={nextIncompleteTasks(week, api.progress, 3)} api={api} />
+        <div className="dash-now">
+          {/* One primary per page: once the capstone owns it, the week card's action is secondary. */}
+          <WeekCard week={week} primary={!current.complete} />
+          <NextTasks tasks={nextIncompleteTasks(week, api.progress, 3)} api={api} />
+        </div>
       ) : null}
       <section className="stack" aria-labelledby="progress-heading">
         <h2 id="progress-heading">Progress</h2>
-        <p className="mono">
-          {counts.weeksDone} / {TOTAL_WEEKS} weeks · {counts.tasksDone} / {counts.tasksTotal} tasks
+        <p className="hud-frame hud-readout dash-progress">
+          <strong>{counts.weeksDone}</strong> / {TOTAL_WEEKS} weeks · <strong>{counts.tasksDone}</strong> / {counts.tasksTotal} tasks
         </p>
         <div className="dash-rail">
           <FilmstripRail orientation="horizontal" compact progress={api.progress} />
@@ -134,30 +143,40 @@ function Dashboard({ api }: { api: ProgressApi }): JSX.Element {
   );
 }
 
-function WeekCard(props: { week: Week; heading: "h1" | "h2" }): JSX.Element {
-  const { week, heading: Heading } = props;
+/** The current week as a "now showing" poster (design-system.md 5.2, 6): halftone offset shadow, the brass
+    week numeral at h1 size in a HUD frame, and one action. */
+function WeekCard(props: { week: Week; primary: boolean }): JSX.Element {
+  const { week, primary } = props;
   const moduleTitle = MODULES.find((item) => item.n === week.module)?.title ?? BUFFER_TITLE;
   const moduleBit = week.module > 0
-    ? `Module ${pad(week.module)} · ${moduleTitle}`
+    ? `Module ${toRoman(week.module)} · ${moduleTitle}`
     : BUFFER_TITLE;
 
   return (
-    <section className="dash-card" aria-labelledby="current-week-heading">
-      <p className="eyebrow">
-        <span className="week-now">WK {pad(week.n)} / {pad(TOTAL_WEEKS)}</span>
-        {` · ${moduleBit}`}
-      </p>
-      <Heading id="current-week-heading">{week.title}</Heading>
-      <p className="mono">~{formatHours(weekMinutes(week))}</p>
-      {week.heavy ? (
-        <p className="heavy-chip">
-          <TriangleAlert aria-hidden="true" size={16} />
-          Heavy week
+    <section className="now-showing" aria-labelledby="current-week-heading">
+      <div className="now-showing__shadow halftone" aria-hidden="true" />
+      <div className="now-showing__card">
+        <p className="eyebrow">Now showing · {moduleBit}</p>
+        <p className="hud-frame hud-readout now-showing__numeral">
+          WK <span className="hud-current">{pad(week.n)}</span> / {pad(TOTAL_WEEKS)}
         </p>
-      ) : null}
-      <Button asChild>
-        <Link to={`/week/${week.n}`} data-page-cta><ButtonSheen />Open this week</Link>
-      </Button>
+        <h2 id="current-week-heading"><BreakableTitle text={week.title} /></h2>
+        <div className="now-showing__meta">
+          <p className="hud-readout">~{formatHours(weekMinutes(week))}</p>
+          {week.heavy ? (
+            <Badge variant="warn">
+              <TriangleAlert aria-hidden="true" />
+              Heavy
+            </Badge>
+          ) : null}
+        </div>
+        <Button asChild variant={primary ? "default" : "outline"}>
+          <Link to={`/week/${week.n}`} data-page-cta={primary ? "" : undefined}>
+            {primary ? <ButtonSheen /> : null}
+            Open this week
+          </Link>
+        </Button>
+      </div>
     </section>
   );
 }

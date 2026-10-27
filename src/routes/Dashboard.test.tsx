@@ -22,6 +22,10 @@ describe("dual-state home", () => {
   it("shows the dashboard once a start date exists", () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...emptyProgress, startDate: "2026-10-22" }));
     render(<MemoryRouter><Home /></MemoryRouter>);
-    expect(screen.getByText(/WK 0?1 \/ 16/)).toBeTruthy();
+    // The readout splits the brass numeral into its own span, so match the whole readout's text.
+    const readout = screen.getByText((_, node) =>
+      node?.classList.contains("now-showing__numeral") === true && /WK 0?1 \/ 16/.test(node.textContent ?? ""));
+    expect(readout.querySelector(".hud-current")?.textContent).toBe("01");
+    expect(screen.getByRole("heading", { level: 1, name: "Today's programme" })).toBeTruthy();
   });
 });

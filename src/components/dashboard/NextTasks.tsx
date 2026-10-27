@@ -45,7 +45,7 @@ export function NextTasks(props: { tasks: Task[]; api: ProgressApi }): JSX.Eleme
                   <Icon aria-hidden="true" size={16} />
                   <span className="task-copy">
                     <span>{task.text}</span>
-                    <span className="mono">{task.minutes} min</span>
+                    <span className="hud-readout">{task.minutes} min</span>
                   </span>
                 </label>
               </li>

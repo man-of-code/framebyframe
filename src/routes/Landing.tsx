@@ -102,7 +102,7 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
                   <Link className="module-block" to={`/week/${span.first}`}>
                     <span className="eyebrow">Module {String(module.n).padStart(2, "0")}</span>
                     <span>{module.title}</span>
-                    <span className="mono">{span.label}</span>
+                    <span className="hud-readout">{span.label}</span>
                   </Link>
                 </li>
               );
@@ -112,7 +112,7 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
                 <Link className="module-block" to={`/week/${buffer.first}`}>
                   <span className="eyebrow">Buffer</span>
                   <span>Weeks 13–16</span>
-                  <span className="mono">{buffer.label}</span>
+                  <span className="hud-readout">{buffer.label}</span>
                 </Link>
               </li>
             ) : null}
