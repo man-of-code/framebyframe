@@ -16,10 +16,14 @@ export async function render(path: string): Promise<string> {
   const router = createStaticRouter(handler.dataRoutes, context);
   // Same element shape as main.tsx (StrictMode around a router provider), so useId values match on hydration.
   // No loaders, so there is no hydration data to embed.
+  // progressiveChunkSize: Infinity keeps every completed boundary inline. With the default (12.8 KB) React
+  // outlines a large route into a hidden <div> behind the RouteFallback skeleton and reveals it from an
+  // inline script on a later frame, so first paint would be the skeleton and LCP would wait for the swap.
   const { prelude } = await prerenderToNodeStream(
     <StrictMode>
       <StaticRouterProvider router={router} context={context} hydrate={false} />
     </StrictMode>,
+    { progressiveChunkSize: Number.POSITIVE_INFINITY },
   );
   const decoder = new TextDecoder();
   let html = "";

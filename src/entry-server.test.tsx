@@ -34,6 +34,10 @@ describe("prerender (Node, no window)", () => {
     // Neutral progress snapshot: never "unavailable", so no read-only banner ships in any page.
     expect(body).not.toMatch(/read-only/i);
     expect(body).not.toContain("readonly-banner");
+    // The route is inline, not outlined behind the RouteFallback skeleton and revealed by an inline script.
+    expect(body).not.toContain("route-fallback");
+    expect(body).not.toContain("<template");
+    expect(body).not.toContain("$RC(");
     // Consent and the deferred chrome are client-only.
     expect(body).not.toContain("cookie-banner");
     // Learning routes and the landing ship no canvas markup.
