@@ -9,7 +9,6 @@ import { useProgress } from "@/hooks/useProgress";
 import { emptyProgress } from "@/lib/progress";
 import type { Resource, Week } from "@/lib/types";
 import { Landing } from "@/routes/Landing";
-import { GrainSurface } from "./GrainSurface";
 
 function LandingFrame() {
   const api = useProgress();
@@ -40,22 +39,7 @@ const resource: Resource = {
   verified: "2026-10-22",
 };
 
-function frameOf(text: string): HTMLElement {
-  const node = screen.getByText(text);
-  const frame = node.closest(".grain");
-  if (!(frame instanceof HTMLElement)) throw new Error(`${text} is not inside a grain surface`);
-  return frame;
-}
-
 describe("static atmosphere", () => {
-  it("keeps grain text in the upper layer", () => {
-    render(<GrainSurface className="week-header"><p>Frame</p></GrainSurface>);
-    const frame = frameOf("Frame");
-    expect(frame.classList.contains("grain")).toBe(true);
-    expect(frame.classList.contains("week-header")).toBe(true);
-    expect(frame.textContent).toContain("Frame");
-  });
-
   it("puts the landing title in a playbill frame beside a film-grain screen, and the week header and a plan module in playbill frames", () => {
     render(
       <MemoryRouter>

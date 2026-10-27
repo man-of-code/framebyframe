@@ -1,11 +1,15 @@
-import { useCallback, useState, type JSX } from "react";
+import { lazy, Suspense, useCallback, useState, type JSX } from "react";
 import "@/components/filmstrip/filmstrip.css";
-import { CeremonyBadge } from "@/components/atmosphere/CeremonyBadge";
 import { PlaybillHeader } from "@/components/PageHeader";
 import { StageList } from "@/components/capstone/StageList";
 import { capstone } from "@/content/capstone";
 import { WithProgress } from "@/hooks/ProgressProvider";
 import "./pages.css";
+
+// A live surface (design-system.md 7.2 rule 1): loaded only when the ceremony opens.
+const CeremonyBadge = lazy(() =>
+  import("@/components/atmosphere/CeremonyBadge").then((mod) => ({ default: mod.CeremonyBadge })),
+);
 
 export function Capstone(): JSX.Element {
   const stages = [...capstone].sort((a, b) => a.order - b.order);
@@ -29,7 +33,11 @@ export function Capstone(): JSX.Element {
               if (api.seeCeremony()) setCeremony(true);
             }}
           />
-          <CeremonyBadge open={ceremony} onClose={closeCeremony} />
+          {ceremony ? (
+            <Suspense fallback={null}>
+              <CeremonyBadge open onClose={closeCeremony} />
+            </Suspense>
+          ) : null}
         </article>
       )}
     </WithProgress>

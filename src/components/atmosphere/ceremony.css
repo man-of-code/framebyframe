@@ -1,0 +1,95 @@
+/* Capstone ceremony (design-system.md 6): a fixed overlay on --bg-base whose first child is the aurora layer
+   (absolute, so the overlay stays fixed); a centred playbill frame on --bg-raised holds the #000 film-grain stage
+   (SparkBadge live, guilloche seal static), the eyebrow, the title and Continue. */
+.ceremony {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  overflow-y: auto;
+  background: var(--bg-base);
+}
+
+.ceremony > .ceremony__aurora {
+  position: absolute;
+  inset: 0;
+}
+
+.ceremony__frame {
+  --playbill-surface: var(--bg-raised);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  box-sizing: border-box;
+  width: min(100%, 28rem);
+  padding: var(--space-5);
+  text-align: center;
+}
+
+.ceremony--live .ceremony__frame {
+  width: min(100%, 40rem);
+}
+
+.ceremony-stage {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--stage-black);
+  box-shadow: 0 0 0 1px var(--ornament);
+}
+
+.ceremony--live .ceremony-stage {
+  aspect-ratio: 4 / 3;
+}
+
+/* The picture sits under the stage's film grain (z 1). */
+.ceremony-stage.grain > * {
+  z-index: 0;
+}
+
+.ceremony-stage > .spark-badge {
+  position: absolute;
+  inset: 0;
+}
+
+.ceremony .spark-badge__frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* 5.1 gives min(64vw, 280px) for the static ceremony; that is a floor, so it grows to 320px from 640px. */
+.ceremony__seal.orn-seal {
+  width: min(64vw, 280px);
+}
+
+.ceremony__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: 400;
+  font-synthesis: none;
+  line-height: var(--text-h1-lh);
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+@media (min-width: 640px) {
+  .ceremony__frame {
+    width: min(100%, 32rem);
+    padding: var(--space-8);
+  }
+
+  .ceremony__seal.orn-seal {
+    width: 320px;
+  }
+}
