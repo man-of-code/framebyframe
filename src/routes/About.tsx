@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import { Link } from "react-router-dom";
 import { DecodeHeading } from "@/components/atmosphere/DecodeHeading";
 import { ContactAddress } from "@/components/ContactAddress";
+import { PlaybillHeader } from "@/components/PageHeader";
 import { ExportImport } from "@/components/ExportImport";
 import { GapCard } from "@/components/resource/GapCard";
 import { gaps as allGaps } from "@/content/gaps";
@@ -32,11 +33,12 @@ export function About(): JSX.Element {
   const gaps = allGaps.filter((gap) => gap.scope !== "week");
 
   return (
-    <article className="page prose-page">
-      <header className="stack">
-        <p className="eyebrow">About</p>
-        <DecodeHeading text="How this was made" />
-      </header>
+    <article className="page prose-centered ruled-sections">
+      <PlaybillHeader
+        eyebrow="About"
+        title="How this was made"
+        heading={<DecodeHeading text="How this was made" />}
+      />
 
       <section className="stack" aria-labelledby="method-heading">
         <h2 id="method-heading">Method</h2>

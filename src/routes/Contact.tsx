@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import { ContactAddress } from "@/components/ContactAddress";
+import { WorkingHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { SITE } from "@/content/site";
 import { contactErrors, contactMailto, type ContactErrors } from "@/lib/form";
@@ -35,8 +36,7 @@ export function Contact(): JSX.Element {
 
   return (
     <article className="page prose-page">
-      <p className="eyebrow">Contact</p>
-      <h1>Write to the project</h1>
+      <WorkingHeader band={false} eyebrow="Contact" title="Write to the project" />
       <p className="page-copy">
         The note opens in your mail app, addressed to the maintainer. This site has no server, so it does not store or deliver the message itself.
       </p>

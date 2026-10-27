@@ -462,3 +462,49 @@
     text-transform: uppercase;
   }
 }
+
+/* Intermission cards: 404 and /thank-you (design-system.md 3.3, 6). A playbill frame on --bg-base that carries the
+   film grain (5.6); the seal, the centred title block, copy and actions sit in one centred prose column. */
+.intermission {
+  --playbill-surface: var(--bg-base);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: var(--space-7) var(--space-5);
+}
+
+.intermission__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  max-width: var(--container-prose);
+  margin-inline: auto;
+  text-align: center;
+}
+
+.intermission .title-block h1 {
+  margin: 0;
+}
+
+.intermission .control-row {
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.intermission .contact-address {
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .intermission {
+    padding: var(--space-8) var(--space-7);
+  }
+}
+
+/* Working sections separated by an ornament hairline (5.1 .orn-rule construction). */
+.ruled-sections > section + section {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--ornament);
+}
