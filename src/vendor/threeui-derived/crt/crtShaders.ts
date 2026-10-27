@@ -1,3 +1,5 @@
+/* Derived from MengTo/threeui@68802d5428071ada5c20db8094b1649e6bb770ed src/shaders/crt/crtShaders.ts (MIT, see src/vendor/threeui/LICENSE).
+   Unchanged from upstream apart from this header. */
 export const CRT_VERTEX_SHADER = "attribute vec2 aPos;\nvoid main(){ gl_Position = vec4(aPos,0.0,1.0); }";
 
 export const CRT_FRAGMENT_SHADER = `precision highp float;

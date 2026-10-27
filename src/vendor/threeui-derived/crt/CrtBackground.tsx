@@ -1,3 +1,5 @@
+/* Derived from MengTo/threeui@68802d5428071ada5c20db8094b1649e6bb770ed src/shaders/crt/CrtBackground.tsx (MIT, see src/vendor/threeui/LICENSE).
+   Unchanged from upstream apart from this header. */
 import { useEffect, useRef } from "react";
 import { createCrtRenderer, crtStyle, CRT_DEFAULTS, CRT_VARIANTS, type CrtOptions } from "./crtRenderer";
 import type { CrtVariant } from "./crtScreens";

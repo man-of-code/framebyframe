@@ -1,3 +1,5 @@
+/* Derived from MengTo/threeui@68802d5428071ada5c20db8094b1649e6bb770ed src/shaders/crt/crtRenderer.ts (MIT, see src/vendor/threeui/LICENSE).
+   Unchanged from upstream apart from this header. */
 import { CRT_SCREENS, CRT_STYLES, type CrtStyle, type CrtVariant } from "./crtScreens";
 import { CRT_FRAGMENT_SHADER, CRT_VERTEX_SHADER } from "./crtShaders";
 

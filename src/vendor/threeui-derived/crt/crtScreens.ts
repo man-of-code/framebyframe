@@ -1,3 +1,5 @@
+/* Derived from MengTo/threeui@68802d5428071ada5c20db8094b1649e6bb770ed src/shaders/crt/crtScreens.ts (MIT, see src/vendor/threeui/LICENSE).
+   Changed: the cinematic corner label (upstream "MONO · ACADEMY") and title card (upstream "T H E   L O N G   Q U I E T") so no foreign name is on screen (docs/design-system.md 6, R4 critique). Nothing else. */
 /* Screen painters for the CRT variants. Each one draws a complete picture into an
    offscreen 2D canvas that the WebGL pass then curves, scans, and grades. The
    authored ZION terminal stays in crtRenderer.ts; these are the added styles. */
@@ -69,7 +71,7 @@ const pad = (value: number, size = 2) => String(Math.floor(value)).padStart(size
 
 const CINEMATIC_CYCLE = 8;
 const CINEMATIC_CHROME = [
-  { text: "PICTURE START", corner: "tl" }, { text: "MONO · ACADEMY", corner: "bl" }, { text: "REEL 02 OF 04", corner: "br" },
+  { text: "PICTURE START", corner: "tl" }, { text: "FRAME BY FRAME", corner: "bl" }, { text: "REEL 02 OF 04", corner: "br" },
 ] as const;
 
 function registrationMark(context: CanvasRenderingContext2D, x: number, y: number, size: number) {
@@ -134,7 +136,7 @@ const paintCinematic: ScreenPainter = (context, width, height, time) => {
     context.fillStyle = "rgba(244,244,248,0.92)";
     const size = height * 0.052;
     context.font = `500 ${size.toFixed(2)}px ${MONO_STACK}`;
-    const title = "T H E   L O N G   Q U I E T";
+    const title = "Y O U R   F I R S T   F I L M";
     context.shadowColor = "rgba(255,255,255,0.45)"; context.shadowBlur = height * 0.020;
     /* clear of the horizontal crosshair, which otherwise rules through the baseline */
     context.fillText(title, cx, cy - size * 0.78);
