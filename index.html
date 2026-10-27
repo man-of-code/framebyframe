@@ -10,27 +10,31 @@
           if (!dark) document.documentElement.classList.add("light");
           document.documentElement.style.colorScheme = dark ? "dark" : "light";
         } catch (e) {}
-        // The hero poster is the LCP element on the first-run landing only. Returning learners and learning routes get no preload.
+        // A stored start date marks a returning learner: html.has-progress hides the prerendered landing until
+        // React renders the dashboard (main.tsx never hydrates / for them). The hero poster is the LCP element on
+        // the first-run landing only; returning learners and learning routes get no preload.
         try {
-          if (location.pathname === "/") {
-            var saved = localStorage.getItem("fbf:progress:v1");
-            var started = false;
-            if (saved) {
-              try { started = !!JSON.parse(saved).startDate; } catch (e) {}
-            }
-            if (!started) {
-              var l = document.createElement("link");
-              l.rel = "preload";
-              l.as = "image";
-              l.href = "/posters/hero-crt.webp";
-              l.type = "image/webp";
-              l.setAttribute("fetchpriority", "high");
-              document.head.appendChild(l);
-            }
+          var saved = localStorage.getItem("fbf:progress:v1");
+          var started = false;
+          if (saved) {
+            try { started = !!JSON.parse(saved).startDate; } catch (e) {}
+          }
+          if (started) document.documentElement.classList.add("has-progress");
+          if (location.pathname === "/" && !started) {
+            var l = document.createElement("link");
+            l.rel = "preload";
+            l.as = "image";
+            l.href = "/posters/hero-crt.webp";
+            l.type = "image/webp";
+            l.setAttribute("fetchpriority", "high");
+            document.head.appendChild(l);
           }
         } catch (e) {}
       })();
     </script>
+    <style>
+      html.has-progress #root[data-prerendered="/"] { display: none; }
+    </style>
     <link
       rel="preload"
       href="/fonts/abril-fatface-latin.woff2"

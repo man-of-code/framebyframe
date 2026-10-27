@@ -1,5 +1,5 @@
 import { lazy, Suspense, type LazyExoticComponent } from "react";
-import { createBrowserRouter, Link, useParams } from "react-router-dom";
+import { Link, useParams, type RouteObject } from "react-router-dom";
 import { RouteError } from "@/components/RouteError";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseWeekParam } from "@/lib/route-week";
@@ -58,7 +58,8 @@ function WeekRoute() {
   return <Lazy page={Week} />;
 }
 
-export const router = createBrowserRouter([
+/** Shared by the browser router (App.tsx) and the build-time prerender (entry-server.tsx). */
+export const routes: RouteObject[] = [
   {
     path: "/",
     element: <Root />,
@@ -83,4 +84,4 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+];

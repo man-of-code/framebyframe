@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "tsx scripts/validate-content.ts",
-    "build": "tsc -b && vite build && tsx scripts/finalize-dist.ts && tsx scripts/assert-bundle.ts",
+    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && tsx scripts/prerender.ts && tsx scripts/finalize-dist.ts && tsx scripts/assert-bundle.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
