@@ -1,8 +1,10 @@
 import { lazy, Suspense, type LazyExoticComponent } from "react";
 import { createBrowserRouter, Link, useParams } from "react-router-dom";
+import { RouteError } from "@/components/RouteError";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseWeekParam } from "@/lib/route-week";
 import { TOTAL_WEEKS } from "@/lib/week";
+import { NotFoundRoute } from "@/routes/NotFoundRoute";
 import { Root } from "@/routes/Root";
 
 const Home = lazy(() => import("@/routes/Dashboard").then((m) => ({ default: m.Home })));
@@ -16,7 +18,6 @@ const Contact = lazy(() => import("@/routes/Contact").then((m) => ({ default: m.
 const Privacy = lazy(() => import("@/routes/Privacy").then((m) => ({ default: m.Privacy })));
 const Terms = lazy(() => import("@/routes/Terms").then((m) => ({ default: m.Terms })));
 const ThankYou = lazy(() => import("@/routes/ThankYou").then((m) => ({ default: m.ThankYou })));
-const NotFound = lazy(() => import("@/routes/NotFound").then((m) => ({ default: m.NotFound })));
 
 function RouteFallback() {
   return (
@@ -62,18 +63,24 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Root />,
     children: [
-      { index: true, element: <Lazy page={Home} /> },
-      { path: "plan", element: <Lazy page={Plan} /> },
-      { path: "week/:n", element: <WeekRoute /> },
-      { path: "library", element: <Lazy page={Library} /> },
-      { path: "capstone", element: <Lazy page={Capstone} /> },
-      { path: "toolkit", element: <Lazy page={Toolkit} /> },
-      { path: "about", element: <Lazy page={About} /> },
-      { path: "contact", element: <Lazy page={Contact} /> },
-      { path: "privacy", element: <Lazy page={Privacy} /> },
-      { path: "terms", element: <Lazy page={Terms} /> },
-      { path: "thank-you", element: <Lazy page={ThankYou} /> },
-      { path: "*", element: <Lazy page={NotFound} /> },
+      {
+        // A failed lazy import (e.g. a stale chunk after a deploy) or a render error stays inside the shell.
+        errorElement: <RouteError />,
+        children: [
+          { index: true, element: <Lazy page={Home} /> },
+          { path: "plan", element: <Lazy page={Plan} /> },
+          { path: "week/:n", element: <WeekRoute /> },
+          { path: "library", element: <Lazy page={Library} /> },
+          { path: "capstone", element: <Lazy page={Capstone} /> },
+          { path: "toolkit", element: <Lazy page={Toolkit} /> },
+          { path: "about", element: <Lazy page={About} /> },
+          { path: "contact", element: <Lazy page={Contact} /> },
+          { path: "privacy", element: <Lazy page={Privacy} /> },
+          { path: "terms", element: <Lazy page={Terms} /> },
+          { path: "thank-you", element: <Lazy page={ThankYou} /> },
+          { path: "*", element: <Lazy page={NotFoundRoute} /> },
+        ],
+      },
     ],
   },
 ]);
