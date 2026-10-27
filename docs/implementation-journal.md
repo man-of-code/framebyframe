@@ -1910,3 +1910,125 @@ Append below this line.
 
 - Spec §5.6 "film grain on always-dark pictures in both themes" is R4's (hero screen, ceremony stage).
 - The assignment card's new stripe and h3 were not viewed after the change.
+
+### Redesign R4: Showcase and launch surfaces
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R4; `docs/design-system.md` §3.3, §5.1–5.6, §6 (incl. the R3-critique and interim rules), §7.1–7.4, §11
+
+#### Shipped
+
+- Primary actions (`bee4beb`): every `.page-button` is now the shadcn `Button` (primary pop + sheen) or `Button asChild` + `ButtonSheen` on links: dashboard, contact, thank-you, 404, landing form, sticky CTA, ceremony. `.page-button`, `.page-button-quiet` and the disabled rule are deleted from `pages.css` / `launch.css`. The sticky-CTA selector moved to `src/components/stickyRoute.ts` as `PAGE_CTA = "#main [data-page-cta], #main .lumen-cta__button"`; `StickyCta.test.tsx` asserts it finds the Lumen CTA and "Set start date" on the landing and exactly "Open this week" on the dashboard.
+- Form controls: `.field input/select/textarea` take the §2.7 input look (2px `--border-strong`, `--bg-inset`, tertiary placeholder; focus offset 3px) on landing, dashboard and `/contact`. Cookie banner: 2px `--pop-outline` + `--shadow-overlay`, actions 12px apart. Sticky bar: 2px `--pop-outline` top rule, full-width primary.
+- Landing hero (`bd35701`): `.hero.aurora(.aurora--live)` root with one `.hero-stage.hud-grid` child; the playbill title block (fleuron eyebrow, `DecodeHeading`, diamond rule, copy, Lumen CTA, "Browse the plan first") in a `.playbill-frame` on `--bg-raised` with an 8px halftone shadow element; the CRT in `.hero-screen.grain.grain--film` (4:3, `--stage-black`, film grain 0.06 in both themes). Beside the screen from 1024px (3fr / 5fr), stacked title-first below. `useAuroraPause` mounted; live only when `shouldRenderCanvas(readCanvasEnv())`. `.force-dark` removed from the hero and from `tokens.css`.
+- Lumen CTA restyled through `.hero-lumen` only (vendor untouched): `--pop-teal` fill, `--pop-ink` label, border and ring, `--radius-sm`, hard `--pop-offset` shadow (4px hover, 1px press, none on focus), focus ring `--accent-primary` offset 3px; `overflow: visible` on the wrapper so the shadow is not clipped.
+- Deleted: `Letterbox.tsx`, `GrainSurface.tsx`, all `.letterbox*` CSS, `--vignette` and the interim `.light { --vignette: none }` (`.slate-rule` was already gone in R3). `atmosphere.test.tsx` now asserts the hero title is in `.playbill-frame`, not in `.hero-screen`, the root is `.aurora` and not `.grain`, the screen is `.grain--film` and text-free, and a `.halftone` exists.
+- `src/lib/webgl-guard.ts`: `CanvasEnv.coarse` (the §7.2 list includes `(pointer: coarse)`) and `readCanvasEnv()` shared by `HeroCanvas`, the landing aurora and the ceremony; test added.
+- `src/styles/tokens.css`: `--grain-picture-opacity: 0.06` (not redeclared in `.light`) and `--stage-black: #000000`; `grain.css` applies the former to `.hero-screen` / `.ceremony-stage` film grain.
+- `public/posters/hero-crt.webp`: recaptured from the mounted cinematic canvas at the new screen size (625×469 CSS at 1440×900, DPR 1.5, cropped to 936×702, WebP q80, 22.9 KB, was 38.8 KB). Poster alt updated to what it shows (test updated).
+- Dashboard (`7e775b1`): `WorkingHeader` band ("Dashboard" / "Today's programme"; the complete state puts "Past week 16" / "Curriculum complete" and its note in the band). The current week is a "now showing" poster: 2px `--pop-outline` card on `--bg-raised`, 8px halftone shadow, eyebrow `Now showing · Module IV · …` (Roman), `WK 08 / 16` in a `.hud-frame` with the brass numeral at `--text-h1`, `BreakableTitle` h2, hours readout, warn `Badge` for Heavy, one primary. Poster beside Next up from 1024px. Progress line in a `.hud-frame` readout. `.heavy-chip`, `.week-now`, `.dash-card` removed.
+- Ceremony (`d563f4a`): `CeremonyBadge` is lazy-loaded from `/capstone` and portalled to `<body>`. One structure for both variants: fixed `.ceremony` on `--bg-base`, an absolute `.aurora` layer (`--live` only when `shouldRenderCanvas`), a centred `.playbill-frame` on `--bg-raised` holding a text-free `#000` `.ceremony-stage.grain.grain--film` (SparkBadge live, guilloché seal static), the `CAPSTONE · COMPLETE` fleuron eyebrow, Abril "Capstone complete" at `--text-h1`, and Continue (primary). Focus goes to Continue, Tab is trapped, Escape closes, focus returns to the trigger. The once-only `seeCeremony` path is unchanged. CSS in `src/components/atmosphere/ceremony.css`. `CeremonyBadge.test.tsx` (4 tests: closed, static under reduced motion, static on a touch phone, live on a capable desktop).
+- Intermission cards (`ee5cdf1`): `src/components/Intermission.tsx`; `/nope` ("Missing reel" / "Page not found") and `/thank-you` ("Thank you" / "Your note is ready to send"): `.intermission.playbill-frame.grain.grain--film` on `--bg-base`, `.orn-seal`, centred title block, centred copy and one primary. 404 is now a lazy route (`e7bef61`).
+- `/about`: `PlaybillHeader` band with a new `heading` slot holding `DecodeHeading`; centred prose column; sections separated by an `--ornament` hairline (`.ruled-sections`). `/privacy`, `/terms`, `/contact`: `WorkingHeader band={false}`.
+- Route fallback (`855d022`): band-shaped block (square), two lines and a 48px `--radius-sm` button block. `src/vendor/threeui/SOURCE.md`: "Lifted techniques" section for §7.1 rows 5–6.
+- Brand (`87bc21b`): `og.svg` → `og.png` (1200×630: playbill frame with halftone, Abril wordmark, 4:3 screen with the poster, HUD readout, teal "Start week 1"); `favicon.svg` (film frame between sprocket rows, ink fat-face F on teal, as paths); `favicon.ico` (16 + 32 PNG entries), 16/32 PNGs, apple-touch 180 (square), icon-192/512; `site.webmanifest` theme and background `#0E0B16`. Rendered in Playwright Chromium from the self-hosted fonts; no dependency added.
+- Also: `NextTasks` minutes and landing module week ranges use `.hud-readout` (`.mono` is defined only in the week route CSS); the landing gap copy renders through `BreakableTitle` (its slash-joined language list overflowed 360px by 8px); `useAuroraPause` returns early when `IntersectionObserver` is missing (jsdom).
+
+#### Verified
+
+- `npm test` → 38 files, 213 tests pass (was 37 / 208). `npx tsc -b --noEmit` → exit 0. `npm run build` → exit 0, no warnings. `npm run e2e` → 1 passed. `npx oxlint` → 42 warnings (baseline 42). `npm run validate` → pass.
+- Sizes (JS gzip; target 160 KiB, ceiling 180 KiB): entry 131892 B (128.8 KB, was 128.9); Plan 130.8 (130.9); Week 154.9 (155.0); Library 152.1 (152.2); Toolkit 132.5 (132.6); Capstone 131.0 (131.6). `atmosphere-*.js` (CRT) 23.02 kB raw / 9.34 kB gzip, loaded only by first-run `/` on a capable desktop. Lazy: CeremonyBadge 1.11 kB gzip, NotFound 0.40 kB.
+- An intermediate build failed the gate (`Capstone.tsx: atmosphere-….js is in the static graph`): the webgl-guard / aurora-hook chunk shared by the hero and the ceremony was named after `atmosphere.css`. Fixed by giving the ceremony its own CSS file and lazy-loading it.
+- Browser (Chromium, `vite preview` :4370, `fbf:consent=rejected`): no horizontal overflow on `/` (clean), `/` (seeded → dashboard), `/about`, `/contact`, `/thank-you`, `/privacy`, `/terms`, `/nope` at 360, 768, 1440 × dark, light (48 of 48), nor in any ceremony variant.
+- Desktop landing (light theme, first run): canvas mounted (1), `atmosphere-jTDYA_x-.js` requested. Title box vs screen box: 1440 title 345–670 × 163–300, screen 727–1352 × 88–557, gap 57px, no overlap, screen 625 / 1104 = 0.566 of the hero; 1280 ratio 0.556, gap 57; 1024 ratio 0.531, gap 57. h1 68.3px at 1440, 55.7px at 1280, 35.5px at 1024.
+- Phone landing (390×844, touch): hero class `hero aurora` (no `--live`), `::before` `animation-name: none`, 0 canvases, no `lenis` class on `<html>`, poster `naturalWidth` 936, screen grain 0.06 in dark and light. Desktop: `aurora-drift`, `data-paused="false"`, `lenis` present.
+- Learning routes `/plan`, `/week/7`, `/library`, `/toolkit`, `/capstone` request no `atmosphere-*.js` and mount no canvas; seeded `/` (returning learner) and `/?intro=1` mount no canvas.
+- Lumen CTA: focus-visible outline 2px `--accent-primary` offset 3px with `box-shadow: none`, 48px tall, fill `rgb(79,224,194)`, label ink; hover `translate(-1px,-1px)` + 4px shadow. 404 primary: sheen `translateX` −162.4px at rest → +162.4px on hover; 131.9×48.
+- Phone dashboard (390×844): at the top the only primary in view is "Open this week" and the sticky CTA is absent; scrolled to 1400px the sticky "Continue week 8" is the only one. Phone landing: only "Start week 1", no sticky.
+- Ceremony (last stage set to Done from a seeded store): 1440×900 → `ceremony--live`, SparkBadge iframe, stage 510×383, stage grain 0.06, aurora `aurora-drift`, focus on Continue, `ceremonySeen: true`. 360×780 touch → `ceremony--static`, seal 230px in a 278px stage; 390×844 touch → seal 250px; 1440×900 with `reducedMotion: "reduce"` → static, seal 320px in a 382px stage, aurora `none`. Stage grain 0.06 in light too.
+- 404: `.intermission.grain--film` grain 0.06 normal blend in dark, 0 in light. Touch targets in `#main` at 360 on `/`, `/about`, `/contact`, `/thank-you`, `/nope`, `/privacy`: none under 48px except the 20px checkbox boxes (48px hit area by pseudo-element, R2b) and the visually hidden file input.
+- Contrast: `tokens.contrast.test.ts` passes; no new foreground/background pair was introduced (ink on teal, brass on raised, text on raised and base are existing rows).
+- Screenshots: 37 PNGs in `/private/tmp/claude-501/-Users-manofcode-Projects-personal-framebyframe/55fecafc-e98e-4278-9014-157489fc6ae7/scratchpad/r4/shots/` — `landing` and `dashboard` at 360 / 768 / 1440, `about`, `404`, `thank-you`, `contact` at 360 / 1440, `ceremony-live-1440`, `ceremony-static-360` and `-1440`, each in dark and light, plus `cookie-banner-360-dark`, `cookie-banner-1440-light` and `og.png`. Looked at by eye: landing 1440 dark/light, 768 dark, 360 dark/light; dashboard 1440 dark/light, 360 dark; ceremony live 1440 dark/light, static 360 dark, static 1440 light; 404 1440 dark, 360 light; about 1440 light; contact 360 dark; cookie banner 360 dark; og.png; favicon 32 and 192. Defects found and fixed while looking: the live ceremony was clipped to the 42rem prose column (portal), OG fleurons overlapped the eyebrow, the favicon's brass bar read as a cursor (removed).
+
+#### Decisions
+
+- **Decision:** the Lumen CTA's pop shadow is a `box-shadow` on the vendored button, not the pop kit's `::before` / `::after` layers; its own hover brightening (`filter`) stays and there is no sheen.
+  - **Because:** vendored markup cannot carry `.pop` or a sheen span, and §5.2 keeps the sheen off the Lumen CTA ("it has its own effect").
+  - **Rejected:** wrapping the Lumen in a `.pop` element (the shadow would belong to the wrapper and the focus ring to the button).
+  - **Risk:** hover and press change `box-shadow` without a transition, so only the lift animates.
+  - **Deviation:** no
+- **Decision:** the hero h1 is `min(var(--text-display), 21cqi)` of its frame: about 68px at 1440, 56px at 1280, 36px at 1024, 44px at 360.
+  - **Because:** beside a ≥55% screen the frame is 250–400px wide; at the full 6.5rem "Frame by" would overflow it.
+  - **Rejected:** stacking the hero until 1440 (fails the "beside on desktop" brief from 1024–1439).
+  - **Risk:** at 1024–1279 the display title is h1-sized.
+  - **Deviation:** yes. Plan step: "`--text-display` … Landing H1 only" (§3.2). Did this instead: the display size, capped by the frame width.
+- **Decision:** the hero `.hud-grid` shows in both themes, and the hero screen and the ceremony stage carry a 1px `--ornament` ring (`box-shadow`).
+  - **Because:** §6 lists `.hud-grid` on the hero without a theme condition, while R3.1 hid it on dark learning bands; the ring separates a black picture from the dark base.
+  - **Rejected:** dark-hidden grid; no ring.
+  - **Risk:** both are faint; a taste call.
+  - **Deviation:** no
+- **Decision:** two tokens: `--grain-picture-opacity: 0.06` (defined once in `:root`, inherited by `.light`) and `--stage-black: #000000`.
+  - **Because:** the R3-critique rule keeps film grain on the always-dark pictures in light mode, where `--grain-film-opacity` is 0; §5.6 rule 3 requires `#000` and components take no raw hex.
+  - **Rejected:** re-declaring `--grain-film-opacity` on the two elements; keeping `.force-dark` on the screen.
+  - **Risk:** §2.2 / §2.3 do not list them; the parent may want them in the spec tables.
+  - **Deviation:** no
+- **Decision:** the poster is frame "7" of the countdown at 936×702 (DPR 1.5), WebP q80, 22.9 KB.
+  - **Because:** the screen is 625px wide at 1440 and up to ~330 CSS px (~990 device px) on phones; DPR 1.5 covers both without a srcset.
+  - **Rejected:** DPR 1 (soft on phones) and DPR 2 (larger LCP image for no visible gain on a CRT still).
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** dashboard copy and shape: band "Dashboard" / "Today's programme"; the poster card has a 2px `--pop-outline` border; poster beside Next up from 1024px; when the complete state shows "Open the capstone" (primary), the week card's "Open this week" is an outline button.
+  - **Because:** the band needs an h1 and the poster the week title as h2; a 1px `--border-default` edge disappeared against the halftone; one primary per page.
+  - **Rejected:** "Now showing" as the band title (repeats the card eyebrow).
+  - **Risk:** copy is unreviewed; §2.6 rule 4 keeps cards plain, and this card is the §5.2 exception.
+  - **Deviation:** no
+- **Decision:** the static ceremony puts the seal on the same `#000` film-grain `.ceremony-stage` as the live badge.
+  - **Because:** the R4 brief asks for the seal "on the stage with film grain" so the static variant reads as the same ceremony, not a fallback.
+  - **Rejected:** the seal straight on the frame's `--bg-raised` (spec).
+  - **Risk:** §5.6's grain map gives the static ceremony band grain only; the stage is text-free and `#000`, so §5.6 rule 3 holds.
+  - **Deviation:** yes. Plan step: "Capstone ceremony, static … the `.aurora` overlay (`::after`) | band | 0.03" (§5.6) and the §6 static row (seal directly in the frame). Did this instead: seal inside a film-grain stage in the frame.
+- **Decision:** ceremony frame padding is `--space-5` below 640px and `--space-8` from 640px; the static frame widens to 32rem and the seal to 320px from 640px; the live frame is 40rem with a 4:3 stage; the title is an h2 styled at `--text-h1`.
+  - **Because:** at 360 a `--space-8` frame leaves 200px for a 230px seal; the brief calls the §5.1 size a floor; the dialog sits under the page h1.
+  - **Rejected:** `--space-8` everywhere (overflows at 360).
+  - **Risk:** none.
+  - **Deviation:** yes. Plan step: "padding `--space-8`, `max-width: 28rem`" (§6 static ceremony). Did this instead: `--space-5` below 640px, 32rem from 640px.
+- **Decision:** the ceremony is lazy-loaded and portalled to `<body>`.
+  - **Because:** SparkBadge is a §7.2 live surface ("lazy only"), the shared env chunk otherwise lands in Capstone's static graph and fails the gate, and the prose column's `max-width` clipped the fixed overlay to 42rem.
+  - **Rejected:** excluding `.ceremony` from `.prose-centered > *`.
+  - **Risk:** the ceremony appears one chunk fetch after the click.
+  - **Deviation:** no
+- **Decision:** the intermission root is also a `.playbill-frame` (card, max 48rem) on `--bg-base`; the seal keeps the §5.1 sizes; `/thank-you` reads "Thank you" / "Your note is ready to send".
+  - **Because:** film grain that stops at the article's box needs an edge to read as a card; the old h1 "Thank you" would repeat the spec's eyebrow.
+  - **Rejected:** grain on a full-bleed root (needs negative margins against the shell padding).
+  - **Risk:** copy is unreviewed.
+  - **Deviation:** no
+- **Decision:** `/about` uses the centred playbill title block on its band (§3.3), not a working header (§6 row).
+  - **Because:** §3.3 lists "about" among the hero-like headers and the brief pairs it with the decode heading; the two spec lines disagree.
+  - **Rejected:** `WorkingHeader` with the decode heading.
+  - **Risk:** the parent should amend whichever line loses.
+  - **Deviation:** no
+- **Decision:** cookie banner Accept and Reject are both secondary (outline) buttons.
+  - **Because:** a teal Accept beside the landing's Lumen CTA would put two primaries in one phone viewport, and equal weight is the honest consent pattern.
+  - **Rejected:** Accept primary.
+  - **Risk:** none.
+  - **Deviation:** no
+- **Decision:** the 404 route is lazy (it was the one static route).
+  - **Because:** its new `Button` pulled cva and the Slot into the entry, +0.6 KB on every learning route.
+  - **Rejected:** hand-written pop classes on the link.
+  - **Risk:** a 404 shows the route skeleton for one chunk fetch.
+  - **Deviation:** no
+- **Decision:** the favicon is a path-drawn film frame with a fat-face "F" (no font), and `og.svg` references `/posters/hero-crt.webp` instead of embedding it; `og.png` is 310 KB.
+  - **Because:** a favicon SVG cannot rely on Abril loading; embedding the poster would add 30 KB to an SVG nobody fetches.
+  - **Rejected:** an Abril wordmark favicon (illegible at 16px).
+  - **Risk:** `og.svg` opened outside the site has no poster.
+  - **Deviation:** no
+
+#### Left open
+
+- The live ceremony's SparkBadge is upstream's artwork and reads "Codex" on the badge. The file is vendored unmodified, and its only knob is `sourceUrl`. Shipping a credential that names another product needs a user decision: keep it, swap in a different approved source, or go static everywhere.
+- §5.6 / §6 still describe the static ceremony without a stage, the R2b interim rules (`.light { --vignette }`, `.force-dark`) are now obsolete, and §2.2 lacks `--grain-picture-opacity` / `--stage-black`; the §3.3 / §6 About conflict is open. These are spec edits for the parent.
+- Not checked in a browser: toasts (unchanged since R2b), the route fallback skeleton (it shows only for a chunk fetch), the dashboard's "Curriculum complete" state, and the cookie banner at 768.
+- `.bleach-bypass` in `atmosphere.css` has no consumer (pre-existing; not deleted).
+- The light-theme hero aurora (strength 0.14) is barely visible behind the frame and screen; taste call for the critique.
+- Lighthouse was not run (R5).
