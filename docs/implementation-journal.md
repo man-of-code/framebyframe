@@ -2414,3 +2414,35 @@ Append below this line.
 - `/` simulated reads worse than R6 (81 / 3.9 against 85 / 3.5 s), a Lantern artifact explained above. Applied throttling improves.
 - `/library` raw markup is 63 KB, mostly the wide filter chips, which render at every width.
 - Items from the R6 and R5.1 Left open lists still stand (Vercel serving and the service worker untested on a real deploy, `/` CLS, DOM size, unrendered primitives, trackpad inertia, light hero aurora strength).
+
+### Redesign R6.2: Independent verification of R6 and R6.1
+
+- **Status:** complete
+- **When:** 2026-10-27
+- **Plan reference:** `docs/redesign-plan.md` → R6 — Build-time prerendering (main-session review of the R6 and R6.1 hand-backs)
+
+#### Verified
+
+- Re-run on `8f0cca4` from the main session: `npm run validate` exit 0; `npm test` 261 passed; `npx tsc -b` exit 0; `npm run build` exit 0 (entry 130.8 KB, `/week` 156.9 KB, target 160 KiB); `npx oxlint` 42 warnings; `npm run e2e` 1 passed; `npm run e2e:preview` 236 passed. `dist/library/index.html` 70,012 B raw / 7,156 B gzip.
+- Route coverage: every `path` in `src/router.tsx` is prerendered, and every internal `href` in `dist/**/*.html` resolves to a file in `dist/`. Query-string links (`/library?…`, `/?intro=1`) are served by their path's `index.html` and client-rendered by the hydrate guard.
+- Returning visitors who already chose: a Playwright probe against `vite preview` seeded `fbf:consent`. With `"accepted"`, `/plan` and `/week/7` requested `/_vercel/insights/script.js` after hydration (404 locally; the path exists only on Vercel). With `"rejected"`, there was no analytics request. The banner was not visible in either case. This covers the stored-accept path, which the R6.1 suite exercised only for banner visibility.
+
+#### Decisions
+
+- **Decision:** the simulated `/` result (81 / 3.9 s) is recorded as the R5.1 baseline, not fixed in R6.
+  - **Because:** across the 12 R6.1 runs, simulated LCP is about 3.88 s whenever the lazy chunk wave starts before the observed LCP, and 3.1–3.5 s otherwise.
+  - **Tried:** one targeted change, `decoding="sync"` on `img.hero-poster`.
+    - Measured 6 runs interleaved with the unchanged build: it made the poster paint in the first frame in 3 of 6 runs, but simulated LCP stayed at 3.77–3.88 s, against 3.50–3.89 s for the unchanged build.
+    - Reverted, so the change is not committed. The frame gap was a symptom, not the cause.
+  - **Rejected:** a further cycle on `/` before critical CSS. The ~750 ms render-blocking main stylesheet dominates every route.
+  - **Risk:** none new. Applied-throttling LCP on `/` improved (3.1 → 2.2 s).
+  - **Deviation:** no
+
+#### Process exceptions (recorded here because the R6 and R6.1 entries omit them)
+
+- `8a90a85` (R6) was gated through `npm test | grep …` rather than the plain `&&` chain. It showed 218 passing, and every later commit passed the plain gate.
+- `6a19619` (R6.1): the stored-consent preview cases were added to the commit after its gate run. `tsc -b` and a full `npm run e2e:preview` covered them, and the gate passed again before `8f0cca4`.
+
+#### Left open
+
+- Unchanged from R6.1. Critical-CSS inlining is the remaining LCP lever, against a target (not a bar) under `docs/prd.md`. Real Vercel serving and the service worker are still untested on a deploy.
