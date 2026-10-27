@@ -1,6 +1,6 @@
 # Frame by Frame — Redesign ("Kinetoscope") and Fix Plan
 
-**Status:** approved direction, 2026-10-27. Supersedes the visual sections of `docs/design-system.md` (rewritten in Phase R1) and closes the review findings against `docs/implementation-plan.md`.
+**Status:** complete, 2026-10-27 — phases R0–R5.1 shipped on `feat/redesign-kinetoscope`; see the `Redesign R*` entries in `docs/implementation-journal.md` (R5 and R5.1 hold the final measurements and open items). Approved direction 2026-10-27. Supersedes the visual sections of `docs/design-system.md` (rewritten in Phase R1) and closes the review findings against `docs/implementation-plan.md`.
 **Branch:** `feat/redesign-kinetoscope`.
 **Journal:** append one entry per phase to `docs/implementation-journal.md`, heading `### Redesign R<N>: <title>`, same template and `**Decision:**` / `**Deviation:**` rules as the v1 tasks.
 

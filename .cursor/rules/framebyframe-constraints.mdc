@@ -8,9 +8,10 @@ alwaysApply: true
 `docs/implementation-plan.md` is the source of truth for v1. `docs/design-system.md` locks visual values. `docs/prd.md` locks behavior. When a task departs from them, say so in the journal and in the reply.
 
 - TypeScript strict. No `any`. No non-null assertions on parsed data.
-- Do not install `three` or `@designcodeio/threeui`. Atmosphere stays the vendored files in `src/vendor/threeui/`.
+- Do not install `three` or `@designcodeio/threeui`. Atmosphere is the vendored files in `src/vendor/threeui/` (never edited) plus recorded MIT derivatives in `src/vendor/threeui-derived/crt/` and `public/ceremony-badge.html` (provenance in `src/vendor/threeui/SOURCE.md`).
 - Learning routes (`/plan`, `/week/:n`, `/library`, `/toolkit`, `/capstone`) load zero canvas code. One WebGL surface at a time.
-- `scripts/assert-bundle.ts` fails the build if the entry graph exceeds 160KB gzip, or if `three` or `crtRenderer` is in that graph.
+- `scripts/assert-bundle.ts` measures the entry graph and each learning route (entry + its static chunks): **160KiB gzip target warns, 180KiB ceiling fails**; any canvas code or `three` import in those graphs fails. Going over the target needs a journaled design/UX reason. Never change the constants to pass.
+- Battery rules (`docs/design-system.md` §7.4): on phones nothing runs continuously — no canvas, no live aurora, no infinite CSS animation, no Lenis. Motion is interaction-only.
 - Business logic lives in `src/lib/` as pure functions. Storage is injected. Components render; they do not decide progress rules.
 - Icons are Lucide only. No emoji.
 - Do not invent a color, type size, space, radius, duration, or font. Use the tokens already in `src/styles/tokens.css`.

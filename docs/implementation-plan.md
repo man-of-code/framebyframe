@@ -1,5 +1,7 @@
 # Frame by Frame — v1 Implementation Plan
 
+> **Superseded for visuals (2026-10-27).** Tasks 1–17 shipped v1. The visual design, budget policy and the fixes from the v1 review are in `docs/redesign-plan.md` (v2 "Kinetoscope") and `docs/design-system.md` v2; the record is `docs/implementation-journal.md`. Values below that conflict with those documents are historical.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. The last step of every task appends to `docs/implementation-journal.md` and commits that entry with the task. Reviewers read the journal before the diff.
 
 **Goal:** Ship a static, no-backend Vite site that presents a 16-week filmmaking curriculum week by week, tracks progress in the browser, and exposes a filterable directory of the verified resource ledger.
