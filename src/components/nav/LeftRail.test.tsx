@@ -1,9 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { weeks } from "@/content/weeks";
 import { emptyProgress } from "@/lib/progress";
 import { Root } from "@/routes/Root";
+import { applyViewportCss } from "@/testing/viewport-css";
 import { LeftRail } from "./LeftRail";
 
 function stubMatchMedia(matchesMin768: boolean) {
@@ -74,11 +75,16 @@ describe("LeftRail", () => {
 });
 
 describe.each([
-  ["desktop", true],
-  ["phone", false],
-])("shell footer on %s layout", (_name, rail) => {
+  ["desktop", true, 1280],
+  ["phone", false, 390],
+])("shell footer on %s layout", (_name, rail, width) => {
+  let removeCss = () => {};
+  afterEach(() => removeCss());
+
   it("renders Contact, Privacy and Terms under main", () => {
     stubMatchMedia(rail);
+    // Root renders the rail and the tabs; shell.css hides the inactive set at this width.
+    removeCss = applyViewportCss("src/components/nav/shell.css", width);
     const { container } = render(
       <MemoryRouter initialEntries={["/x"]}>
         <Routes>
@@ -94,6 +100,8 @@ describe.each([
     }
     const main = container.querySelector("main")!;
     expect(main.compareDocumentPosition(legal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(Boolean(container.querySelector(".left-rail"))).toBe(rail);
+    expect(screen.queryByRole("complementary") !== null).toBe(rail);
+    expect(screen.queryByRole("button", { name: "More" }) !== null).toBe(!rail);
+    expect(screen.getAllByRole("navigation", { name: "Primary" })).toHaveLength(1);
   });
 });

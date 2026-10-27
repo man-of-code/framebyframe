@@ -6,7 +6,6 @@ import { facetValueLabel } from "@/components/library/labels";
 import "@/components/library/library.css";
 import { ResultsGrid } from "@/components/library/ResultsGrid";
 import { ResultsTable } from "@/components/library/ResultsTable";
-import { useMediaQuery } from "@/components/library/useMediaQuery";
 import { usePaletteShortcut } from "@/components/library/usePaletteShortcut";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { GapCard } from "@/components/resource/GapCard";
@@ -27,7 +26,6 @@ function appliedCount(facets: Facets): number {
 
 export function Library(): JSX.Element {
   const { query, facets, setQuery, toggleFacet, clearAll, results, options, view, setView } = useLibraryFilters();
-  const wide = useMediaQuery("(min-width: 1024px)");
   const [paletteOpen, setPaletteOpen] = useState(false);
   // Mounted on first open and kept, so the dialog's close animation still runs.
   const [paletteMounted, setPaletteMounted] = useState(false);
@@ -90,11 +88,13 @@ export function Library(): JSX.Element {
           <ToggleGroupItem value="table">Table</ToggleGroupItem>
         </ToggleGroup>
       </div>
-      {wide ? (
+      {/* Chips from 1024px, the Filters sheet below; CSS hides the inactive one (library.css). */}
+      <div className="library-filters-wide">
         <FilterChips facets={facets} options={options} onToggle={toggleFacet} />
-      ) : (
+      </div>
+      <div className="library-filters-narrow">
         <FilterSheet applied={appliedCount(facets)} facets={facets} options={options} onToggle={toggleFacet} />
-      )}
+      </div>
       {active.length > 0 || query.trim() !== "" ? (
         <div className="active-filters">
           {query.trim() !== "" ? (

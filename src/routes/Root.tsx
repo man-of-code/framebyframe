@@ -13,24 +13,9 @@ import type { Progress } from "@/lib/types";
 import "@/routes/launch.css";
 import "@/routes/pages.css";
 
-const RAIL_QUERY = "(min-width: 768px)";
-
 export type ShellOutletContext = {
   progress: Progress;
 };
-
-function useRailLayout(): boolean {
-  const [matches, setMatches] = useState(() => window.matchMedia(RAIL_QUERY).matches);
-
-  useEffect(() => {
-    const query = window.matchMedia(RAIL_QUERY);
-    const onChange = () => setMatches(query.matches);
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
-  }, []);
-
-  return matches;
-}
 
 export function Root() {
   return (
@@ -60,20 +45,19 @@ function DeferredChrome({ progress }: { progress: Progress }) {
 function RootLayout() {
   const { progress, status, replace } = useProgressContext();
   const { week } = useCurrentWeek(progress);
-  const rail = useRailLayout();
 
+  // The rail (>= 768px) and the mobile bar + bottom tabs (below) both render; shell.css hides the inactive set
+  // with display: none. No viewport read during render, so the prerendered HTML and hydration agree.
   return (
     <div className="shell">
       <PageMeta />
       <SkipLink />
-      {rail ? <LeftRail week={week} progress={progress} /> : null}
+      <LeftRail week={week} progress={progress} />
       <div className="shell-main">
-        {rail ? null : (
-          <header className="mobile-bar">
-            <Link to="/" className="brand mobile-brand">Frame by Frame</Link>
-            <WeekNumeral week={week} />
-          </header>
-        )}
+        <header className="mobile-bar">
+          <Link to="/" className="brand mobile-brand">Frame by Frame</Link>
+          <WeekNumeral week={week} />
+        </header>
         {status === "unavailable" ? (
           <p className="readonly-banner" role="status">
             Progress is read-only. This browser is not storing changes.
@@ -84,7 +68,9 @@ function RootLayout() {
         </main>
         <ShellFooter />
       </div>
-      {rail ? null : <BottomTabs progress={progress} replace={replace} />}
+      <div className="shell-tabs">
+        <BottomTabs progress={progress} replace={replace} />
+      </div>
       <DeferredChrome progress={progress} />
     </div>
   );

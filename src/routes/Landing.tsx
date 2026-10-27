@@ -1,5 +1,5 @@
 import type { FormEvent, JSX } from "react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BreakableTitle } from "@/components/BreakableTitle";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { weeks as allWeeks } from "@/content/weeks";
 import type { ProgressApi } from "@/hooks/ProgressProvider";
 import { useAuroraPause } from "@/hooks/useAuroraPause";
 import { useEdgeFade } from "@/hooks/useEdgeFade";
+import { useHydrated } from "@/hooks/useHydrated";
 import { startDateError } from "@/lib/form";
 import { toRoman } from "@/lib/title";
 import { readCanvasEnv, shouldRenderCanvas } from "@/lib/webgl-guard";
@@ -39,12 +40,15 @@ export function Landing(props: { api: ProgressApi; replay: boolean }): JSX.Eleme
   const { api, replay } = props;
   const navigate = useNavigate();
   const hero = useRef<HTMLElement>(null);
+  const hydrated = useHydrated();
   // Live aurora only where a live surface may run (7.2 rule 1); aurora.css also stops it on phones and reduced motion.
-  const [live] = useState(() => shouldRenderCanvas(readCanvasEnv()));
+  // The prerender and the hydration render show the static band and an empty date; both fill in once hydrated.
+  const live = useMemo(() => hydrated && shouldRenderCanvas(readCanvasEnv()), [hydrated]);
   useAuroraPause(hero);
   const strip = useRef<HTMLOListElement>(null);
   useEdgeFade(strip);
-  const [date, setDate] = useState(api.progress.startDate ?? localToday());
+  const [typed, setDate] = useState<string | null>(api.progress.startDate ?? null);
+  const date = typed ?? (hydrated ? localToday() : "");
   const [dateError, setDateError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const gap = gaps.find((item) => item.id === "indian-language-craft");

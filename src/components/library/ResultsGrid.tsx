@@ -9,6 +9,7 @@ const VirtualResultsGrid = lazy(() =>
   import("./VirtualResultsGrid").then((m) => ({ default: m.VirtualResultsGrid })),
 );
 
+/** Row chunking for the virtualizer only; the plain grid takes its columns from CSS (library.css). */
 function useColumnCount(): number {
   const three = useMediaQuery("(min-width: 1024px)");
   const two = useMediaQuery("(min-width: 640px)");
@@ -17,11 +18,19 @@ function useColumnCount(): number {
   return 1;
 }
 
+function VirtualGrid(props: { resources: Resource[]; fallback: JSX.Element }): JSX.Element {
+  const columns = useColumnCount();
+  return (
+    <Suspense fallback={props.fallback}>
+      <VirtualResultsGrid resources={props.resources} columns={columns} />
+    </Suspense>
+  );
+}
+
 export function ResultsGrid(props: { resources: Resource[] }): JSX.Element {
   const { resources } = props;
-  const columns = useColumnCount();
   const plain = (
-    <div className="results-grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+    <div className="results-grid">
       {resources.map((resource) => (
         <ResourceCard key={resource.id} resource={resource} />
       ))}
@@ -29,9 +38,5 @@ export function ResultsGrid(props: { resources: Resource[] }): JSX.Element {
   );
 
   if (resources.length <= VIRTUALIZE_AFTER) return plain;
-  return (
-    <Suspense fallback={plain}>
-      <VirtualResultsGrid resources={resources} columns={columns} />
-    </Suspense>
-  );
+  return <VirtualGrid resources={resources} fallback={plain} />;
 }

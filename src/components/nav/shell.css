@@ -352,9 +352,19 @@
   .shell-main {
     padding-bottom: calc(56px + 64px + env(safe-area-inset-bottom));
   }
+
+  /* Rail vs mobile bar + tabs is CSS only (Root renders both); display: none leaves the a11y tree too. */
+  .left-rail {
+    display: none;
+  }
 }
 
 @media (min-width: 768px) {
+  .mobile-bar,
+  .shell-tabs {
+    display: none;
+  }
+
   .shell {
     display: grid;
     grid-template-columns: 240px minmax(0, 1fr);

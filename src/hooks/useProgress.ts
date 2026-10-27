@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useHydrated } from "@/hooks/useHydrated";
 import {
+  emptyProgress,
   loadProgress,
   saveProgress,
   setCapstoneStage,
@@ -24,10 +26,26 @@ export function useProgress(): {
   replace: (progress: Progress) => void;
   seeCeremony: () => boolean;
 } {
-  const [state, setState] = useState(() => loadProgress());
+  const hydrated = useHydrated();
+  // The prerender and the hydration render use a neutral snapshot ("empty", never "unavailable", so no read-only
+  // banner ships in the HTML); storage is read right after hydration. A plain client render reads it at once.
+  const [state, setState] = useState<{ progress: Progress; status: LoadStatus }>(() =>
+    hydrated ? loadProgress() : { progress: emptyProgress, status: "empty" },
+  );
   const progressRef = useRef(state.progress);
+  const loaded = useRef(hydrated);
   const pending = useRef<Progress | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (loaded.current) return;
+    loaded.current = true;
+    const stored = loadProgress();
+    progressRef.current = stored.progress;
+    // A transition, so a route boundary still waiting for its lazy chunk finishes hydrating before this update
+    // reaches it; an urgent update there would throw the server HTML away and client-render the boundary.
+    startTransition(() => setState(stored));
+  }, []);
 
   const reportSave = useCallback((result: "ok" | "unavailable") => {
     setState((current) => {
@@ -104,15 +122,19 @@ export function useProgress(): {
     return true;
   }, [write]);
 
-  return {
-    progress: state.progress,
-    status: state.status,
-    toggle,
-    note,
-    stage,
-    setStartDate,
-    setWeekOverride,
-    replace,
-    seeCeremony,
-  };
+  // Stable while nothing changed, so the re-render when hydration ends (useHydrated) is not a context update.
+  return useMemo(
+    () => ({
+      progress: state.progress,
+      status: state.status,
+      toggle,
+      note,
+      stage,
+      setStartDate,
+      setWeekOverride,
+      replace,
+      seeCeremony,
+    }),
+    [state, toggle, note, stage, setStartDate, setWeekOverride, replace, seeCeremony],
+  );
 }

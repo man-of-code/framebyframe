@@ -158,8 +158,40 @@
 
 .results-grid {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
   min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .results-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Chips at >= 1024px, the Filters sheet below: both render (no viewport read during render, so the prerendered
+   HTML and hydration agree) and the inactive one is display: none, which also drops it from the a11y tree. */
+.library-filters-wide,
+.library-filters-narrow {
+  display: contents;
+}
+
+@media (max-width: 1023px) {
+  .library-filters-wide {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .library-filters-narrow {
+    display: none;
+  }
 }
 
 .results-virtual {

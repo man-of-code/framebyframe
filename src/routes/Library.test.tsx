@@ -1,8 +1,9 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { resources } from "@/content";
+import { applyViewportCss } from "@/testing/viewport-css";
 import { Library } from "./Library";
 
 function installMatchMedia(matches: (query: string) => boolean) {
@@ -52,8 +53,13 @@ describe("Library", () => {
     await Promise.all([import("@/components/library/SearchPalette"), import("@/components/library/FilterSheetPanel")]);
   });
 
+  // Chips vs the Filters sheet is CSS only: library.css hides the inactive one at the emulated width.
+  let removeCss = () => {};
+  afterEach(() => removeCss());
+
   beforeEach(() => {
     installMatchMedia((query) => query.includes("1024"));
+    removeCss = applyViewportCss("src/components/library/library.css", 1280);
     Element.prototype.scrollIntoView = () => {};
     window.ResizeObserver = class {
       observe() {}
@@ -193,6 +199,8 @@ describe("Library", () => {
 
   it("keeps facets in a sheet below 1024px and badges the applied count", async () => {
     installMatchMedia(() => false);
+    removeCss();
+    removeCss = applyViewportCss("src/components/library/library.css", 390);
     renderLibrary();
     expect(screen.queryByRole("button", { name: "Tamil" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Filters" }));
