@@ -1,6 +1,6 @@
 /* Capstone ceremony (design-system.md 6): a fixed overlay on --bg-base whose first child is the aurora layer
-   (absolute, so the overlay stays fixed); a centred playbill frame on --bg-raised holds the #000 film-grain stage
-   (SparkBadge live, guilloche seal static), the eyebrow, the title and Continue. */
+   (absolute, so the overlay stays fixed); a centred playbill frame on --bg-raised holds the picture (live: SparkBadge
+   on a #000 film-grain stage; static: the guilloche seal directly on the frame), the eyebrow, the title and Continue. */
 .ceremony {
   position: fixed;
   inset: 0;
@@ -39,14 +39,10 @@
   display: grid;
   place-items: center;
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: var(--stage-black);
   box-shadow: 0 0 0 1px var(--ornament);
-}
-
-.ceremony--live .ceremony-stage {
-  aspect-ratio: 4 / 3;
 }
 
 /* The picture sits under the stage's film grain (z 1). */

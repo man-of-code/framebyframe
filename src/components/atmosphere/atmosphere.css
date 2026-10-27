@@ -5,6 +5,11 @@
   min-width: 0;
 }
 
+/* Light mode only defines --aurora-fields-hero (0.30); dark falls back to the shared fields (0.20). */
+.hero.aurora::before {
+  background-image: var(--aurora-fields-hero, var(--aurora-fields));
+}
+
 .hero-stage {
   display: grid;
   gap: var(--space-6);
@@ -167,21 +172,8 @@
   box-shadow: none;
 }
 
-.hero-lumen .lumen-cta__ring {
-  border-color: var(--pop-ink);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .hero-lumen .lumen-cta__button {
     transition: none;
   }
 }
-
-.bleach-bypass {
-  filter: saturate(0.65) contrast(1.12);
-}
-
-.bleach-bypass:hover {
-  filter: saturate(1) contrast(1.12);
-}
-

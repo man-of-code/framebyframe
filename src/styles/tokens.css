@@ -36,7 +36,7 @@
   --grain-film-opacity: 0.06;
   /* 6 (R3 critique): the hero screen and the ceremony stage are always-dark #000 pictures, so their film grain
      stays at 0.06 in both themes. Not redeclared in .light. Text-bearing surfaces keep --grain-film-opacity. */
-  --grain-picture-opacity: 0.06;
+  --grain-picture-opacity: 0.10;
   /* 5.6 rule 3: the picture surfaces (.hero-screen, .ceremony-stage) are #000 in either theme. */
   --stage-black: #000000;
   /* 5.2 sheen: only lightens the teal under ink */
@@ -127,10 +127,10 @@
   --pop-offset: 3px;
   --pop-offset-hover: 4px;
   --pop-offset-press: 1px;
-  --pop-offset-lg: 8px;
+  --pop-offset-lg: 12px;
   --shadow-overlay: 6px 6px 0 var(--pop-shadow-color);
-  --halftone-dot: 1.5px;
-  --halftone-gap: 6px;
+  --halftone-dot: 1.25px;
+  --halftone-gap: 4px;
 
   /* 4 z-index scale. Names are the labels in that section. */
   --z-sticky: 10;
@@ -206,6 +206,13 @@
   --grain-opacity: 0;
   --grain-film-opacity: 0;
   --aurora-strength: 0.14;
+  /* 6 (R4 critique): the light hero band is stronger; no text sits on it (the title is in the raised frame).
+     A custom property resolves var() where it is declared, so the hero needs its own field list. */
+  --aurora-strength-hero: 0.30;
+  --aurora-fields-hero:
+    radial-gradient(60% 80% at 60% 95%, rgba(255,79,163,var(--aurora-strength-hero)), transparent 70%),
+    radial-gradient(55% 75% at 80% 10%, rgba(123,92,255,var(--aurora-strength-hero)), transparent 70%),
+    radial-gradient(60% 80% at 15% 20%, rgba(79,224,194,var(--aurora-strength-hero)), transparent 70%);
   --sheen-color: color-mix(in srgb, var(--bg-overlay) 50%, transparent);
   --scrim: rgba(27,20,36,0.40);
 }

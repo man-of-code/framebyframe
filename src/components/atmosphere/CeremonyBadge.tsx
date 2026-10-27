@@ -9,7 +9,7 @@ import "./ceremony.css";
 /**
  * Capstone ceremony (design-system.md 6). Live on a capable desktop: SparkBadge on a #000 film-grain stage under a
  * live aurora. Static whenever any 7.2 rule 1 condition holds (phone, coarse pointer, reduced motion, Save-Data,
- * few cores or little memory): the guilloche seal on the same stage, static aurora. Both put Continue on the
+ * few cores or little memory): the guilloche seal directly on the frame (no stage, no film grain), static aurora. Both put Continue on the
  * playbill frame's --bg-raised surface, never on the aurora.
  */
 function CeremonyOverlay(props: { onClose: () => void }): JSX.Element {
@@ -50,9 +50,13 @@ function CeremonyOverlay(props: { onClose: () => void }): JSX.Element {
         aria-hidden="true"
       />
       <div className="ceremony__frame playbill-frame">
-        <div className="ceremony-stage grain grain--film" aria-hidden="true">
-          {live ? <SparkBadge sourceUrl="/ceremony-badge.html" /> : <div className="orn-seal ceremony__seal" />}
-        </div>
+        {live ? (
+          <div className="ceremony-stage grain grain--film" aria-hidden="true">
+            <SparkBadge sourceUrl="/ceremony-badge.html" />
+          </div>
+        ) : (
+          <div className="orn-seal ceremony__seal" aria-hidden="true" />
+        )}
         <p className="eyebrow orn-fleuron">Capstone · Complete</p>
         <h2 id="ceremony-title" className="ceremony__title">Capstone complete</h2>
         <Button ref={button} type="button" onClick={onClose}>

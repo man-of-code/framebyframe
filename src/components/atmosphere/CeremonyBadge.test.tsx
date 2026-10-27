@@ -36,7 +36,9 @@ describe("CeremonyBadge", () => {
     render(<CeremonyBadge open onClose={onClose} />);
     const dialog = screen.getByRole("dialog", { name: "Capstone complete" });
     expect(dialog.classList.contains("ceremony--static")).toBe(true);
-    expect(dialog.querySelector(".ceremony-stage.grain--film .orn-seal")).toBeTruthy();
+    // The seal sits directly on the frame's raised surface: no black stage, no film grain.
+    expect(dialog.querySelector(".playbill-frame > .orn-seal")).toBeTruthy();
+    expect(dialog.querySelector(".ceremony-stage, .grain--film")).toBeNull();
     expect(dialog.querySelector("iframe")).toBeNull();
     expect(dialog.querySelector(".aurora--live")).toBeNull();
     const button = screen.getByRole("button", { name: "Continue" });
