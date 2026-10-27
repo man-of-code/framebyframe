@@ -3,7 +3,6 @@ import { createBrowserRouter, Link, useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseWeekParam } from "@/lib/route-week";
 import { TOTAL_WEEKS } from "@/lib/week";
-import { NotFound } from "@/routes/NotFound";
 import { Root } from "@/routes/Root";
 
 const Home = lazy(() => import("@/routes/Dashboard").then((m) => ({ default: m.Home })));
@@ -17,6 +16,7 @@ const Contact = lazy(() => import("@/routes/Contact").then((m) => ({ default: m.
 const Privacy = lazy(() => import("@/routes/Privacy").then((m) => ({ default: m.Privacy })));
 const Terms = lazy(() => import("@/routes/Terms").then((m) => ({ default: m.Terms })));
 const ThankYou = lazy(() => import("@/routes/ThankYou").then((m) => ({ default: m.ThankYou })));
+const NotFound = lazy(() => import("@/routes/NotFound").then((m) => ({ default: m.NotFound })));
 
 function RouteFallback() {
   return (
@@ -73,7 +73,7 @@ export const router = createBrowserRouter([
       { path: "privacy", element: <Lazy page={Privacy} /> },
       { path: "terms", element: <Lazy page={Terms} /> },
       { path: "thank-you", element: <Lazy page={ThankYou} /> },
-      { path: "*", element: <NotFound /> },
+      { path: "*", element: <Lazy page={NotFound} /> },
     ],
   },
 ]);
